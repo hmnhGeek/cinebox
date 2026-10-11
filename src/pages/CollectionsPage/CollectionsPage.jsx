@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
-import { getAllCollections } from "../../service/collectionApi";
-import "./CollectionsPage.css";
 import { useNavigate } from "react-router-dom";
+import {
+  getAllCollections,
+  createCollection,
+  deleteCollection,
+} from "../../service/collectionApi";
 import CreateCollectionModal from "../../components/CreateCollectionModal/CreateCollectionModal";
+import "./CollectionsPage.css";
 
 const CollectionsPage = () => {
   const [collections, setCollections] = useState([]);
@@ -29,10 +33,38 @@ const CollectionsPage = () => {
   }, []);
 
   const handleCreateCollection = async (request) => {
-    const collection = await createCollection(request);
+    try {
+      const collection = await createCollection(request);
 
-    // Optionally refresh your collections list here.
-    console.log("Created collection:", collection);
+      setCollections((previous) => [...previous, collection]);
+      setCollectionModalOpen(false);
+    } catch (error) {
+      console.error("Failed to create collection:", error);
+      throw error;
+    }
+  };
+
+  const handleDeleteCollection = async (event, collection) => {
+    event.stopPropagation();
+    try {
+      await deleteCollection(collection.id);
+
+      setCollections((previous) =>
+        previous.filter((item) => item.id !== collection.id),
+      );
+    } catch (error) {
+      console.error("Failed to delete collection:", error);
+      window.alert(error.message || "Failed to delete collection.");
+    }
+  };
+
+  const handleCardKeyDown = (event, collectionId) => {
+    if (event.target !== event.currentTarget) return;
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      navigate(`/collections/${collectionId}`);
+    }
   };
 
   return (
@@ -42,9 +74,11 @@ const CollectionsPage = () => {
         onClose={() => setCollectionModalOpen(false)}
         onCreate={handleCreateCollection}
       />
+
       <main className="content">
         <div className="collections-heading">
           <h2>My Collections</h2>
+
           <button
             className="app-level-button"
             onClick={() => setCollectionModalOpen(true)}
@@ -61,7 +95,7 @@ const CollectionsPage = () => {
           <div className="empty-state">
             <div className="empty-collection-icon">▤</div>
             <h3>No collections yet</h3>
-            <p>Create a collection to organize your videos.</p>
+            <p>Create a collection to organize your content.</p>
           </div>
         )}
 
@@ -72,14 +106,21 @@ const CollectionsPage = () => {
                 className="collection-card"
                 key={collection.id}
                 onClick={() => navigate(`/collections/${collection.id}`)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    navigate(`/collections/${collection.id}`);
-                  }
-                }}
+                onKeyDown={(event) => handleCardKeyDown(event, collection.id)}
                 role="button"
                 tabIndex={0}
               >
+                <button
+                  type="button"
+                  className="delete-collection-button"
+                  aria-label={`Delete ${collection.title}`}
+                  title="Delete collection"
+                  onClick={(event) => handleDeleteCollection(event, collection)}
+                  onKeyDown={(event) => event.stopPropagation()}
+                >
+                  &times;
+                </button>
+
                 <div className="collection-card-icon">
                   <span>▤</span>
                 </div>

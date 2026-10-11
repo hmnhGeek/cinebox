@@ -71,3 +71,16 @@ export const syncCollection = async (collectionId) => {
     throw new Error("Failed to synchronise collection.");
   }
 };
+
+export const deleteCollection = async (collectionId) => {
+  const response = await fetch(
+    `${API_BASE_URL}/${encodeURIComponent(collectionId)}`,
+    {
+      method: "DELETE",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to delete collection.");
+  }
+};

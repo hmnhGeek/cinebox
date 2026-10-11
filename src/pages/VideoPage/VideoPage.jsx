@@ -236,7 +236,7 @@ function VideoPage() {
                 >
                   <path d="M8 5.5v13l10-6.5z" fill="currentColor" />
                 </svg>
-                <span>Play movie</span>
+                <span>Play</span>
               </button>
 
               <span className="play-hint">
