@@ -1,0 +1,5 @@
+.app-logo {
+  height: 44px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
