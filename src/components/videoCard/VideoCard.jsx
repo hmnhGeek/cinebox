@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { getThumbnailUrl, getPreviewUrl } from "../../service/videoApi";
 
 function VideoCard({ video, thumbnailUrl, previewUrl, handleClick }) {
   const [isHovered, setIsHovered] = useState(false);

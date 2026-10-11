@@ -91,3 +91,112 @@
     width: 100%;
   }
 }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 10, 18, 0.72);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+}
+
+.modal-content {
+  width: min(520px, 92vw);
+  background: #171a1f;
+  color: #f3f4f6;
+  border: 1px solid #2a2f38;
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  padding: 28px 24px;
+  z-index: 1001;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.modal-content h2 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: #ffffff;
+}
+
+.close-button {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #2d333d;
+  border-radius: 50%;
+  background: #0f1217;
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.modal-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: #c7ccd6;
+}
+
+.modal-content input,
+.modal-content textarea {
+  width: 100%;
+  background: #0f1217;
+  color: #fff;
+  border: 1px solid #2d333d;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font: inherit;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.modal-content input:focus,
+.modal-content textarea:focus {
+  border-color: #7c9cff;
+  box-shadow: 0 0 0 3px rgba(124, 156, 255, 0.2);
+}
+
+.modal-content textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.modal-content button[type="submit"] {
+  background: linear-gradient(135deg, #5b8cff, #7c4dff);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.modal-content button[type="submit"]:hover {
+  opacity: 0.96;
+  transform: translateY(-1px);
+}
