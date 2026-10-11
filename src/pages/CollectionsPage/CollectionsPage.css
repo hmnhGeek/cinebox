@@ -25,6 +25,7 @@
 }
 
 .collection-card {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -34,6 +35,7 @@
   border: 1px solid #2a2f38;
   border-radius: 12px;
   cursor: pointer;
+
   transition:
     border-color 0.2s ease,
     background 0.2s ease,
@@ -46,6 +48,78 @@
   transform: translateY(-2px);
 }
 
+.collection-card:focus-visible {
+  outline: 2px solid #5b8cff;
+  outline-offset: 3px;
+}
+
+/* Delete cross */
+.delete-collection-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 28px;
+  height: 28px;
+  padding: 0;
+
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: rgba(35, 39, 47, 0.96);
+  color: #aab2c0;
+
+  font-size: 21px;
+  font-family: inherit;
+  line-height: 1;
+  cursor: pointer;
+
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.85);
+  pointer-events: none;
+
+  transition:
+    opacity 0.18s ease,
+    visibility 0.18s ease,
+    transform 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+/* Show the cross when hovering or focusing inside the card */
+.collection-card:hover .delete-collection-button,
+.collection-card:focus-within .delete-collection-button {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.delete-collection-button:hover {
+  background: #48242b;
+  border-color: #71343e;
+  color: #ff7b88;
+}
+
+.delete-collection-button:active {
+  transform: scale(0.92);
+}
+
+.delete-collection-button:focus-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  outline: 2px solid #5b8cff;
+  outline-offset: 2px;
+}
+
+/* Collection icon */
 .collection-card-icon {
   display: flex;
   align-items: center;
@@ -54,11 +128,13 @@
   width: 56px;
   height: 56px;
   border-radius: 12px;
+
   background: linear-gradient(
     135deg,
     rgba(91, 140, 255, 0.22),
     rgba(124, 77, 255, 0.22)
   );
+
   color: #9bb7ff;
   font-size: 30px;
 }
@@ -88,6 +164,7 @@
   white-space: nowrap;
 }
 
+/* Empty state */
 .empty-collection-icon {
   margin-bottom: 12px;
   color: #7c9cff;
@@ -104,6 +181,16 @@
   margin: 0;
   color: #aaa;
   font-size: 14px;
+}
+
+/* Touchscreens don't have hover, so keep the cross visible */
+@media (hover: none) {
+  .delete-collection-button {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+    pointer-events: auto;
+  }
 }
 
 @media (max-width: 600px) {
