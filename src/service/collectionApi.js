@@ -84,3 +84,13 @@ export const deleteCollection = async (collectionId) => {
     throw new Error("Failed to delete collection.");
   }
 };
+
+export const getPreviewProgress = async (previewPath) => {
+  const response = await fetch(`${API_BASE_URL}/preview/preview-progress`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch preview progress.");
+  }
+
+  return response.json();
+};
