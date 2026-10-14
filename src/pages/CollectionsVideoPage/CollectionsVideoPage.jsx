@@ -134,11 +134,7 @@ const CollectionVideosPage = () => {
           <div className="collection-videos-heading">
             <h2>{collection.title}</h2>
 
-            <button
-              className="app-level-button"
-              onClick={handleSynchronize}
-              disabled={syncing || loading}
-            >
+            <button className="app-level-button" onClick={handleSynchronize}>
               ⟳ Synchronize
             </button>
           </div>
@@ -151,6 +147,7 @@ const CollectionVideosPage = () => {
           syncProgress={syncProgress}
           syncMessage={syncMessage}
           error={error}
+          collectionId={id}
         />
 
         {loading && <div className="loading">Loading videos...</div>}

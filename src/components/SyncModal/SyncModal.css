@@ -1,14 +1,46 @@
 .sync-modal {
   max-width: 580px;
+  display: flex;
+  flex-direction: column;
+  /* Ensure the modal itself doesn't exceed the viewport */
+  max-height: 85vh;
 }
 
 .sync-modal-body {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-height: 60vh;
+  /* Dynamically adapts to viewport height while allowing scrolling when needed */
+  max-height: min(50vh, 400px);
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 6px;
+  margin-right: -4px; /* Compensate for padding to keep alignment clean */
+}
+
+/* Custom Scrollbar Styles for Aesthetically Pleasing Look */
+.sync-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sync-modal-body::-webkit-scrollbar-track {
+  background: rgba(23, 26, 31, 0.5);
+  border-radius: 3px;
+}
+
+.sync-modal-body::-webkit-scrollbar-thumb {
+  background: #2d333d;
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.sync-modal-body::-webkit-scrollbar-thumb:hover {
+  background: #4a5263;
+}
+
+/* Firefox scrollbar support */
+.sync-modal-body {
+  scrollbar-width: thin;
+  scrollbar-color: #2d333d rgba(23, 26, 31, 0.5);
 }
 
 .sync-progress-heading {

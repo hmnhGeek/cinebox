@@ -8,6 +8,7 @@ const SyncModal = ({
   syncProgress,
   syncMessage,
   error,
+  collectionId,
 }) => {
   if (!isOpen) return null;
 
@@ -28,7 +29,7 @@ const SyncModal = ({
         aria-labelledby="sync-modal-title"
       >
         <div className="modal-header">
-          <h2 id="sync-modal-title">Synchronizing Collection</h2>
+          <h2 id="sync-modal-title">Synchronizing Collection(s)</h2>
 
           <button
             type="button"
@@ -48,6 +49,9 @@ const SyncModal = ({
 
         <div className="sync-modal-body">
           {Object.entries(syncProgress).map(([path, progress]) => {
+            if (!path.includes(collectionId)) {
+              return null;
+            }
             const percentage = Math.min(100, Math.max(0, progress));
             const videoName = path.split(/[\\/]/).slice(-2, -1)[0] || path;
 
@@ -78,18 +82,6 @@ const SyncModal = ({
           {syncMessage && <div className="success">{syncMessage}</div>}
           {error && <div className="error">{error}</div>}
         </div>
-
-        {!syncing && (
-          <div className="collection-actions" style={{ marginTop: "20px" }}>
-            <button
-              type="button"
-              className="app-level-button"
-              onClick={onClose}
-            >
-              Done
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
