@@ -1,23 +1,15 @@
 import React from "react";
 import "./SyncModal.css";
 
-const SyncModal = ({
-  isOpen,
-  onClose,
-  syncing,
-  syncProgress,
-  syncMessage,
-  error,
-  collectionId,
-}) => {
+const SyncModal = ({ isOpen, onClose, syncProgress, error, collectionId }) => {
   if (!isOpen) return null;
 
   return (
     <div
       className="modal-overlay"
       onMouseDown={(event) => {
-        // Close only if clicking the backdrop, and allow closing when done syncing
-        if (event.target === event.currentTarget && !syncing) {
+        // Close only if clicking the backdrop
+        if (event.target === event.currentTarget) {
           onClose();
         }
       }}
@@ -75,7 +67,7 @@ const SyncModal = ({
 
           {Object.keys(syncProgress).some((path) =>
             path.includes(collectionId),
-          ) ? null : ( // Render nothing (or a loading spinner) while syncing
+          ) ? null : (
             <div className="success">
               <span>Collection has been synced.</span>
             </div>

@@ -17,10 +17,8 @@ const CollectionVideosPage = () => {
   const [videos, setVideos] = useState([]);
   const [collection, setCollection] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [error, setError] = useState(null);
-  const [syncMessage, setSyncMessage] = useState("");
   const [syncProgress, setSyncProgress] = useState({});
 
   const isMounted = useRef(true);
@@ -75,10 +73,8 @@ const CollectionVideosPage = () => {
   }, [loadCollection]);
 
   const handleSynchronize = async () => {
-    setSyncing(true);
     setIsSyncModalOpen(true);
     setSyncProgress({});
-    setSyncMessage("");
     setError(null);
 
     let progressTimer;
@@ -104,8 +100,6 @@ const CollectionVideosPage = () => {
           if (progressTimer) {
             window.clearInterval(progressTimer);
           }
-          setSyncing(false);
-          setSyncMessage("Collection synchronized successfully.");
         }
         if (isMounted.current) {
           setSyncProgress(finalResult ?? {});
@@ -119,10 +113,6 @@ const CollectionVideosPage = () => {
       console.error(err);
       if (isMounted.current) {
         setError("Failed to synchronize collection.");
-      }
-    } finally {
-      if (isMounted.current) {
-        setSyncing(false);
       }
     }
   };
@@ -143,9 +133,7 @@ const CollectionVideosPage = () => {
         <SyncModal
           isOpen={isSyncModalOpen}
           onClose={() => setIsSyncModalOpen(false)}
-          syncing={syncing}
           syncProgress={syncProgress}
-          syncMessage={syncMessage}
           error={error}
           collectionId={id}
         />
