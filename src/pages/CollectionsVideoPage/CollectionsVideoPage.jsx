@@ -9,7 +9,7 @@ import {
 } from "../../service/collectionApi";
 
 import "./CollectionsVideoPage.css";
-import SyncModal from "../../components/SyncModal/SynchModal";
+import SyncModal from "../../components/SyncModal/SyncModal";
 
 const CollectionVideosPage = () => {
   const { id } = useParams();

@@ -41,12 +41,6 @@ const SyncModal = ({
           </button>
         </div>
 
-        {syncing && (
-          <div className="sync-progress-heading">
-            <span>Generating video previews...</span>
-          </div>
-        )}
-
         <div className="sync-modal-body">
           {Object.entries(syncProgress).map(([path, progress]) => {
             if (!path.includes(collectionId)) {
@@ -79,7 +73,13 @@ const SyncModal = ({
             );
           })}
 
-          {syncMessage && <div className="success">{syncMessage}</div>}
+          {Object.keys(syncProgress).some((path) =>
+            path.includes(collectionId),
+          ) ? null : ( // Render nothing (or a loading spinner) while syncing
+            <div className="success">
+              <span>Collection has been synced.</span>
+            </div>
+          )}
           {error && <div className="error">{error}</div>}
         </div>
       </div>
