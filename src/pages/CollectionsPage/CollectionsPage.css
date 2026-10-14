@@ -206,3 +206,38 @@
     padding: 16px;
   }
 }
+
+/* Syncing state for collection button */
+.delete-collection-button.syncing {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+  pointer-events: auto;
+  background: rgba(24, 43, 33, 0.96);
+  border-color: #2b6144;
+  color: #4ade80;
+  cursor: default;
+}
+
+.delete-collection-button.syncing:hover {
+  background: rgba(24, 43, 33, 0.96);
+  border-color: #2b6144;
+  color: #4ade80;
+  transform: scale(1);
+}
+
+.sync-spinner {
+  display: inline-block;
+  animation: spin 1.5s linear infinite;
+  font-size: 16px;
+  line-height: 1;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,25 +1,28 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import VideoGrid from "../../components/videoGrid/VideoGrid";
 import {
   getCollectionVideos,
   getAllCollections,
-  syncCollection,
-  getPreviewProgress,
 } from "../../service/collectionApi";
+import { useSync } from "../../context/SyncContext";
 
 import "./CollectionsVideoPage.css";
 import SyncModal from "../../components/SyncModal/SyncModal";
 
 const CollectionVideosPage = () => {
   const { id } = useParams();
-
+  const {
+    syncProgress,
+    isSyncModalOpen,
+    setIsSyncModalOpen,
+    startSynchronization,
+    error,
+    setError,
+  } = useSync();
   const [videos, setVideos] = useState([]);
   const [collection, setCollection] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
-  const [error, setError] = useState(null);
-  const [syncProgress, setSyncProgress] = useState({});
 
   const isMounted = useRef(true);
 
@@ -66,55 +69,16 @@ const CollectionVideosPage = () => {
         setLoading(false);
       }
     }
-  }, [id]);
+  }, [id, setError]);
 
   useEffect(() => {
     loadCollection();
   }, [loadCollection]);
 
-  const handleSynchronize = async () => {
-    setIsSyncModalOpen(true);
-    setSyncProgress({});
-    setError(null);
-
-    let progressTimer;
-
-    try {
-      progressTimer = window.setInterval(async () => {
-        if (!isMounted.current) return;
-        try {
-          const result = await getPreviewProgress();
-          if (isMounted.current) {
-            setSyncProgress(result ?? {});
-          }
-        } catch (err) {
-          console.error("Failed to fetch preview progress:", err);
-        }
-      }, 1000);
-
-      await syncCollection(id);
-
-      try {
-        const finalResult = await getPreviewProgress();
-        if (Object.entries(finalResult).length === 0) {
-          if (progressTimer) {
-            window.clearInterval(progressTimer);
-          }
-        }
-        if (isMounted.current) {
-          setSyncProgress(finalResult ?? {});
-        }
-      } catch (e) {
-        // ignore final poll error
-      }
-
-      await loadCollection();
-    } catch (err) {
-      console.error(err);
-      if (isMounted.current) {
-        setError("Failed to synchronize collection.");
-      }
-    }
+  const handleSynchronize = () => {
+    startSynchronization(id, () => {
+      loadCollection();
+    });
   };
 
   return (
