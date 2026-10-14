@@ -29,7 +29,7 @@ const SyncModal = ({
         aria-labelledby="sync-modal-title"
       >
         <div className="modal-header">
-          <h2 id="sync-modal-title">Synchronizing Collection(s)</h2>
+          <h2 id="sync-modal-title">Synchronizing Collection</h2>
 
           <button
             type="button"
