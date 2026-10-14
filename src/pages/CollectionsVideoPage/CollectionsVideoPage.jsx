@@ -9,6 +9,7 @@ import {
 } from "../../service/collectionApi";
 
 import "./CollectionsVideoPage.css";
+import SyncModal from "../../components/SyncModal/SynchModal";
 
 const CollectionVideosPage = () => {
   const { id } = useParams();
@@ -17,11 +18,11 @@ const CollectionVideosPage = () => {
   const [collection, setCollection] = useState(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [error, setError] = useState(null);
   const [syncMessage, setSyncMessage] = useState("");
   const [syncProgress, setSyncProgress] = useState({});
 
-  // Track component mounted state to prevent memory leaks & state updates on unmount
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -75,6 +76,7 @@ const CollectionVideosPage = () => {
 
   const handleSynchronize = async () => {
     setSyncing(true);
+    setIsSyncModalOpen(true);
     setSyncProgress({});
     setSyncMessage("");
     setError(null);
@@ -82,7 +84,6 @@ const CollectionVideosPage = () => {
     let progressTimer;
 
     try {
-      // 1. Start polling immediately
       progressTimer = window.setInterval(async () => {
         if (!isMounted.current) return;
         try {
@@ -95,10 +96,8 @@ const CollectionVideosPage = () => {
         }
       }, 1000);
 
-      // 2. Trigger the synchronization
       await syncCollection(id);
 
-      // Optional: Fetch one last time to ensure 100% state is captured
       try {
         const finalResult = await getPreviewProgress();
         if (Object.entries(finalResult).length === 0) {
@@ -121,6 +120,10 @@ const CollectionVideosPage = () => {
       if (isMounted.current) {
         setError("Failed to synchronize collection.");
       }
+    } finally {
+      if (isMounted.current) {
+        setSyncing(false);
+      }
     }
   };
 
@@ -136,51 +139,22 @@ const CollectionVideosPage = () => {
               onClick={handleSynchronize}
               disabled={syncing || loading}
             >
-              {syncing ? "Synchronizing..." : "⟳ Synchronize"}
+              ⟳ Synchronize
             </button>
           </div>
         )}
-        {syncing && (
-          <div className="sync-progress-container">
-            <div className="sync-progress-heading">
-              <span>Generating video previews...</span>
-            </div>
 
-            {Object.entries(syncProgress).map(([path, progress]) => {
-              const percentage = Math.min(100, Math.max(0, progress));
+        <SyncModal
+          isOpen={isSyncModalOpen}
+          onClose={() => setIsSyncModalOpen(false)}
+          syncing={syncing}
+          syncProgress={syncProgress}
+          syncMessage={syncMessage}
+          error={error}
+        />
 
-              // Display the movie folder name instead of the full Windows/Unix path.
-              const videoName = path.split(/[\\/]/).slice(-2, -1)[0] || path;
-
-              return (
-                <div className="sync-progress-item" key={path}>
-                  <div className="sync-progress-info">
-                    <span title={path}>{videoName}</span>
-                    <span>{percentage}%</span>
-                  </div>
-
-                  <div
-                    className="sync-progress-track"
-                    role="progressbar"
-                    aria-label={`Preview generation progress for ${videoName}`}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-valuenow={percentage}
-                  >
-                    <div
-                      className="sync-progress-fill"
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {syncMessage && <div className="success">{syncMessage}</div>}
         {loading && <div className="loading">Loading videos...</div>}
-        {error && <div className="error">{error}</div>}
+        {error && !isSyncModalOpen && <div className="error">{error}</div>}
         {!loading && !error && videos.length === 0 && (
           <div className="empty-state">No videos found in this collection.</div>
         )}
