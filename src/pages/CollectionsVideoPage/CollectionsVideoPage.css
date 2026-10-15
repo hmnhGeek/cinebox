@@ -50,47 +50,6 @@
   background: linear-gradient(90deg, #6485ff, #9257ff);
 }
 
-/* Synchronize button */
-.app-level-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  min-height: 46px;
-  padding: 0 21px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  background: linear-gradient(135deg, #6485ff 0%, #7650f5 100%);
-  box-shadow:
-    0 5px 18px rgba(99, 102, 241, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  color: #fff;
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 650;
-  cursor: pointer;
-  white-space: nowrap;
-  transition:
-    transform 180ms ease,
-    box-shadow 180ms ease,
-    filter 180ms ease;
-}
-
-.app-level-button:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.09);
-  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
-}
-
-.app-level-button:active {
-  transform: translateY(0) scale(0.98);
-}
-
-.app-level-button:focus-visible {
-  outline: 2px solid #a5b4fc;
-  outline-offset: 4px;
-}
-
 /* Loading, error and empty states */
 .loading,
 .error,
@@ -192,17 +151,6 @@
     margin-bottom: 24px;
   }
 
-  .collection-videos-heading h2 {
-    font-size: 24px;
-  }
-
-  .app-level-button {
-    min-height: 42px;
-    padding: 0 13px;
-    border-radius: 10px;
-    font-size: 13px;
-  }
-
   .sync-progress-container {
     padding: 14px;
   }
@@ -212,5 +160,11 @@
   .app-level-button,
   .sync-progress-fill {
     transition: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .collection-videos-heading {
+    margin-bottom: 14px;
   }
 }

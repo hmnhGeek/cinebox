@@ -131,7 +131,7 @@ const CreateCollectionModal = ({ isOpen, onClose, onCreate }) => {
               <div className="collection-actions">
                 <button
                   type="button"
-                  className="collection-cancel"
+                  className="app-level-button"
                   onClick={onClose}
                   disabled={isSubmitting}
                 >
