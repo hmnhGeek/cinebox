@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "./VideoCard.css";
 
 function VideoCard({ video, thumbnailUrl, previewUrl, handleClick }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -21,14 +22,12 @@ function VideoCard({ video, thumbnailUrl, previewUrl, handleClick }) {
       onClick={() => handleClick(video)}
     >
       <div className="video-thumbnail-container">
-        {/* Normal thumbnail */}
         <img
           className={`video-thumbnail ${previewReady ? "hidden" : ""}`}
           src={thumbnailUrl}
           alt={video.title}
         />
 
-        {/* Preview */}
         {isHovered && (
           <video
             className={`video-preview ${previewReady ? "visible" : ""}`}
@@ -45,7 +44,6 @@ function VideoCard({ video, thumbnailUrl, previewUrl, handleClick }) {
 
       <div className="video-info">
         <h3>{video.title}</h3>
-
         {video.plot && <p>{video.plot}</p>}
       </div>
     </div>

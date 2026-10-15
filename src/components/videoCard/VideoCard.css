@@ -1,0 +1,206 @@
+/* =========================================
+   Premium Cinematic Video Card
+   ========================================= */
+
+.video-card {
+  position: relative;
+  min-width: 0;
+  cursor: pointer;
+  background: transparent;
+  border-radius: 3px;
+  transition: transform 300ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* Cinematic artwork frame */
+.video-card .video-thumbnail-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  isolation: isolate;
+
+  border-radius: 3px;
+  background: #111;
+
+  box-shadow:
+    0 5px 16px rgba(0, 0, 0, 0.22),
+    0 1px 0 rgba(255, 255, 255, 0.035);
+
+  transition:
+    box-shadow 350ms ease,
+    outline-color 350ms ease;
+}
+
+/* Subtle cinematic vignette */
+.video-card .video-thumbnail-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.02) 35%,
+      rgba(0, 0, 0, 0.12) 68%,
+      rgba(0, 0, 0, 0.32) 100%
+    ),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.08), transparent 35%);
+
+  opacity: 0.8;
+  transition: opacity 350ms ease;
+}
+
+/* Poster and animated preview */
+.video-card .video-thumbnail,
+.video-card .video-preview {
+  position: absolute;
+  inset: 0;
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  transition:
+    opacity 350ms ease,
+    transform 800ms cubic-bezier(0.2, 0.65, 0.25, 1);
+}
+
+.video-card .video-thumbnail {
+  opacity: 1;
+  transform: scale(1.001);
+}
+
+.video-card .video-thumbnail.hidden {
+  opacity: 0;
+}
+
+.video-card .video-preview {
+  opacity: 0;
+}
+
+.video-card .video-preview.visible {
+  opacity: 1;
+}
+
+.video-card:hover {
+  transform: translateY(-4px);
+}
+
+.video-card:hover .video-thumbnail-container {
+  box-shadow:
+    0 14px 32px rgba(0, 0, 0, 0.42),
+    0 0 0 1px rgba(201, 170, 117, 0.2);
+}
+
+.video-card:hover .video-thumbnail-container::after {
+  opacity: 0.48;
+}
+
+.video-card:hover .video-thumbnail {
+  transform: scale(1.022);
+}
+
+/* Elegant title area */
+.video-card .video-info {
+  padding: 12px 1px 0;
+}
+
+.video-card .video-info h3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+
+  margin: 0;
+
+  color: #f1eee9;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0.08px;
+
+  transition: color 250ms ease;
+}
+
+.video-card:hover .video-info h3 {
+  color: #d8bf96;
+}
+
+/* Restrained secondary text */
+.video-card .video-info p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+
+  margin: 4px 0 0;
+
+  color: #898783;
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.55;
+  letter-spacing: 0.1px;
+
+  transition: color 250ms ease;
+}
+
+.video-card:hover .video-info p {
+  color: #b0aaa1;
+}
+
+/* Keyboard accessibility */
+.video-card:focus-visible {
+  outline: 2px solid #c9aa75;
+  outline-offset: 5px;
+}
+
+/* Tablet */
+@media (max-width: 1100px) {
+  .video-card .video-info h3 {
+    font-size: 14px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  .video-card:hover {
+    transform: none;
+  }
+
+  .video-card .video-thumbnail-container {
+    border-radius: 2px;
+  }
+
+  .video-card .video-info {
+    padding-top: 8px;
+  }
+
+  .video-card .video-info h3 {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .video-card .video-info p {
+    margin-top: 3px;
+    font-size: 11.5px;
+    line-height: 1.45;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .video-card,
+  .video-card .video-thumbnail-container,
+  .video-card .video-thumbnail-container::after,
+  .video-card .video-thumbnail,
+  .video-card .video-preview,
+  .video-card .video-info h3,
+  .video-card .video-info p {
+    transition: none;
+  }
+}
