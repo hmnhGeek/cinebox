@@ -1,19 +1,42 @@
 /* =========================================
-   Cinematic Library Hero
+   Immersive, edge-free hero
    ========================================= */
 
 .library-hero {
   position: relative;
   isolation: isolate;
-  width: 100%;
-  height: clamp(350px, 45vw, 560px);
-  margin: 0 0 12px;
+  width: calc(100% + 88px);
+  height: clamp(400px, 46vw, 620px);
+
+  /* Extend behind the content padding */
+  margin: -32px -44px 0;
   overflow: hidden;
-  background: #080808;
+
+  background: #101114;
   color: #fff;
+
+  /* Fade all four edges into the page */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 7%,
+    #000 68%,
+    rgba(0, 0, 0, 0.88) 79%,
+    rgba(0, 0, 0, 0.45) 91%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 7%,
+    #000 68%,
+    rgba(0, 0, 0, 0.88) 79%,
+    rgba(0, 0, 0, 0.45) 91%,
+    transparent 100%
+  );
 }
 
-/* Cover image */
+/* Full-bleed cover */
 .library-hero-image {
   position: absolute;
   inset: 0;
@@ -26,37 +49,48 @@
   object-fit: cover;
   object-position: center 45%;
 
-  transform: scale(1.015);
+  transform: scale(1.025);
   animation: hero-image-reveal 1.2s ease-out both;
 }
 
-/* Blend the cover into the dark page */
+/* Adaptive image blending */
 .library-hero-overlay {
   position: absolute;
   inset: 0;
   z-index: -1;
+  pointer-events: none;
 
+  /*
+    Screen blends dark gradients over bright and dark images.
+    It reduces harsh contrast without relying on a fixed
+    black overlay alone.
+  */
   background:
     linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0.72) 0%,
-      rgba(0, 0, 0, 0.38) 48%,
-      rgba(0, 0, 0, 0.12) 100%
+      to bottom,
+      rgba(16, 17, 20, 0.24) 0%,
+      transparent 22%,
+      transparent 52%,
+      rgba(16, 17, 20, 0.58) 72%,
+      #101114 100%
     ),
     linear-gradient(
-      0deg,
-      #101114 0%,
-      rgba(16, 17, 20, 0.82) 9%,
-      transparent 48%,
-      rgba(0, 0, 0, 0.12) 100%
+      to right,
+      rgba(16, 17, 20, 0.78) 0%,
+      rgba(16, 17, 20, 0.5) 28%,
+      rgba(16, 17, 20, 0.12) 62%,
+      transparent 100%
     );
+
+  /* Blend the overlay into the artwork */
+  mix-blend-mode: multiply;
 }
 
-/* Hero copy */
+/* Keep the text readable regardless of image brightness */
 .library-hero-content {
   position: absolute;
   top: 43%;
-  left: clamp(24px, 5vw, 76px);
+  left: clamp(44px, 7vw, 120px);
 
   width: min(620px, 75%);
   transform: translateY(-50%);
@@ -68,10 +102,12 @@
   display: inline-block;
   margin-bottom: 20px;
 
-  color: #d2b98e;
+  color: #dfc69b;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 3.2px;
+
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.65);
 }
 
 .library-hero-content h1 {
@@ -84,17 +120,19 @@
   letter-spacing: -2px;
   line-height: 1.08;
   text-wrap: balance;
+
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.45);
 }
 
 .library-hero-content p {
   max-width: 420px;
   margin: 20px 0 0;
 
-  color: rgba(255, 255, 255, 0.76);
+  color: rgba(255, 255, 255, 0.88);
   font-size: clamp(13px, 1.15vw, 16px);
-  font-weight: 400;
   line-height: 1.8;
-  letter-spacing: 0.15px;
+
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.75);
 }
 
 .library-hero-divider {
@@ -102,48 +140,49 @@
   height: 2px;
   margin-top: 26px;
 
-  background: linear-gradient(90deg, #d2b98e, transparent);
+  background: linear-gradient(90deg, #dfc69b, transparent);
 }
 
-/* Bottom editorial details */
+/* Bottom labels */
 .library-hero-bottom {
   position: absolute;
-  right: clamp(24px, 4vw, 60px);
-  bottom: 40px;
-  left: clamp(24px, 5vw, 76px);
+  right: clamp(44px, 7vw, 120px);
+  bottom: 66px;
+  left: clamp(44px, 7vw, 120px);
 
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
 
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.76);
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 2px;
+
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.8);
 }
 
 .library-hero-scroll {
-  color: rgba(255, 255, 255, 0.78);
   white-space: nowrap;
 }
 
-/* Space between hero and collection heading */
+/* Remove the gap between hero and the collection heading */
 .collection-videos-heading {
   position: relative;
-  margin-top: 4px;
+  margin-top: -12px;
 }
 
-/* Entrance animation */
+/* Entrance animations */
 @keyframes hero-image-reveal {
   from {
     opacity: 0.5;
-    transform: scale(1.06);
+    transform: scale(1.07);
   }
 
   to {
     opacity: 1;
-    transform: scale(1.015);
+    transform: scale(1.025);
   }
 }
 
@@ -159,8 +198,7 @@
   }
 }
 
-/* Fade hero as it scrolls out of view.
-   Supported by modern Chromium browsers. */
+/* Scroll fade: supported in modern Chromium */
 @supports (animation-timeline: view()) {
   .library-hero {
     animation: hero-scroll-fade linear both;
@@ -184,29 +222,44 @@
 /* Responsive */
 @media (max-width: 700px) {
   .library-hero {
+    width: calc(100% + 40px);
     height: 410px;
-    margin-bottom: 8px;
-  }
+    margin: -24px -20px 0;
 
-  .library-hero-image {
-    object-position: center;
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 5%,
+      #000 65%,
+      rgba(0, 0, 0, 0.7) 83%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 5%,
+      #000 65%,
+      rgba(0, 0, 0, 0.7) 83%,
+      transparent 100%
+    );
   }
 
   .library-hero-overlay {
     background:
       linear-gradient(
-        0deg,
-        #101114 0%,
-        rgba(16, 17, 20, 0.72) 20%,
-        rgba(0, 0, 0, 0.18) 100%
+        to bottom,
+        rgba(16, 17, 20, 0.15),
+        transparent 25%,
+        rgba(16, 17, 20, 0.45) 60%,
+        #101114 100%
       ),
-      linear-gradient(90deg, rgba(0, 0, 0, 0.35), transparent);
+      linear-gradient(to right, rgba(16, 17, 20, 0.65), rgba(16, 17, 20, 0.08));
   }
 
   .library-hero-content {
     top: 48%;
-    left: 22px;
-    width: calc(100% - 44px);
+    left: 24px;
+    width: calc(100% - 48px);
   }
 
   .library-hero-content h1 {
@@ -231,29 +284,19 @@
   }
 
   .library-hero-bottom {
-    right: 22px;
-    bottom: 30px;
-    left: 22px;
+    right: 24px;
+    bottom: 44px;
+    left: 24px;
     font-size: 8px;
     letter-spacing: 1px;
   }
-}
 
-@media (max-width: 420px) {
-  .library-hero {
-    height: 360px;
-  }
-
-  .library-hero-bottom {
-    align-items: flex-end;
-  }
-
-  .library-hero-bottom > span:first-child {
-    max-width: 145px;
-    line-height: 1.7;
+  .collection-videos-heading {
+    margin-top: -8px;
   }
 }
 
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .library-hero-image,
   .library-hero-content,

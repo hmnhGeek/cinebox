@@ -138,7 +138,11 @@ const CreateCollectionModal = ({ isOpen, onClose, onCreate }) => {
                   Cancel
                 </button>
 
-                <button type="submit" disabled={isSubmitting}>
+                <button
+                  className="app-level-button"
+                  type="submit"
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? "Creating..." : "Create Collection"}
                 </button>
               </div>
