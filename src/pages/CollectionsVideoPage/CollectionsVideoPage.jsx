@@ -96,9 +96,12 @@ const CollectionVideosPage = () => {
               YOUR PERSONAL COLLECTION
             </span>
 
-            <h1>Your Cinema. Your World.</h1>
+            <h1>{collection?.title || "Collection"}</h1>
 
-            <p>Every story worth watching, all in one place.</p>
+            <p>
+              {collection?.tagline ||
+                "Every story worth watching, all in one place."}
+            </p>
 
             <div className="library-hero-divider" />
           </div>
@@ -112,8 +115,6 @@ const CollectionVideosPage = () => {
         {/* Existing collection heading */}
         {collection && (
           <div className="collection-videos-heading">
-            <h2>{collection.title}</h2>
-
             <button className="app-level-button" onClick={handleSynchronize}>
               ⟳ Synchronize
             </button>
