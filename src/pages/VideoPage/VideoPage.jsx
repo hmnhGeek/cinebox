@@ -187,6 +187,8 @@ function VideoPage() {
         playsInline
         controls={false}
         muted
+        controlsList="nodownload"
+        disablePictureInPicture
         onError={() =>
           setPlayError("The video couldn't be loaded. Please check its URL.")
         }

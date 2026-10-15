@@ -7,8 +7,11 @@ import {
 } from "../../service/collectionApi";
 import CreateCollectionModal from "../../components/CreateCollectionModal/CreateCollectionModal";
 import "./CollectionsPage.css";
+import { useSync } from "../../context/SyncContext";
+import toast from "react-hot-toast";
 
 const CollectionsPage = () => {
+  const { checkSyncInProgress } = useSync();
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isCollectionModalOpen, setCollectionModalOpen] = useState(false);
@@ -46,15 +49,27 @@ const CollectionsPage = () => {
 
   const handleDeleteCollection = async (event, collection) => {
     event.stopPropagation();
+
     try {
+      const isSyncing = await checkSyncInProgress(collection.id);
+
+      if (isSyncing) {
+        toast.error(
+          `Cannot delete "${collection.title}" while synchronization is in progress.`,
+        );
+        return;
+      }
+
       await deleteCollection(collection.id);
 
       setCollections((previous) =>
         previous.filter((item) => item.id !== collection.id),
       );
+
+      toast.success(`"${collection.title}" deleted successfully.`);
     } catch (error) {
       console.error("Failed to delete collection:", error);
-      window.alert(error.message || "Failed to delete collection.");
+      toast.error(error.message || "Failed to delete collection.");
     }
   };
 
