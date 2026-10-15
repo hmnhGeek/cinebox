@@ -38,6 +38,7 @@ const CollectionVideosPage = () => {
     if (!isMounted.current) return;
     setLoading(true);
     setError(null);
+    setCollection(null);
 
     try {
       const [videoData, currentCollection] = await Promise.all([
@@ -92,12 +93,14 @@ const CollectionVideosPage = () => {
               YOUR PERSONAL COLLECTION
             </span>
 
-            <h1>{collection?.title || "Collection"}</h1>
+            {!loading && <h1>{collection?.title || "Collection"}</h1>}
 
-            <p>
-              {collection?.tagline ||
-                "Every story worth watching, all in one place."}
-            </p>
+            {!loading && (
+              <p>
+                {collection?.tagline ||
+                  "Every story worth watching, all in one place."}
+              </p>
+            )}
 
             <div className="library-hero-divider" />
           </div>
