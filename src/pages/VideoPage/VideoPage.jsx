@@ -186,7 +186,7 @@ function VideoPage() {
         preload="metadata"
         playsInline
         controls={false}
-        // muted
+        muted
         controlsList="nodownload"
         disablePictureInPicture
         onError={() =>
