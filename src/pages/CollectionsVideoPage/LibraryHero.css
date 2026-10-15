@@ -1,0 +1,263 @@
+/* =========================================
+   Cinematic Library Hero
+   ========================================= */
+
+.library-hero {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: clamp(350px, 45vw, 560px);
+  margin: 0 0 12px;
+  overflow: hidden;
+  background: #080808;
+  color: #fff;
+}
+
+/* Cover image */
+.library-hero-image {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+
+  width: 100%;
+  height: 100%;
+  max-width: none;
+
+  object-fit: cover;
+  object-position: center 45%;
+
+  transform: scale(1.015);
+  animation: hero-image-reveal 1.2s ease-out both;
+}
+
+/* Blend the cover into the dark page */
+.library-hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.72) 0%,
+      rgba(0, 0, 0, 0.38) 48%,
+      rgba(0, 0, 0, 0.12) 100%
+    ),
+    linear-gradient(
+      0deg,
+      #101114 0%,
+      rgba(16, 17, 20, 0.82) 9%,
+      transparent 48%,
+      rgba(0, 0, 0, 0.12) 100%
+    );
+}
+
+/* Hero copy */
+.library-hero-content {
+  position: absolute;
+  top: 43%;
+  left: clamp(24px, 5vw, 76px);
+
+  width: min(620px, 75%);
+  transform: translateY(-50%);
+
+  animation: hero-content-reveal 850ms 120ms ease-out both;
+}
+
+.library-hero-eyebrow {
+  display: inline-block;
+  margin-bottom: 20px;
+
+  color: #d2b98e;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3.2px;
+}
+
+.library-hero-content h1 {
+  max-width: 600px;
+  margin: 0;
+
+  color: #fff;
+  font-size: clamp(34px, 4.2vw, 62px);
+  font-weight: 650;
+  letter-spacing: -2px;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.library-hero-content p {
+  max-width: 420px;
+  margin: 20px 0 0;
+
+  color: rgba(255, 255, 255, 0.76);
+  font-size: clamp(13px, 1.15vw, 16px);
+  font-weight: 400;
+  line-height: 1.8;
+  letter-spacing: 0.15px;
+}
+
+.library-hero-divider {
+  width: 54px;
+  height: 2px;
+  margin-top: 26px;
+
+  background: linear-gradient(90deg, #d2b98e, transparent);
+}
+
+/* Bottom editorial details */
+.library-hero-bottom {
+  position: absolute;
+  right: clamp(24px, 4vw, 60px);
+  bottom: 40px;
+  left: clamp(24px, 5vw, 76px);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+.library-hero-scroll {
+  color: rgba(255, 255, 255, 0.78);
+  white-space: nowrap;
+}
+
+/* Space between hero and collection heading */
+.collection-videos-heading {
+  position: relative;
+  margin-top: 4px;
+}
+
+/* Entrance animation */
+@keyframes hero-image-reveal {
+  from {
+    opacity: 0.5;
+    transform: scale(1.06);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.015);
+  }
+}
+
+@keyframes hero-content-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-50% + 18px));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(-50%);
+  }
+}
+
+/* Fade hero as it scrolls out of view.
+   Supported by modern Chromium browsers. */
+@supports (animation-timeline: view()) {
+  .library-hero {
+    animation: hero-scroll-fade linear both;
+    animation-timeline: view();
+    animation-range: exit 0% exit 85%;
+  }
+
+  @keyframes hero-scroll-fade {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    to {
+      opacity: 0;
+      transform: translateY(-45px);
+    }
+  }
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .library-hero {
+    height: 410px;
+    margin-bottom: 8px;
+  }
+
+  .library-hero-image {
+    object-position: center;
+  }
+
+  .library-hero-overlay {
+    background:
+      linear-gradient(
+        0deg,
+        #101114 0%,
+        rgba(16, 17, 20, 0.72) 20%,
+        rgba(0, 0, 0, 0.18) 100%
+      ),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.35), transparent);
+  }
+
+  .library-hero-content {
+    top: 48%;
+    left: 22px;
+    width: calc(100% - 44px);
+  }
+
+  .library-hero-content h1 {
+    font-size: clamp(32px, 8vw, 44px);
+    letter-spacing: -1.3px;
+  }
+
+  .library-hero-content p {
+    max-width: 310px;
+    margin-top: 14px;
+    font-size: 13px;
+  }
+
+  .library-hero-eyebrow {
+    margin-bottom: 14px;
+    font-size: 9px;
+    letter-spacing: 2.2px;
+  }
+
+  .library-hero-divider {
+    margin-top: 20px;
+  }
+
+  .library-hero-bottom {
+    right: 22px;
+    bottom: 30px;
+    left: 22px;
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+}
+
+@media (max-width: 420px) {
+  .library-hero {
+    height: 360px;
+  }
+
+  .library-hero-bottom {
+    align-items: flex-end;
+  }
+
+  .library-hero-bottom > span:first-child {
+    max-width: 145px;
+    line-height: 1.7;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .library-hero-image,
+  .library-hero-content,
+  .library-hero {
+    animation: none !important;
+  }
+}
