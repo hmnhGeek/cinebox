@@ -1,72 +1,216 @@
+/* CollectionsVideoPage.css */
+
+/* Page layout */
+.app {
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      ellipse at 50% 0%,
+      rgba(76, 81, 191, 0.07),
+      transparent 48%
+    ),
+    #101114;
+  color: #f5f6fa;
+}
+
+.content {
+  width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: 32px 44px 48px;
+  box-sizing: border-box;
+}
+
+/* Collection heading */
 .collection-videos-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 20px;
+  margin-bottom: 30px;
 }
 
 .collection-videos-heading h2 {
+  position: relative;
   margin: 0;
+  color: #f7f7fb;
+  font-size: clamp(24px, 2vw, 30px);
+  font-weight: 700;
+  letter-spacing: -0.8px;
+  line-height: 1.3;
 }
 
-.sync-button {
+.collection-videos-heading h2::after {
+  content: "";
+  display: block;
+  width: 36px;
+  height: 3px;
+  margin-top: 10px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #6485ff, #9257ff);
+}
+
+/* Synchronize button */
+.app-level-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  background-color: #2563eb;
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
+  gap: 9px;
+  min-height: 46px;
+  padding: 0 21px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6485ff 0%, #7650f5 100%);
+  box-shadow:
+    0 5px 18px rgba(99, 102, 241, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 650;
   cursor: pointer;
-  transition: background-color 0.2s ease;
   white-space: nowrap;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    filter 180ms ease;
 }
 
-.sync-button:hover:not(:disabled) {
-  background-color: #1d4ed8;
+.app-level-button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.09);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
 }
 
-.sync-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.app-level-button:active {
+  transform: translateY(0) scale(0.98);
 }
 
+.app-level-button:focus-visible {
+  outline: 2px solid #a5b4fc;
+  outline-offset: 4px;
+}
+
+/* Loading, error and empty states */
+.loading,
+.error,
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  padding: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.025);
+  color: #aeb3c2;
+  font-size: 15px;
+  text-align: center;
+}
+
+.loading {
+  color: #c3c9ff;
+}
+
+.error {
+  border-color: rgba(248, 113, 113, 0.18);
+  background: rgba(248, 113, 113, 0.045);
+  color: #fca5a5;
+}
+
+/* Synchronization progress */
 .success {
   margin-bottom: 16px;
-  color: #16a34a;
+  color: #4ade80;
   font-size: 14px;
+  font-weight: 500;
 }
 
 .sync-progress-container {
-  margin: 16px 0 24px;
-  max-width: 520px;
+  width: 100%;
+  max-width: 560px;
+  margin: 20px 0 28px;
+  padding: 18px;
+  box-sizing: border-box;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.035);
 }
 
 .sync-progress-info {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  margin-bottom: 8px;
-  font-size: 14px;
+  margin-bottom: 12px;
+  color: #d6d9e4;
+  font-size: 13px;
 }
 
 .sync-progress-track {
   width: 100%;
-  height: 8px;
+  height: 7px;
   overflow: hidden;
   border-radius: 999px;
-  background: #2b2b2b;
+  background: #292b36;
 }
 
 .sync-progress-fill {
   height: 100%;
   border-radius: inherit;
-  background: #16a34a;
+  background: linear-gradient(90deg, #6485ff, #9b5cff);
+  box-shadow: 0 0 12px rgba(126, 87, 255, 0.35);
   transition: width 300ms ease;
+}
+
+/* Responsive layout */
+@media (min-width: 1600px) {
+  .content {
+    padding-right: 52px;
+    padding-left: 52px;
+  }
+}
+
+@media (max-width: 900px) {
+  .content {
+    padding: 28px 24px 36px;
+  }
+
+  .collection-videos-heading {
+    margin-bottom: 24px;
+  }
+}
+
+@media (max-width: 600px) {
+  .content {
+    padding: 24px 16px 32px;
+  }
+
+  .collection-videos-heading {
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .collection-videos-heading h2 {
+    font-size: 24px;
+  }
+
+  .app-level-button {
+    min-height: 42px;
+    padding: 0 13px;
+    border-radius: 10px;
+    font-size: 13px;
+  }
+
+  .sync-progress-container {
+    padding: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-level-button,
+  .sync-progress-fill {
+    transition: none;
+  }
 }
