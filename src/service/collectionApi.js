@@ -35,6 +35,18 @@ export const getAllCollections = async () => {
   return response.json();
 };
 
+export const getAllCollectionById = async (collectionId) => {
+  const response = await fetch(
+    `${API_BASE_URL}/${encodeURIComponent(collectionId)}`,
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch collection.");
+  }
+
+  return response.json();
+};
+
 export const getCollectionVideos = async (collectionId) => {
   const response = await fetch(
     `${API_BASE_URL}/${encodeURIComponent(collectionId)}/videos`,

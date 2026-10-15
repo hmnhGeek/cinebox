@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import VideoGrid from "../../components/videoGrid/VideoGrid";
 import {
   getCollectionVideos,
-  getAllCollections,
+  getAllCollectionById,
 } from "../../service/collectionApi";
 import { useSync } from "../../context/SyncContext";
 import "./CollectionsVideoPage.css";
@@ -40,18 +40,14 @@ const CollectionVideosPage = () => {
     setError(null);
 
     try {
-      const [videoData, collections] = await Promise.all([
+      const [videoData, currentCollection] = await Promise.all([
         getCollectionVideos(id),
-        getAllCollections(),
+        getAllCollectionById(id),
       ]);
 
       if (!isMounted.current) return;
 
       setVideos(videoData);
-
-      const currentCollection = collections.find(
-        (item) => String(item.id) === String(id),
-      );
 
       if (!currentCollection) {
         setError("Collection not found.");
