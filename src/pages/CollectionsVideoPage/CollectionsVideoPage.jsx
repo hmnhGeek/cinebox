@@ -82,9 +82,20 @@ const CollectionVideosPage = () => {
   return (
     <div className="app">
       <main className="content">
-        {/* Cinematic cover */}
         <section className="library-hero">
-          <img className="library-hero-image" src={libhero} alt="" />
+          <img
+            className="library-hero-image"
+            src={
+              collection
+                ? `http://localhost:8080/api/v1/collections/hero-image?collectionId=${collection.id}`
+                : libhero
+            }
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = libhero;
+            }}
+            alt=""
+          />
 
           <div className="library-hero-overlay" />
 
