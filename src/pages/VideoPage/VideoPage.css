@@ -27,23 +27,25 @@
 }
 
 /* =========================================
-   Cinematic Backdrop
+   CineBox — Cinematic Spotlight Backdrop
    ========================================= */
 
 .backdrop-image {
   position: absolute;
   z-index: -2;
-  inset: -15px;
+  inset: -12px;
 
   background-image: var(--movie-backdrop);
   background-position: center 30%;
   background-size: cover;
+  background-repeat: no-repeat;
 
-  filter: blur(5px) brightness(0.58);
-  transform: scale(1.02);
-  opacity: 0.9;
+  /* Richer, more recognizable artwork */
+  filter: brightness(0.78) saturate(1.05);
+  transform: scale(1.025);
 }
 
+/* Layered cinematic lighting */
 .backdrop-shade {
   position: absolute;
   z-index: -1;
@@ -51,19 +53,66 @@
   pointer-events: none;
 
   background:
-    linear-gradient(
-      90deg,
-      rgba(20, 20, 19, 0.86) 0%,
-      rgba(20, 20, 19, 0.62) 50%,
-      rgba(20, 20, 19, 0.34) 100%
+    /* Subtle warm CineBox glow */
+    radial-gradient(
+      ellipse at 78% 28%,
+      rgba(196, 166, 106, 0.11) 0%,
+      rgba(196, 166, 106, 0.035) 27%,
+      transparent 55%
     ),
+    /* Keep the title area dark */
     linear-gradient(
-      180deg,
-      rgba(20, 20, 19, 0.12) 0%,
-      rgba(20, 20, 19, 0.2) 38%,
-      rgba(20, 20, 19, 0.88) 76%,
-      var(--cb-bg) 100%
-    );
+        90deg,
+        rgba(20, 20, 19, 0.94) 0%,
+        rgba(20, 20, 19, 0.78) 24%,
+        rgba(20, 20, 19, 0.4) 52%,
+        rgba(20, 20, 19, 0.12) 78%,
+        rgba(20, 20, 19, 0.28) 100%
+      ),
+    /* Dark cinematic vignette around the edges */
+    radial-gradient(
+        ellipse at 60% 35%,
+        transparent 15%,
+        rgba(10, 10, 9, 0.22) 68%,
+        rgba(10, 10, 9, 0.58) 100%
+      ),
+    /* Fade into the details section */
+    linear-gradient(
+        180deg,
+        rgba(20, 20, 19, 0.08) 0%,
+        rgba(20, 20, 19, 0.04) 25%,
+        rgba(20, 20, 19, 0.38) 48%,
+        rgba(20, 20, 19, 0.82) 68%,
+        #141413 88%,
+        #141413 100%
+      );
+}
+
+/* Mobile adaptation */
+@media (max-width: 650px) {
+  .backdrop-image {
+    inset: -10px;
+    background-position: center top;
+    filter: brightness(0.65) saturate(0.95);
+    transform: scale(1.02);
+  }
+
+  .backdrop-shade {
+    background:
+      radial-gradient(
+        ellipse at 50% 16%,
+        rgba(196, 166, 106, 0.09) 0%,
+        transparent 48%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(20, 20, 19, 0.12) 0%,
+        rgba(20, 20, 19, 0.36) 23%,
+        rgba(20, 20, 19, 0.7) 43%,
+        #141413 70%,
+        #141413 100%
+      );
+  }
 }
 
 /* =========================================
