@@ -1,12 +1,12 @@
 const API_BASE_URL = "http://localhost:8080/api/v1/collections";
 
-export const createCollection = async ({ title, folder }) => {
+export const createCollection = async ({ title, folder, tagline }) => {
   const response = await fetch(API_BASE_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ title, folder }),
+    body: JSON.stringify({ title, folder, tagline }),
   });
 
   if (!response.ok) {
