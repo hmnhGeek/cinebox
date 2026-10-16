@@ -1,5 +1,5 @@
 /* =========================================
-   Immersive, edge-free hero
+   CineBox — Immersive Collection Hero
    ========================================= */
 
 .library-hero {
@@ -12,10 +12,10 @@
   margin: -32px -44px 0;
   overflow: hidden;
 
-  background: #101114;
-  color: #fff;
+  background: #141413;
+  color: #f0eee8;
 
-  /* Fade all four edges into the page */
+  /* Fade the hero into the page */
   -webkit-mask-image: linear-gradient(
     to bottom,
     transparent 0%,
@@ -36,7 +36,7 @@
   );
 }
 
-/* Full-bleed cover */
+/* Full-bleed collection artwork */
 .library-hero-image {
   position: absolute;
   inset: 0;
@@ -53,40 +53,32 @@
   animation: hero-image-reveal 1.2s ease-out both;
 }
 
-/* Adaptive image blending */
+/* Predictable cinematic overlay */
 .library-hero-overlay {
   position: absolute;
   inset: 0;
   z-index: -1;
   pointer-events: none;
 
-  /*
-    Screen blends dark gradients over bright and dark images.
-    It reduces harsh contrast without relying on a fixed
-    black overlay alone.
-  */
   background:
     linear-gradient(
       to bottom,
-      rgba(16, 17, 20, 0.24) 0%,
+      rgba(20, 20, 19, 0.2) 0%,
       transparent 22%,
-      transparent 52%,
-      rgba(16, 17, 20, 0.58) 72%,
-      #101114 100%
+      rgba(20, 20, 19, 0.08) 48%,
+      rgba(20, 20, 19, 0.62) 72%,
+      #141413 100%
     ),
     linear-gradient(
       to right,
-      rgba(16, 17, 20, 0.78) 0%,
-      rgba(16, 17, 20, 0.5) 28%,
-      rgba(16, 17, 20, 0.12) 62%,
+      rgba(20, 20, 19, 0.82) 0%,
+      rgba(20, 20, 19, 0.58) 28%,
+      rgba(20, 20, 19, 0.16) 62%,
       transparent 100%
     );
-
-  /* Blend the overlay into the artwork */
-  mix-blend-mode: multiply;
 }
 
-/* Keep the text readable regardless of image brightness */
+/* Hero text */
 .library-hero-content {
   position: absolute;
   top: 43%;
@@ -98,11 +90,12 @@
   animation: hero-content-reveal 850ms 120ms ease-out both;
 }
 
+/* Eyebrow */
 .library-hero-eyebrow {
   display: inline-block;
   margin-bottom: 20px;
 
-  color: #dfc69b;
+  color: #dec58e;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 3.2px;
@@ -110,11 +103,12 @@
   text-shadow: 0 1px 12px rgba(0, 0, 0, 0.65);
 }
 
+/* Collection title */
 .library-hero-content h1 {
   max-width: 600px;
   margin: 0;
 
-  color: #fff;
+  color: #f0eee8;
   font-size: clamp(34px, 4.2vw, 62px);
   font-weight: 650;
   letter-spacing: -2px;
@@ -124,23 +118,25 @@
   text-shadow: 0 2px 24px rgba(0, 0, 0, 0.45);
 }
 
+/* Collection tagline */
 .library-hero-content p {
   max-width: 420px;
   margin: 20px 0 0;
 
-  color: rgba(255, 255, 255, 0.88);
+  color: rgba(240, 238, 232, 0.88);
   font-size: clamp(13px, 1.15vw, 16px);
   line-height: 1.8;
 
   text-shadow: 0 1px 14px rgba(0, 0, 0, 0.75);
 }
 
+/* Gold accent divider */
 .library-hero-divider {
   width: 54px;
   height: 2px;
   margin-top: 26px;
 
-  background: linear-gradient(90deg, #dfc69b, transparent);
+  background: linear-gradient(90deg, #c4a66a, rgba(196, 166, 106, 0));
 }
 
 /* Bottom labels */
@@ -155,7 +151,7 @@
   justify-content: space-between;
   gap: 16px;
 
-  color: rgba(255, 255, 255, 0.76);
+  color: rgba(240, 238, 232, 0.76);
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 2px;
@@ -167,7 +163,7 @@
   white-space: nowrap;
 }
 
-/* Remove the gap between hero and the collection heading */
+/* Blend hero into the video section */
 .collection-videos-heading {
   position: relative;
   margin-top: -12px;
@@ -198,7 +194,7 @@
   }
 }
 
-/* Scroll fade: supported in modern Chromium */
+/* Scroll fade */
 @supports (animation-timeline: view()) {
   .library-hero {
     animation: hero-scroll-fade linear both;
@@ -248,12 +244,12 @@
     background:
       linear-gradient(
         to bottom,
-        rgba(16, 17, 20, 0.15),
+        rgba(20, 20, 19, 0.16),
         transparent 25%,
-        rgba(16, 17, 20, 0.45) 60%,
-        #101114 100%
+        rgba(20, 20, 19, 0.5) 60%,
+        #141413 100%
       ),
-      linear-gradient(to right, rgba(16, 17, 20, 0.65), rgba(16, 17, 20, 0.08));
+      linear-gradient(to right, rgba(20, 20, 19, 0.68), rgba(20, 20, 19, 0.08));
   }
 
   .library-hero-content {
