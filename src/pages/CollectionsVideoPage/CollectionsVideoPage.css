@@ -142,3 +142,15 @@
     transition: none;
   }
 }
+
+.syncing-button-loader {
+  flex-shrink: 0;
+  color: black;
+  animation: sync-spin 1.5s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .syncing-button-loader {
+    animation: none;
+  }
+}

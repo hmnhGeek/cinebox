@@ -460,3 +460,37 @@
     transition: none !important;
   }
 }
+
+.sync-status-message {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--cb-border, #35332e);
+  border-radius: 12px;
+  background: var(--cb-surface, #1c1b19);
+  color: #c9c6be;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.sync-status-message svg {
+  flex-shrink: 0;
+}
+
+.sync-item-loading-icon {
+  animation: sync-spin 1.4s linear infinite;
+}
+
+@keyframes sync-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sync-item-loading-icon {
+    animation: none;
+  }
+}

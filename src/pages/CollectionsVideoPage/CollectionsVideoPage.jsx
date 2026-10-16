@@ -1,26 +1,38 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
+import { LoaderCircle } from "lucide-react";
 import VideoGrid from "../../components/videoGrid/VideoGrid";
 import {
   getCollectionVideos,
   getAllCollectionById,
 } from "../../service/collectionApi";
 import { useSync } from "../../context/SyncContext";
-import "./CollectionsVideoPage.css";
 import SyncModal from "../../components/SyncModal/SyncModal";
+
+import "./CollectionsVideoPage.css";
 import "./LibraryHero.css";
 import libhero from "../../assets/libhero.jpg";
 
 const CollectionVideosPage = () => {
   const { id } = useParams();
+
   const {
-    syncProgress,
+    syncStatusByCollection,
+    syncProgressByCollection,
+    hasReceivedProgressByCollection,
+    errorByCollection,
     isSyncModalOpen,
     setIsSyncModalOpen,
     startSynchronization,
-    error,
-    setError,
+    checkSyncInProgress,
   } = useSync();
+
+  const syncStatus = syncStatusByCollection[String(id)] ?? "IDLE";
+  const syncProgress = syncProgressByCollection[String(id)] ?? {};
+  const hasReceivedProgress =
+    hasReceivedProgressByCollection[String(id)] ?? false;
+  const error = errorByCollection[String(id)] ?? null;
+
   const [videos, setVideos] = useState([]);
   const [collection, setCollection] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -29,6 +41,7 @@ const CollectionVideosPage = () => {
 
   useEffect(() => {
     isMounted.current = true;
+
     return () => {
       isMounted.current = false;
     };
@@ -36,8 +49,8 @@ const CollectionVideosPage = () => {
 
   const loadCollection = useCallback(async () => {
     if (!isMounted.current) return;
+
     setLoading(true);
-    setError(null);
     setCollection(null);
 
     try {
@@ -51,32 +64,26 @@ const CollectionVideosPage = () => {
       setVideos(videoData);
 
       if (!currentCollection) {
-        setError("Collection not found.");
         setCollection(null);
         return;
       }
 
       setCollection(currentCollection);
     } catch (err) {
-      console.error(err);
-      if (isMounted.current) {
-        setError("Failed to load collection videos.");
-      }
+      console.error("Failed to load collection:", err);
     } finally {
       if (isMounted.current) {
         setLoading(false);
       }
     }
-  }, [id, setError]);
+  }, [id]);
 
   useEffect(() => {
     loadCollection();
   }, [loadCollection]);
 
   const handleSynchronize = () => {
-    startSynchronization(id, () => {
-      loadCollection();
-    });
+    startSynchronization(id, loadCollection, true);
   };
 
   return (
@@ -90,9 +97,9 @@ const CollectionVideosPage = () => {
                 ? `http://localhost:8080/api/v1/collections/hero-image?collectionId=${collection.id}`
                 : libhero
             }
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = libhero;
+            onError={(event) => {
+              event.currentTarget.onerror = null;
+              event.currentTarget.src = libhero;
             }}
             alt=""
           />
@@ -122,11 +129,21 @@ const CollectionVideosPage = () => {
           </div>
         </section>
 
-        {/* Existing collection heading */}
         {collection && (
           <div className="collection-videos-heading">
-            <button className="app-level-button" onClick={handleSynchronize}>
-              ⟳ Synchronize
+            <button
+              className="app-level-button"
+              onClick={handleSynchronize}
+              // disabled={syncStatus === "QUEUED" || syncStatus === "IN_PROGRESS"}
+            >
+              {syncStatus === "QUEUED" || syncStatus === "IN_PROGRESS" ? (
+                <>
+                  <LoaderCircle className="syncing-button-loader" size={21} />
+                  Synchronizing...
+                </>
+              ) : (
+                <>⟳ Synchronize</>
+              )}
             </button>
           </div>
         )}
@@ -135,11 +152,14 @@ const CollectionVideosPage = () => {
           isOpen={isSyncModalOpen}
           onClose={() => setIsSyncModalOpen(false)}
           syncProgress={syncProgress}
+          syncStatus={syncStatus}
+          hasReceivedProgress={hasReceivedProgress}
           error={error}
           collectionId={id}
         />
 
         {loading && <div className="loading">Loading videos...</div>}
+
         {error && !isSyncModalOpen && <div className="error">{error}</div>}
 
         {!loading && !error && videos.length === 0 && (

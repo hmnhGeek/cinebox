@@ -29,7 +29,7 @@ const CollectionIcon = () => (
 );
 
 const CollectionsPage = () => {
-  const { checkSyncInProgress } = useSync();
+  const { checkSyncInProgress, startSynchronization } = useSync();
 
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -55,8 +55,8 @@ const CollectionsPage = () => {
   const handleCreateCollection = async (request) => {
     try {
       const collection = await createCollection(request);
-
       setCollections((previous) => [...previous, collection]);
+      startSynchronization(collection.id, () => {}, false);
       setCollectionModalOpen(false);
     } catch (error) {
       console.error("Failed to create collection:", error);
