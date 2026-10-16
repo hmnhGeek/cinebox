@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getVideoMetadata } from "../../service/collectionApi";
 import "./VideoPage.css";
 
@@ -7,6 +7,7 @@ const API_BASE = "http://localhost:8080/api/v1/collections";
 
 function VideoPage() {
   const { collectionId, videoFolderPath } = useParams();
+  const navigate = useNavigate();
 
   const [videoMetadata, setVideoMetadata] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -28,6 +29,10 @@ function VideoPage() {
   const videoUrl =
     `${API_BASE}/video?collectionId=${collectionId}` +
     `&videoFolder=${encodedFolder}`;
+
+  function handleBackToCollection() {
+    navigate(`/collections/${collectionId}`);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -65,7 +70,6 @@ function VideoPage() {
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      // The user exited fullscreen, e.g. by pressing Escape.
       if (!document.fullscreenElement) {
         const video = videoRef.current;
 
@@ -89,14 +93,12 @@ function VideoPage() {
     setPlayError("");
     video.controls = true;
 
-    // Call both APIs directly from the user's click.
     let fullscreenPromise;
 
     try {
       if (video.requestFullscreen) {
         fullscreenPromise = video.requestFullscreen();
       } else if (video.webkitEnterFullscreen) {
-        // Safari on iPhone.
         video.webkitEnterFullscreen();
       }
     } catch (err) {
@@ -173,11 +175,9 @@ function VideoPage() {
       className="video-page"
       style={{ "--movie-backdrop": `url("${thumbnailUrl}")` }}
     >
-      {/* Blurred backdrop and cinematic gradients */}
       <div className="backdrop-image" aria-hidden="true" />
       <div className="backdrop-shade" aria-hidden="true" />
 
-      {/* Video stays hidden until it enters fullscreen */}
       <video
         ref={videoRef}
         className="fullscreen-video"
@@ -197,6 +197,31 @@ function VideoPage() {
       <div className="movie-content">
         <section className="movie-hero">
           <div className="hero-copy">
+            {/* Back navigation */}
+            <button
+              type="button"
+              className="back-to-collection"
+              onClick={handleBackToCollection}
+              aria-label="Back to collection"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="19"
+                height="19"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M19 12H5" />
+                <path d="m12 19-7-7 7-7" />
+              </svg>
+
+              <span>Back to Collection</span>
+            </button>
+
             <div className="eyebrow">
               <span className="eyebrow-dot" />
               YOUR PERSONAL CINEMA
