@@ -103,7 +103,7 @@ const CollectionsPage = () => {
         <header className="collections-heading">
           <div className="collections-heading-copy">
             <span className="collections-eyebrow">YOUR LIBRARY</span>
-            <p>All your movies, organized your way.</p>
+            <p>All your content, organized your way.</p>
           </div>
 
           <button
