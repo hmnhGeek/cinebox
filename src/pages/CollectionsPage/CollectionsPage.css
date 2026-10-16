@@ -1,243 +1,632 @@
+/* =========================================
+   CineBox — Collections Page
+   Theme: Charcoal / Muted Gold
+   ========================================= */
+
+.collections-page {
+  --cb-bg: #141413;
+  --cb-surface: #1c1b19;
+  --cb-surface-hover: #23221f;
+  --cb-border: #35332e;
+  --cb-border-hover: #716044;
+  --cb-gold: #c4a66a;
+  --cb-gold-light: #dec58e;
+  --cb-gold-soft: rgba(196, 166, 106, 0.12);
+  --cb-text: #f0eee8;
+  --cb-text-secondary: #a5a197;
+  --cb-text-muted: #77736a;
+  --cb-danger: #d9847c;
+
+  color: var(--cb-text);
+}
+
+.collections-content {
+  min-width: 0;
+}
+
+/* Page heading */
+
 .collections-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 26px;
+  gap: 24px;
+  margin-bottom: 36px;
 }
 
-.collections-heading h2 {
+.collections-heading-copy {
+  min-width: 0;
+}
+
+.collections-eyebrow {
+  display: block;
+  margin-bottom: 9px;
+  color: var(--cb-gold);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.collections-heading h1 {
   margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: #fff;
+  color: var(--cb-text);
+  font-size: clamp(25px, 3vw, 30px);
+  font-weight: 650;
+  letter-spacing: -0.8px;
+  line-height: 1.25;
 }
 
-.collection-count {
-  color: #aaa;
+.collections-heading-copy > p {
+  margin: 9px 0 0;
+  color: var(--cb-text-secondary);
   font-size: 14px;
+  line-height: 1.6;
 }
+
+/* Primary action */
+
+.collections-page .collections-add-button,
+.collections-page .collections-empty-button {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 43px;
+  padding: 0 17px;
+
+  border: 1px solid #d1b477;
+  border-radius: 9px;
+  background: var(--cb-gold);
+  color: #201b12;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.05px;
+  cursor: pointer;
+
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.collections-page .collections-add-button:hover,
+.collections-page .collections-empty-button:hover {
+  background: var(--cb-gold-light);
+  border-color: var(--cb-gold-light);
+  box-shadow: 0 4px 18px rgba(196, 166, 106, 0.12);
+  transform: translateY(-1px);
+}
+
+.collections-page .collections-add-button:active,
+.collections-page .collections-empty-button:active {
+  transform: translateY(0);
+}
+
+.collections-page .collections-add-button:focus-visible,
+.collections-page .collections-empty-button:focus-visible {
+  outline: 2px solid var(--cb-gold-light);
+  outline-offset: 4px;
+}
+
+.add-button-icon {
+  font-size: 21px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+/* Collection section */
+
+.collections-section {
+  width: 100%;
+}
+
+.collections-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 17px;
+}
+
+.collections-section-heading h2 {
+  margin: 0;
+  color: #dcd8cf;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+}
+
+.collections-count {
+  color: var(--cb-text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* =========================================
+   Collection Grid
+========================================= */
 
 .collections-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 18px;
+  gap: 17px;
 }
+
+/* =========================================
+   Collection Card
+========================================= */
 
 .collection-card {
   position: relative;
-  display: flex;
-  align-items: center;
-  gap: 16px;
   min-width: 0;
-  padding: 20px;
-  background: #171a1f;
-  border: 1px solid #2a2f38;
-  border-radius: 12px;
-  cursor: pointer;
+  overflow: hidden;
+
+  border: 1px solid var(--cb-border);
+  border-radius: 13px;
+  background: linear-gradient(145deg, #201f1c, #191816);
 
   transition:
-    border-color 0.2s ease,
-    background 0.2s ease,
-    transform 0.2s ease;
+    border-color 220ms ease,
+    background 220ms ease,
+    transform 220ms ease,
+    box-shadow 220ms ease;
+}
+
+/* Gold accent appears on hover */
+
+.collection-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+
+  background: var(--cb-gold);
+  opacity: 0;
+
+  transition: opacity 220ms ease;
+  pointer-events: none;
 }
 
 .collection-card:hover {
-  background: #1d222b;
-  border-color: #5b8cff;
-  transform: translateY(-2px);
+  border-color: var(--cb-border-hover);
+  background: var(--cb-surface-hover);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
+  transform: translateY(-3px);
 }
 
-.collection-card:focus-visible {
-  outline: 2px solid #5b8cff;
-  outline-offset: 3px;
+.collection-card:hover::before {
+  opacity: 1;
 }
 
-/* Delete cross */
+.collection-card:focus-within {
+  border-color: var(--cb-border-hover);
+}
+
+.collection-card-link {
+  display: block;
+  min-width: 0;
+  padding: 22px 20px 20px;
+
+  color: inherit;
+  text-decoration: none;
+  outline: none;
+}
+
+.collection-card-link:focus-visible {
+  outline: 2px solid var(--cb-gold);
+  outline-offset: -4px;
+  border-radius: 12px;
+}
+
+/* Card top row */
+
+.collection-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+/* Collection icon */
+
+.collection-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  width: 49px;
+  height: 49px;
+
+  border: 1px solid rgba(196, 166, 106, 0.19);
+  border-radius: 12px;
+  background: linear-gradient(
+    145deg,
+    rgba(196, 166, 106, 0.15),
+    rgba(196, 166, 106, 0.045)
+  );
+
+  color: var(--cb-gold-light);
+
+  transition:
+    background 200ms ease,
+    border-color 200ms ease,
+    transform 200ms ease;
+}
+
+.collection-card-icon svg {
+  display: block;
+  width: 23px;
+  height: 23px;
+}
+
+.collection-card:hover .collection-card-icon {
+  border-color: rgba(196, 166, 106, 0.38);
+  background: var(--cb-gold-soft);
+  transform: scale(1.04);
+}
+
+/* Open indicator */
+
+.collection-open-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 29px;
+  height: 29px;
+
+  border: 1px solid transparent;
+  border-radius: 8px;
+
+  color: var(--cb-text-muted);
+  opacity: 0.65;
+
+  transition:
+    color 180ms ease,
+    opacity 180ms ease,
+    background 180ms ease,
+    transform 180ms ease;
+}
+
+.collection-card:hover .collection-open-indicator {
+  background: var(--cb-gold-soft);
+  color: var(--cb-gold-light);
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+/* Card text */
+
+.collection-card-info {
+  min-width: 0;
+}
+
+.collection-card-info h3 {
+  overflow: hidden;
+  margin: 0 0 13px;
+
+  color: var(--cb-text);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  transition: color 180ms ease;
+}
+
+.collection-card:hover .collection-card-info h3 {
+  color: var(--cb-gold-light);
+}
+
+/* Folder path */
+
+.collection-folder {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding-top: 13px;
+
+  border-top: 1px solid rgba(165, 161, 151, 0.12);
+
+  color: var(--cb-text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.collection-folder svg {
+  flex-shrink: 0;
+  color: #a99a7b;
+}
+
+.collection-folder span {
+  overflow: hidden;
+  min-width: 0;
+
+  color: #8f8a80;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Delete control */
+
 .delete-collection-button {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 12px;
+  right: 12px;
   z-index: 2;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  width: 28px;
-  height: 28px;
+  width: 31px;
+  height: 31px;
   padding: 0;
 
   border: 1px solid transparent;
-  border-radius: 50%;
-  background: rgba(35, 39, 47, 0.96);
-  color: #aab2c0;
+  border-radius: 9px;
+  background: rgba(20, 20, 19, 0.94);
+  color: var(--cb-text-secondary);
 
-  font-size: 21px;
-  font-family: inherit;
-  line-height: 1;
   cursor: pointer;
-
   opacity: 0;
   visibility: hidden;
-  transform: scale(0.85);
   pointer-events: none;
 
   transition:
-    opacity 0.18s ease,
-    visibility 0.18s ease,
-    transform 0.18s ease,
-    background 0.18s ease,
-    color 0.18s ease,
-    border-color 0.18s ease;
+    opacity 180ms ease,
+    visibility 180ms ease,
+    color 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease;
 }
 
-/* Show the cross when hovering or focusing inside the card */
 .collection-card:hover .delete-collection-button,
 .collection-card:focus-within .delete-collection-button {
   opacity: 1;
   visibility: visible;
-  transform: scale(1);
   pointer-events: auto;
 }
 
 .delete-collection-button:hover {
-  background: #48242b;
-  border-color: #71343e;
-  color: #ff7b88;
+  border-color: rgba(217, 132, 124, 0.27);
+  background: rgba(92, 42, 38, 0.45);
+  color: var(--cb-danger);
 }
 
 .delete-collection-button:active {
-  transform: scale(0.92);
+  background: rgba(92, 42, 38, 0.65);
 }
 
 .delete-collection-button:focus-visible {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  outline: 2px solid #5b8cff;
+  outline: 2px solid var(--cb-gold);
   outline-offset: 2px;
 }
 
-/* Collection icon */
-.collection-card-icon {
+/* =========================================
+   Empty State
+   Original styling preserved
+========================================= */
+
+.collections-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 310px;
+  padding: 42px 24px;
+
+  border: 1px dashed #3a3730;
+  border-radius: 15px;
+  background: rgba(28, 27, 25, 0.52);
+
+  text-align: center;
+}
+
+.empty-icon-tile {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
 
-  background: linear-gradient(
-    135deg,
-    rgba(91, 140, 255, 0.22),
-    rgba(124, 77, 255, 0.22)
-  );
+  width: 64px;
+  height: 64px;
+  margin-bottom: 22px;
 
-  color: #9bb7ff;
-  font-size: 30px;
+  border: 1px solid rgba(196, 166, 106, 0.22);
+  border-radius: 17px;
+  background: var(--cb-gold-soft);
+  color: var(--cb-gold);
 }
 
-.collection-card-info {
-  min-width: 0;
-  flex: 1;
-}
-
-.collection-card-info h3 {
-  margin: 0 0 8px;
-  color: #f3f4f6;
-  font-size: 16px;
+.collections-empty h2 {
+  margin: 0 0 10px;
+  color: var(--cb-text);
+  font-size: 19px;
   font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  letter-spacing: -0.3px;
 }
 
-.collection-folder {
-  margin: 0;
-  color: #969eac;
+.collections-empty > p {
+  max-width: 370px;
+  margin: 0 0 23px;
+
+  color: var(--cb-text-secondary);
   font-size: 13px;
-  line-height: 1.5;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.8;
 }
 
-/* Empty state */
-.empty-collection-icon {
-  margin-bottom: 12px;
-  color: #7c9cff;
-  font-size: 44px;
+.collections-page .collections-empty-button {
+  min-height: 40px;
+  font-size: 12px;
 }
 
-.empty-state h3 {
-  margin: 0 0 8px;
-  color: #eee;
-  font-size: 20px;
+/* Loading and error feedback */
+
+.collections-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 220px;
+  padding: 32px 20px;
+
+  border: 1px solid var(--cb-border);
+  border-radius: 13px;
+  background: var(--cb-surface);
+
+  text-align: center;
 }
 
-.empty-state p {
-  margin: 0;
-  color: #aaa;
-  font-size: 14px;
+.collections-message p {
+  margin: 12px 0 0;
+  color: var(--cb-text-secondary);
+  font-size: 13px;
+  line-height: 1.7;
 }
 
-/* Touchscreens don't have hover, so keep the cross visible */
+.collections-loader {
+  width: 25px;
+  height: 25px;
+  border: 2px solid rgba(196, 166, 106, 0.2);
+  border-top-color: var(--cb-gold);
+  border-radius: 50%;
+  animation: collections-spin 800ms linear infinite;
+}
+
+@keyframes collections-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.collections-error {
+  border-color: rgba(217, 132, 124, 0.2);
+}
+
+.collections-error .message-symbol {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(217, 132, 124, 0.3);
+  border-radius: 50%;
+  background: rgba(217, 132, 124, 0.09);
+
+  color: var(--cb-danger);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.collections-error h3 {
+  margin: 15px 0 0;
+  color: var(--cb-text);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.collections-error p {
+  max-width: 400px;
+}
+
+/* Touch devices */
+
 @media (hover: none) {
   .delete-collection-button {
     opacity: 1;
     visibility: visible;
-    transform: scale(1);
     pointer-events: auto;
+    background: rgba(20, 20, 19, 0.94);
+  }
+
+  .collection-open-indicator {
+    opacity: 1;
   }
 }
 
+/* Responsive layout */
+
 @media (max-width: 600px) {
-  .collections-heading h2 {
-    font-size: 21px;
+  .collections-heading {
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 27px;
+  }
+
+  .collections-heading h1 {
+    font-size: 24px;
+  }
+
+  .collections-heading-copy > p {
+    max-width: 240px;
+    font-size: 12px;
+  }
+
+  .collections-page .collections-add-button {
+    min-height: 39px;
+    gap: 6px;
+    padding: 0 11px;
+    font-size: 11px;
+  }
+
+  .add-button-icon {
+    font-size: 18px;
   }
 
   .collections-grid {
     grid-template-columns: 1fr;
+    gap: 13px;
   }
 
-  .collection-card {
-    padding: 16px;
+  .collection-card-link {
+    padding: 18px 17px;
+  }
+
+  .collection-card-top {
+    margin-bottom: 20px;
+  }
+
+  .collection-card-icon {
+    width: 46px;
+    height: 46px;
+  }
+
+  .collection-card-info h3 {
+    font-size: 15px;
+  }
+
+  .collections-empty {
+    min-height: 280px;
+    padding: 30px 18px;
   }
 }
 
-/* Syncing state for collection button */
-.delete-collection-button.syncing {
-  opacity: 1;
-  visibility: visible;
-  transform: scale(1);
-  pointer-events: auto;
-  background: rgba(24, 43, 33, 0.96);
-  border-color: #2b6144;
-  color: #4ade80;
-  cursor: default;
-}
+/* Reduced motion */
 
-.delete-collection-button.syncing:hover {
-  background: rgba(24, 43, 33, 0.96);
-  border-color: #2b6144;
-  color: #4ade80;
-  transform: scale(1);
-}
-
-.sync-spinner {
-  display: inline-block;
-  animation: spin 1.5s linear infinite;
-  font-size: 16px;
-  line-height: 1;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
+@media (prefers-reduced-motion: reduce) {
+  .collections-page *,
+  .collections-page *::before,
+  .collections-page *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
