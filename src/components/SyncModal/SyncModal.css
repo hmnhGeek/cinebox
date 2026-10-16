@@ -1,89 +1,462 @@
-.sync-modal {
-  max-width: 580px;
+.modal-content.sync-modal {
+  width: min(580px, 100%);
+  max-height: 85vh;
+
   display: flex;
   flex-direction: column;
-  /* Ensure the modal itself doesn't exceed the viewport */
-  max-height: 85vh;
+
+  color: #f3f0e9;
+  background: #111110;
+
+  border: 1px solid #34312a;
+  border-radius: 14px;
+
+  box-shadow:
+    0 28px 90px rgba(0, 0, 0, 0.58),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
 }
+
+/* =========================================
+   Header
+   ========================================= */
+
+.sync-modal .modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+
+  padding: 26px 28px 22px;
+  margin: 0;
+
+  border-bottom: 1px solid #292722;
+}
+
+.sync-modal-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.sync-modal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  width: 44px;
+  height: 44px;
+
+  color: #d3b98b;
+  background: #252117;
+  border: 1px solid #403824;
+  border-radius: 10px;
+}
+
+.sync-modal .modal-header h2 {
+  margin: 1px 0 6px;
+
+  color: #f3f0e9;
+  font-size: 1.3rem;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  line-height: 1.3;
+}
+
+.sync-modal-description {
+  margin: 0;
+
+  color: #a6a197;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.sync-modal .close-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  width: 36px;
+  height: 36px;
+  padding: 0;
+
+  color: #9b978e;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease;
+}
+
+.sync-modal .close-button:hover {
+  color: #f3f0e9;
+  background: #242321;
+  border-color: #383630;
+}
+
+/* =========================================
+   Scrollable Progress Area
+   ========================================= */
 
 .sync-modal-body {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  /* Dynamically adapts to viewport height while allowing scrolling when needed */
+  gap: 12px;
+
+  min-height: 0;
   max-height: min(50vh, 400px);
+
   overflow-y: auto;
-  padding-right: 6px;
-  margin-right: -4px; /* Compensate for padding to keep alignment clean */
+  padding: 22px 28px;
+
+  scrollbar-width: thin;
+  scrollbar-color: #494438 #151513;
 }
 
-/* Custom Scrollbar Styles for Aesthetically Pleasing Look */
 .sync-modal-body::-webkit-scrollbar {
   width: 6px;
 }
 
 .sync-modal-body::-webkit-scrollbar-track {
-  background: rgba(23, 26, 31, 0.5);
+  background: #151513;
   border-radius: 3px;
 }
 
 .sync-modal-body::-webkit-scrollbar-thumb {
-  background: #2d333d;
+  background: #494438;
   border-radius: 3px;
-  transition: background 0.2s ease;
 }
 
 .sync-modal-body::-webkit-scrollbar-thumb:hover {
-  background: #4a5263;
+  background: #6a604b;
 }
 
-/* Firefox scrollbar support */
-.sync-modal-body {
-  scrollbar-width: thin;
-  scrollbar-color: #2d333d rgba(23, 26, 31, 0.5);
-}
+/* =========================================
+   Progress Section Heading
+   ========================================= */
 
 .sync-progress-heading {
-  margin-bottom: 16px;
-  color: #a9b0bd;
-  font-size: 0.95rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+
+  margin-bottom: 3px;
+
+  color: #c6c0b4;
+  font-size: 0.84rem;
+  font-weight: 550;
 }
+
+.sync-progress-heading span:last-child {
+  color: #89857c;
+  font-size: 0.78rem;
+  font-weight: 400;
+}
+
+/* =========================================
+   Individual Progress Items
+   ========================================= */
 
 .sync-progress-item {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  background: #0f1217;
-  border: 1px solid #2d333d;
-  border-radius: 10px;
-  padding: 12px 14px;
+  gap: 11px;
+
+  padding: 15px 16px;
+
+  background: #0b0b0a;
+  border: 1px solid #34312a;
+  border-radius: 9px;
+
+  transition: border-color 180ms ease;
+}
+
+.sync-progress-item:hover {
+  border-color: #514b3e;
 }
 
 .sync-progress-info {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  font-size: 0.9rem;
-  color: #c7ccd6;
   gap: 12px;
+
+  color: #ddd8ce;
+  font-size: 0.875rem;
 }
 
-.sync-progress-info span:first-child {
-  white-space: nowrap;
+.sync-video-name {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.sync-video-name span {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
+.sync-item-loading-icon {
+  flex-shrink: 0;
+  color: #bba579;
+  animation: sync-spin 1.5s linear infinite;
+}
+
+.sync-item-complete-icon {
+  flex-shrink: 0;
+  color: #d3b98b;
+}
+
+.sync-progress-percentage {
+  flex-shrink: 0;
+
+  color: #d3b98b;
+  font-size: 0.84rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================================
+   Progress Bar
+   ========================================= */
 
 .sync-progress-track {
   width: 100%;
-  height: 8px;
-  background: #171a1f;
-  border-radius: 4px;
+  height: 6px;
+
   overflow: hidden;
-  border: 1px solid #2d333d;
+
+  background: #25231e;
+  border: 1px solid #34312a;
+  border-radius: 999px;
 }
 
 .sync-progress-fill {
   height: 100%;
-  background: linear-gradient(135deg, #5b8cff, #7c4dff);
-  transition: width 0.3s ease;
+
+  background: linear-gradient(90deg, #a68b5e, #d3b98b);
+
+  border-radius: inherit;
+
+  transition: width 350ms ease;
+}
+
+.sync-progress-status {
+  color: #89857c;
+  font-size: 0.77rem;
+  line-height: 1.3;
+}
+
+/* =========================================
+   Success State
+   ========================================= */
+
+.sync-success {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+
+  padding: 18px;
+
+  background: #171710;
+  border: 1px solid #49432f;
+  border-radius: 10px;
+}
+
+.sync-success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  width: 40px;
+  height: 40px;
+
+  color: #d3b98b;
+  background: #292519;
+  border: 1px solid #49432f;
+  border-radius: 50%;
+}
+
+.sync-success-title {
+  margin: 1px 0 5px;
+
+  color: #f3f0e9;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.sync-success-description {
+  margin: 0;
+
+  color: #a6a197;
+  font-size: 0.83rem;
+  line-height: 1.55;
+}
+
+/* =========================================
+   Error State
+   ========================================= */
+
+.sync-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+
+  padding: 15px;
+
+  color: #f09b91;
+  background: #211311;
+  border: 1px solid #59312c;
+  border-radius: 9px;
+}
+
+.sync-error > svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.sync-error-title {
+  margin: 0 0 5px;
+
+  color: #ffb0a5;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.sync-error-message {
+  margin: 0;
+
+  color: #d6a49d;
+  font-size: 0.83rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+/* =========================================
+   Footer
+   ========================================= */
+
+.sync-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  padding: 17px 28px 22px;
+
+  border-top: 1px solid #292722;
+}
+
+.sync-close-action {
+  min-height: 41px;
+  padding: 0 17px;
+
+  color: #17140e;
+  background: #d3b98b;
+  border: 1px solid #d3b98b;
+  border-radius: 7px;
+
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.sync-close-action:hover {
+  background: #e2cca4;
+  border-color: #e2cca4;
+  transform: translateY(-1px);
+}
+
+.sync-close-action:active {
+  transform: translateY(0);
+}
+
+.sync-close-action:focus-visible {
+  outline: 2px solid #d3b98b;
+  outline-offset: 3px;
+}
+
+/* =========================================
+   Animations
+   ========================================= */
+
+@keyframes sync-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================
+   Responsive Layout
+   ========================================= */
+
+@media (max-width: 480px) {
+  .modal-content.sync-modal {
+    width: 100%;
+    max-height: calc(100vh - 24px);
+    border-radius: 11px;
+  }
+
+  .sync-modal .modal-header {
+    padding: 21px 18px 18px;
+  }
+
+  .sync-modal-heading {
+    gap: 11px;
+  }
+
+  .sync-modal-icon {
+    width: 39px;
+    height: 39px;
+  }
+
+  .sync-modal .modal-header h2 {
+    font-size: 1.13rem;
+  }
+
+  .sync-modal-description {
+    font-size: 0.8rem;
+  }
+
+  .sync-modal-body {
+    padding: 18px;
+    max-height: 48vh;
+  }
+
+  .sync-progress-item {
+    padding: 13px;
+  }
+
+  .sync-modal-footer {
+    padding: 15px 18px 18px;
+  }
+
+  .sync-close-action {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sync-modal *,
+  .sync-modal *::before,
+  .sync-modal *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
