@@ -94,7 +94,7 @@ const CollectionVideosPage = () => {
             className="library-hero-image"
             src={
               collection
-                ? `http://localhost:8080/api/v1/collections/hero-image?collectionId=${collection.id}`
+                ? `${import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")}/api/v1/collections/hero-image?collectionId=${collection.id}`
                 : libhero
             }
             onError={(event) => {
