@@ -44,8 +44,6 @@ const Icon = ({ name, size = 22 }) => {
     forward: <path d="m9 18 6-6-6-6" />,
   };
 
-  // Use Lucide's native gear icon to avoid the old SVG transform
-  // that caused the settings icon to appear displaced.
   if (name === "settings") {
     return (
       <Settings
@@ -99,6 +97,7 @@ export default function VideoPlayer({
   const [speed, setSpeed] = useState(1);
   const [fullscreen, setFullscreen] = useState(false);
   const [playbackError, setPlaybackError] = useState("");
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
   const bufferedProgress = duration > 0 ? (buffered / duration) * 100 : 0;
@@ -148,6 +147,18 @@ export default function VideoPlayer({
     );
   }, []);
 
+  // Lock landscape only after entering fullscreen.
+  // Some mobile browsers do not support this API.
+  const lockLandscape = useCallback(async () => {
+    try {
+      if (screen.orientation && typeof screen.orientation.lock === "function") {
+        await screen.orientation.lock("landscape");
+      }
+    } catch {
+      // Fullscreen remains available if orientation locking is unsupported.
+    }
+  }, []);
+
   const toggleFullscreen = useCallback(async () => {
     const player = wrapperRef.current;
     if (!player) return;
@@ -155,13 +166,21 @@ export default function VideoPlayer({
     try {
       if (document.fullscreenElement) {
         await document.exitFullscreen();
-      } else {
+        return;
+      }
+
+      if (player.requestFullscreen) {
         await player.requestFullscreen();
+        await lockLandscape();
+      } else if (player.webkitRequestFullscreen) {
+        // Safari/WebKit fallback where available.
+        player.webkitRequestFullscreen();
+        await lockLandscape();
       }
     } catch (error) {
       console.error("Fullscreen failed:", error);
     }
-  }, []);
+  }, [lockLandscape]);
 
   const handleVolumeChange = useCallback((value) => {
     const nextVolume = Number(value);
@@ -279,7 +298,10 @@ export default function VideoPlayer({
     const onTimeUpdate = () => {
       const time = video.currentTime;
       setCurrentTime(time);
-      lastPlaybackTimeRef.current = time;
+
+      if (lastPlaybackTimeRef) {
+        lastPlaybackTimeRef.current = time;
+      }
     };
 
     const onLoadedMetadata = () => {
@@ -320,15 +342,32 @@ export default function VideoPlayer({
     };
 
     const onFullscreenChange = () => {
-      setFullscreen(document.fullscreenElement === wrapperRef.current);
+      const isFullscreen = document.fullscreenElement === wrapperRef.current;
+
+      setFullscreen(isFullscreen);
       setControlsVisible(true);
 
-      if (lastPlaybackTimeRef.current > 0) {
+      if (isFullscreen) {
+        // Re-attempt orientation locking after fullscreen is established.
+        lockLandscape();
+      } else {
+        // Restore the device's normal orientation behavior on exit.
+        try {
+          screen.orientation?.unlock?.();
+        } catch {
+          // Orientation unlocking may be unsupported.
+        }
+      }
+
+      // Preserve playback position across fullscreen transitions.
+      if (lastPlaybackTimeRef && lastPlaybackTimeRef.current > 0) {
+        const savedTime = lastPlaybackTimeRef.current;
+
         video.currentTime = Math.min(
-          lastPlaybackTimeRef.current,
+          savedTime,
           Number.isFinite(video.duration)
             ? Math.max(0, video.duration - 0.1)
-            : lastPlaybackTimeRef.current,
+            : savedTime,
         );
       }
     };
@@ -359,7 +398,7 @@ export default function VideoPlayer({
       video.removeEventListener("ended", onEnded);
       document.removeEventListener("fullscreenchange", onFullscreenChange);
     };
-  }, [src, initialMuted, autoPlay]);
+  }, [src, initialMuted, autoPlay, lastPlaybackTimeRef, lockLandscape]);
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
@@ -374,6 +413,10 @@ export default function VideoPlayer({
 
   useEffect(() => {
     return () => clearTimeout(hideTimerRef.current);
+  }, []);
+
+  useEffect(() => {
+    setIsTouchDevice(window.matchMedia("(pointer: coarse)").matches);
   }, []);
 
   return (
@@ -397,6 +440,7 @@ export default function VideoPlayer({
         }
       }}
       onClick={(event) => {
+        if (isTouchDevice) return;
         if (
           event.target === wrapperRef.current ||
           event.target === videoRef.current
@@ -478,6 +522,10 @@ export default function VideoPlayer({
                 if (video && Number.isFinite(nextTime)) {
                   video.currentTime = nextTime;
                   setCurrentTime(nextTime);
+
+                  if (lastPlaybackTimeRef) {
+                    lastPlaybackTimeRef.current = nextTime;
+                  }
                 }
               }}
               aria-label="Seek"
@@ -498,6 +546,7 @@ export default function VideoPlayer({
             >
               <Icon name={playing ? "pause" : "play"} />
             </button>
+
             <button
               type="button"
               className="cine-player__icon-button cine-player__skip-button"

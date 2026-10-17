@@ -29,7 +29,9 @@
   outline-offset: 3px;
 }
 
-/* Fullscreen */
+/* =========================================
+   Fullscreen
+   ========================================= */
 
 .cine-player:fullscreen,
 .cine-player:-webkit-full-screen {
@@ -38,6 +40,8 @@
 
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
+
   max-width: none;
   max-height: none;
 
@@ -51,6 +55,9 @@
   background: #000;
 }
 
+/* Ensure the video fills the fullscreen viewport
+   without cropping the original video. */
+
 .cine-player:fullscreen .cine-player__video,
 .cine-player:-webkit-full-screen .cine-player__video {
   display: block;
@@ -58,6 +65,8 @@
   height: 100%;
   object-fit: contain;
 }
+
+/* Keep controls positioned against the fullscreen player. */
 
 .cine-player:fullscreen .cine-player__top,
 .cine-player:fullscreen .cine-player__bottom,
@@ -68,7 +77,9 @@
   right: 0;
 }
 
-/* Video */
+/* =========================================
+   Video
+   ========================================= */
 
 .cine-player__video {
   display: block;
@@ -78,7 +89,9 @@
   background: #080808;
 }
 
-/* Cinematic gradients */
+/* =========================================
+   Cinematic gradients
+   ========================================= */
 
 .cine-player__top-gradient,
 .cine-player__bottom {
@@ -148,7 +161,9 @@
   white-space: nowrap;
 }
 
-/* Icons */
+/* =========================================
+   Icons
+   ========================================= */
 
 .cine-player__icon,
 .cine-player__settings-icon {
@@ -164,7 +179,9 @@
   transform-origin: center;
 }
 
-/* Buttons */
+/* =========================================
+   Buttons
+   ========================================= */
 
 .cine-player__icon-button {
   position: relative;
@@ -233,7 +250,9 @@
   pointer-events: none;
 }
 
-/* Center play button */
+/* =========================================
+   Center play button
+   ========================================= */
 
 .cine-player__center-play {
   position: absolute;
@@ -279,7 +298,9 @@
   display: block;
 }
 
-/* Timeline */
+/* =========================================
+   Timeline
+   ========================================= */
 
 .cine-player__timeline {
   display: flex;
@@ -407,7 +428,9 @@
   border-radius: 4px;
 }
 
-/* Toolbar */
+/* =========================================
+   Toolbar
+   ========================================= */
 
 .cine-player__toolbar,
 .cine-player__toolbar-left,
@@ -427,9 +450,9 @@
   min-width: 0;
 }
 
-/* Volume */
-
-/* Volume */
+/* =========================================
+   Volume
+   ========================================= */
 
 .cine-player__volume {
   width: 76px;
@@ -494,7 +517,9 @@
   border-radius: 50%;
 }
 
-/* Playback settings */
+/* =========================================
+   Playback settings
+   ========================================= */
 
 .cine-player__settings-wrap {
   position: relative;
@@ -566,7 +591,9 @@
   }
 }
 
-/* Playback error */
+/* =========================================
+   Playback error
+   ========================================= */
 
 .cine-player__error {
   position: absolute;
@@ -601,7 +628,9 @@
   line-height: 1.6;
 }
 
-/* Auto-hidden controls */
+/* =========================================
+   Auto-hidden controls
+   ========================================= */
 
 .cine-player--controls-hidden {
   cursor: none;
@@ -619,7 +648,9 @@
   pointer-events: none;
 }
 
-/* Overlay interaction fix: overlays should not block controls */
+/* =========================================
+   Overlay interaction
+   ========================================= */
 
 .cine-player__top,
 .cine-player__bottom {
@@ -640,7 +671,9 @@
   pointer-events: auto;
 }
 
-/* Responsive layout */
+/* =========================================
+   Responsive layout
+   ========================================= */
 
 @media (max-width: 600px) {
   .cine-player {
@@ -710,7 +743,34 @@
   }
 }
 
-/* Reduced motion */
+/* Compact controls for mobile landscape fullscreen. */
+
+@media (max-width: 900px) and (orientation: landscape) {
+  .cine-player:fullscreen .cine-player__top,
+  .cine-player:-webkit-full-screen .cine-player__top {
+    padding: 8px 16px;
+  }
+
+  .cine-player:fullscreen .cine-player__bottom,
+  .cine-player:-webkit-full-screen .cine-player__bottom {
+    padding: 28px 16px 8px;
+  }
+
+  .cine-player:fullscreen .cine-player__timeline,
+  .cine-player:-webkit-full-screen .cine-player__timeline {
+    margin-bottom: 2px;
+  }
+
+  .cine-player:fullscreen .cine-player__icon-button,
+  .cine-player:-webkit-full-screen .cine-player__icon-button {
+    width: 34px;
+    height: 34px;
+  }
+}
+
+/* =========================================
+   Reduced motion
+   ========================================= */
 
 @media (prefers-reduced-motion: reduce) {
   .cine-player *,
@@ -721,8 +781,14 @@
   }
 }
 
-/* Remove modal padding while the player is fullscreen */
+/* =========================================
+   Fullscreen overlay spacing
+   ========================================= */
 
 .cine-player-overlay:has(.cine-player:fullscreen) {
+  padding: 0;
+}
+
+.cine-player-overlay:has(.cine-player:-webkit-full-screen) {
   padding: 0;
 }
