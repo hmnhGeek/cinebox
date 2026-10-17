@@ -11,6 +11,7 @@ function VideoPage() {
   const navigate = useNavigate();
 
   const pageRef = useRef(null);
+  const lastPlaybackTimeRef = useRef(0);
 
   const [videoMetadata, setVideoMetadata] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -200,11 +201,13 @@ function VideoPage() {
             poster={thumbnailUrl}
             title={metadata.title || "Untitled video"}
             autoPlay
+            initialMuted
             onError={() => {
               setPlayError(
                 "The video couldn't be loaded. Please check the file.",
               );
             }}
+            lastPlaybackTimeRef={lastPlaybackTimeRef}
           />
         </div>
       )}

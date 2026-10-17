@@ -82,6 +82,7 @@ export default function VideoPlayer({
   autoPlay = false,
   initialMuted = false,
   onError,
+  lastPlaybackTimeRef,
 }) {
   const wrapperRef = useRef(null);
   const videoRef = useRef(null);
@@ -276,7 +277,9 @@ export default function VideoPlayer({
     setSpeed(1);
 
     const onTimeUpdate = () => {
-      setCurrentTime(video.currentTime);
+      const time = video.currentTime;
+      setCurrentTime(time);
+      lastPlaybackTimeRef.current = time;
     };
 
     const onLoadedMetadata = () => {
@@ -319,6 +322,15 @@ export default function VideoPlayer({
     const onFullscreenChange = () => {
       setFullscreen(document.fullscreenElement === wrapperRef.current);
       setControlsVisible(true);
+
+      if (lastPlaybackTimeRef.current > 0) {
+        video.currentTime = Math.min(
+          lastPlaybackTimeRef.current,
+          Number.isFinite(video.duration)
+            ? Math.max(0, video.duration - 0.1)
+            : lastPlaybackTimeRef.current,
+        );
+      }
     };
 
     video.addEventListener("timeupdate", onTimeUpdate);
