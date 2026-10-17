@@ -486,27 +486,24 @@ export default function VideoPlayer({
             >
               <Icon name={playing ? "pause" : "play"} />
             </button>
-
             <button
               type="button"
-              className="cine-player__icon-button"
+              className="cine-player__icon-button cine-player__skip-button"
               onClick={() => seekBy(-10)}
               aria-label="Back 10 seconds"
               title="Back 10 seconds (←)"
             >
               <Icon name="back" />
-              <span className="cine-player__skip-label">10</span>
             </button>
 
             <button
               type="button"
-              className="cine-player__icon-button"
+              className="cine-player__icon-button cine-player__skip-button"
               onClick={() => seekBy(10)}
               aria-label="Forward 10 seconds"
               title="Forward 10 seconds (→)"
             >
               <Icon name="forward" />
-              <span className="cine-player__skip-label">10</span>
             </button>
 
             <button
@@ -527,6 +524,9 @@ export default function VideoPlayer({
               step="0.05"
               value={muted ? 0 : volume}
               onChange={(event) => handleVolumeChange(event.target.value)}
+              style={{
+                "--volume-progress": `${(muted ? 0 : volume) * 100}%`,
+              }}
               aria-label="Volume"
             />
           </div>
