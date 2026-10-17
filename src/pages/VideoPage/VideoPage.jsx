@@ -1,19 +1,23 @@
-import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { getVideoMetadata } from "../../service/collectionApi";
+import VideoPlayer from "../../components/VideoPlayer/VideoPlayer";
 import "./VideoPage.css";
 
 const API_BASE = "http://localhost:8080/api/v1/collections";
 
 function VideoPage() {
   const { collectionId, videoFolderPath } = useParams();
+  const navigate = useNavigate();
+
+  const pageRef = useRef(null);
+  const lastPlaybackTimeRef = useRef(0);
 
   const [videoMetadata, setVideoMetadata] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [playError, setPlayError] = useState("");
-
-  const videoRef = useRef(null);
+  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
 
   const encodedFolder = encodeURIComponent(videoFolderPath || "");
 
@@ -28,6 +32,27 @@ function VideoPage() {
   const videoUrl =
     `${API_BASE}/video?collectionId=${collectionId}` +
     `&videoFolder=${encodedFolder}`;
+
+  const handleBackToCollection = useCallback(() => {
+    navigate(`/collections/${collectionId}`);
+  }, [navigate, collectionId]);
+
+  const handlePlay = useCallback(async () => {
+    setPlayError("");
+    setIsPlayerOpen(true);
+  }, []);
+
+  const handleClosePlayer = useCallback(async () => {
+    setIsPlayerOpen(false);
+
+    if (document.fullscreenElement) {
+      try {
+        await document.exitFullscreen();
+      } catch (err) {
+        console.warn("Could not exit fullscreen:", err);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,73 +88,55 @@ function VideoPage() {
     };
   }, [collectionId, videoFolderPath]);
 
+  // Escape exits fullscreen. Close the overlay after fullscreen has ended.
   useEffect(() => {
-    const handleFullscreenChange = () => {
-      // The user exited fullscreen, e.g. by pressing Escape.
-      if (!document.fullscreenElement) {
-        const video = videoRef.current;
+    if (!isPlayerOpen) return;
 
-        if (video && !video.paused) {
-          video.pause();
-        }
+    function handleFullscreenChange() {
+      if (!document.fullscreenElement) {
+        setIsPlayerOpen(false);
       }
-    };
+    }
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
 
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
-  }, []);
+  }, [isPlayerOpen]);
 
-  async function handlePlay() {
-    const video = videoRef.current;
-    if (!video) return;
+  // Keep the background page from scrolling behind the player.
+  useEffect(() => {
+    if (!isPlayerOpen) return;
 
-    setPlayError("");
-    video.controls = true;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
 
-    // Call both APIs directly from the user's click.
-    let fullscreenPromise;
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isPlayerOpen]);
 
-    try {
-      if (video.requestFullscreen) {
-        fullscreenPromise = video.requestFullscreen();
-      } else if (video.webkitEnterFullscreen) {
-        // Safari on iPhone.
-        video.webkitEnterFullscreen();
+  useEffect(() => {
+    if (!isPlayerOpen) return;
+
+    const enterFullscreen = async () => {
+      // Wait for React to mount the player.
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+
+      const player = pageRef.current?.querySelector(".cine-player");
+
+      if (!player || document.fullscreenElement) return;
+
+      try {
+        await player.requestFullscreen();
+      } catch (error) {
+        console.warn("Could not enter player fullscreen:", error);
       }
-    } catch (err) {
-      console.warn("Fullscreen request failed:", err);
-    }
+    };
 
-    let playbackPromise;
-
-    try {
-      playbackPromise = video.play();
-    } catch (err) {
-      console.error("Playback failed:", err);
-      setPlayError("Unable to start playback. Please try again.");
-      return;
-    }
-
-    const results = await Promise.allSettled(
-      [fullscreenPromise, playbackPromise].filter(Boolean),
-    );
-
-    const playbackFailed = results.some(
-      (result) =>
-        result.status === "rejected" &&
-        result.reason &&
-        result.reason.name !== "TypeError",
-    );
-
-    if (playbackFailed || video.paused) {
-      setPlayError(
-        "Couldn't start the video. Check that the video is accessible and try again.",
-      );
-    }
-  }
+    enterFullscreen();
+  }, [isPlayerOpen]);
 
   const formatDate = (date) => {
     if (!date) return null;
@@ -170,33 +177,67 @@ function VideoPage() {
 
   return (
     <main
+      ref={pageRef}
       className="video-page"
       style={{ "--movie-backdrop": `url("${thumbnailUrl}")` }}
     >
-      {/* Blurred backdrop and cinematic gradients */}
       <div className="backdrop-image" aria-hidden="true" />
       <div className="backdrop-shade" aria-hidden="true" />
 
-      {/* Video stays hidden until it enters fullscreen */}
-      <video
-        ref={videoRef}
-        className="fullscreen-video"
-        src={videoUrl}
-        poster={thumbnailUrl}
-        preload="metadata"
-        playsInline
-        controls={false}
-        muted
-        controlsList="nodownload"
-        disablePictureInPicture
-        onError={() =>
-          setPlayError("The video couldn't be loaded. Please check its URL.")
-        }
-      />
+      {isPlayerOpen && (
+        <div
+          className="cine-player-overlay"
+          role="dialog"
+          aria-label={`Playing ${metadata.title || "video"}`}
+          aria-modal="true"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              handleClosePlayer();
+            }
+          }}
+        >
+          <VideoPlayer
+            src={videoUrl}
+            poster={thumbnailUrl}
+            title={metadata.title || "Untitled video"}
+            autoPlay
+            initialMuted
+            onError={() => {
+              setPlayError(
+                "The video couldn't be loaded. Please check the file.",
+              );
+            }}
+            lastPlaybackTimeRef={lastPlaybackTimeRef}
+          />
+        </div>
+      )}
 
       <div className="movie-content">
         <section className="movie-hero">
           <div className="hero-copy">
+            <button
+              type="button"
+              className="back-to-collection"
+              onClick={handleBackToCollection}
+              aria-label="Back to collection"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="19"
+                height="19"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M19 12H5" />
+                <path d="m12 19-7-7 7-7" />
+              </svg>
+              <span>Back to Collection</span>
+            </button>
+
             <div className="eyebrow">
               <span className="eyebrow-dot" />
               YOUR PERSONAL CINEMA
@@ -228,7 +269,7 @@ function VideoPage() {
                 type="button"
                 className="play-button"
                 onClick={handlePlay}
-                aria-label={`Play ${metadata.title || "video"} in fullscreen`}
+                aria-label={`Play ${metadata.title || "video"}`}
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -286,12 +327,14 @@ function VideoPage() {
           {actors.length > 0 && (
             <div className="detail-section">
               <h2>Cast</h2>
+
               <div className="cast-grid">
                 {actors.map((actor, index) => (
                   <div className="cast-card" key={`${actor.name}-${index}`}>
                     <div className="cast-avatar">
                       {(actor.name || "?").charAt(0)}
                     </div>
+
                     <div className="cast-info">
                       <span className="cast-name">{actor.name}</span>
                       {actor.role && (
@@ -307,12 +350,14 @@ function VideoPage() {
           {(directors.length > 0 || writers.length > 0) && (
             <div className="detail-section">
               <h2>Credits</h2>
+
               {directors.length > 0 && (
                 <div className="detail-row">
                   <span>Director</span>
                   <strong>{directors.join(", ")}</strong>
                 </div>
               )}
+
               {writers.length > 0 && (
                 <div className="detail-row">
                   <span>Writer</span>
@@ -324,6 +369,7 @@ function VideoPage() {
 
           <div className="detail-section">
             <h2>Movie details</h2>
+
             <div className="details-grid">
               {[
                 ["Original title", metadata.originalTitle],
@@ -358,6 +404,7 @@ function VideoPage() {
           {tags.length > 0 && (
             <div className="detail-section">
               <h2>Tags</h2>
+
               <div className="tag-list">
                 {tags.map((tag) => (
                   <span key={tag}>{tag}</span>

@@ -1,5 +1,6 @@
 import React from "react";
 import { Formik } from "formik";
+import { Clapperboard, X, FolderOpen } from "lucide-react";
 import "./CreateCollectionModal.css";
 
 const CreateCollectionModal = ({ isOpen, onClose, onCreate }) => {
@@ -11,6 +12,7 @@ const CreateCollectionModal = ({ isOpen, onClose, onCreate }) => {
     try {
       await onCreate({
         title: values.title.trim(),
+        tagline: values.tagline.trim(),
         folder: values.folder.trim(),
       });
 
@@ -36,7 +38,18 @@ const CreateCollectionModal = ({ isOpen, onClose, onCreate }) => {
         aria-labelledby="collection-modal-title"
       >
         <div className="modal-header">
-          <h2 id="collection-modal-title">Create Collection</h2>
+          <div className="collection-modal-heading">
+            <div className="collection-modal-icon">
+              <Clapperboard size={21} />
+            </div>
+
+            <div>
+              <h2 id="collection-modal-title">Create Collection</h2>
+              <p className="collection-description">
+                Build a home for the movies you love.
+              </p>
+            </div>
+          </div>
 
           <button
             type="button"
@@ -44,17 +57,16 @@ const CreateCollectionModal = ({ isOpen, onClose, onCreate }) => {
             className="close-button"
             aria-label="Close modal"
           >
-            &times;
+            <X size={19} />
           </button>
         </div>
 
-        <p className="collection-description">
-          Give your collection a title and select the folder containing your
-          videos.
-        </p>
-
         <Formik
-          initialValues={{ title: "", folder: "" }}
+          initialValues={{
+            title: "",
+            tagline: "",
+            folder: "",
+          }}
           validate={(values) => {
             const errors = {};
 
@@ -81,14 +93,14 @@ const CreateCollectionModal = ({ isOpen, onClose, onCreate }) => {
             status,
           }) => (
             <form onSubmit={handleSubmit}>
-              <div>
-                <label htmlFor="collection-title">Collection Title</label>
+              <div className="collection-field">
+                <label htmlFor="collection-title">Collection title</label>
 
                 <input
                   type="text"
                   id="collection-title"
                   name="title"
-                  placeholder="e.g. Movies, TV Shows, Documentaries"
+                  placeholder="e.g. Movies, Documentaries"
                   value={values.title}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -100,18 +112,43 @@ const CreateCollectionModal = ({ isOpen, onClose, onCreate }) => {
                 )}
               </div>
 
-              <div>
-                <label htmlFor="collection-folder">System Folder Path</label>
+              <div className="collection-field">
+                <label htmlFor="collection-tagline">
+                  Tagline <span className="collection-optional">Optional</span>
+                </label>
 
                 <input
                   type="text"
-                  id="collection-folder"
-                  name="folder"
-                  placeholder="e.g. D:\\Movies"
-                  value={values.folder}
+                  id="collection-tagline"
+                  name="tagline"
+                  placeholder="A collection worth coming back to"
+                  value={values.tagline}
                   onChange={handleChange}
                   onBlur={handleBlur}
+                  maxLength={160}
                 />
+
+                <p className="collection-help">
+                  A short description displayed beneath your collection title.
+                </p>
+              </div>
+
+              <div className="collection-field">
+                <label htmlFor="collection-folder">System folder path</label>
+
+                <div className="collection-folder-input">
+                  <FolderOpen size={18} aria-hidden="true" />
+
+                  <input
+                    type="text"
+                    id="collection-folder"
+                    name="folder"
+                    placeholder="e.g. D:\\Movies"
+                    value={values.folder}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                  />
+                </div>
 
                 <p className="collection-help">
                   Enter the absolute path accessible to your backend.
@@ -138,7 +175,11 @@ const CreateCollectionModal = ({ isOpen, onClose, onCreate }) => {
                   Cancel
                 </button>
 
-                <button type="submit" disabled={isSubmitting}>
+                <button
+                  className="collection-create"
+                  type="submit"
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? "Creating..." : "Create Collection"}
                 </button>
               </div>

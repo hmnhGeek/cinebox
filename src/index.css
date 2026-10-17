@@ -1,3 +1,7 @@
+/* =========================================
+   Global Styles
+   ========================================= */
+
 * {
   box-sizing: border-box;
 }
@@ -5,7 +9,7 @@
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
-  background: #111;
+  background: #0b0b0b;
   color: #fff;
 }
 
@@ -13,36 +17,78 @@ body {
   min-height: 100vh;
 }
 
+/* =========================================
+   App-Level Buttons
+   Matches Create Collection
+   ========================================= */
+
 .app-level-button {
-  font: inherit;
-  font-weight: 600;
-  border-radius: 10px;
-  padding: 12px 18px;
-  background: linear-gradient(135deg, #5b8cff, #7c4dff);
-  color: white;
-  border: none;
-  cursor: pointer;
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-}
-
-.app-header {
-  padding: 10px 40px;
-  border-bottom: 1px solid #2a2a2a;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 24px;
+  justify-content: center;
+  gap: 9px;
+
+  min-height: 42px;
+  padding: 0 17px;
+
+  color: #17140e;
+  background: #d3b98b;
+  border: 1px solid #d3b98b;
+  border-radius: 7px;
+
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.4;
+
+  white-space: nowrap;
+  cursor: pointer;
+
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
 }
 
-.app-header h1 {
-  margin: 0;
-  font-size: 28px;
+.app-level-button:hover:not(:disabled) {
+  color: #17140e;
+  background: #e2cca4;
+  border-color: #e2cca4;
+  transform: translateY(-1px);
 }
+
+.app-level-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.app-level-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.app-level-button:focus-visible {
+  outline: 2px solid #d3b98b;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-level-button {
+    transition: none;
+  }
+}
+
+/* =========================================
+   Main Content
+   ========================================= */
 
 .content {
   padding: 30px 40px;
 }
+
+/* =========================================
+   Video Grid
+   ========================================= */
 
 .video-grid {
   display: grid;
@@ -92,6 +138,10 @@ body {
   opacity: 1;
 }
 
+/* =========================================
+   Video Information
+   ========================================= */
+
 .video-info {
   padding-top: 10px;
 }
@@ -104,7 +154,6 @@ body {
 
 .video-info p {
   margin: 6px 0 0;
-
   color: #aaa;
   font-size: 14px;
 
@@ -115,6 +164,10 @@ body {
   overflow: hidden;
 }
 
+/* =========================================
+   Loading, Error and Empty States
+   ========================================= */
+
 .loading,
 .error,
 .empty-state {
@@ -123,30 +176,16 @@ body {
   color: #aaa;
 }
 
+/* =========================================
+   Responsive Layout
+   ========================================= */
+
 @media (max-width: 700px) {
   .content {
-    padding: 20px;
-  }
-
-  .app-header {
     padding: 20px;
   }
 
   .video-grid {
     grid-template-columns: 1fr;
   }
-}
-
-.upload-link {
-  background: none;
-  border: none;
-  color: #aaa;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 4px 0;
-  transition: color 0.2s ease;
-}
-
-.upload-link:hover {
-  color: #fff;
 }

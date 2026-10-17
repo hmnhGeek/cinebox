@@ -1,12 +1,12 @@
 const API_BASE_URL = "http://localhost:8080/api/v1/collections";
 
-export const createCollection = async ({ title, folder }) => {
+export const createCollection = async ({ title, folder, tagline }) => {
   const response = await fetch(API_BASE_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ title, folder }),
+    body: JSON.stringify({ title, folder, tagline }),
   });
 
   if (!response.ok) {
@@ -30,6 +30,18 @@ export const getAllCollections = async () => {
 
   if (!response.ok) {
     throw new Error("Failed to fetch collections.");
+  }
+
+  return response.json();
+};
+
+export const getAllCollectionById = async (collectionId) => {
+  const response = await fetch(
+    `${API_BASE_URL}/${encodeURIComponent(collectionId)}`,
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch collection.");
   }
 
   return response.json();
@@ -92,5 +104,15 @@ export const getPreviewProgress = async (previewPath) => {
     throw new Error("Failed to fetch preview progress.");
   }
 
+  return response.json();
+};
+
+export const getSyncStatus = async (collectionId) => {
+  const response = await fetch(
+    `${API_BASE_URL}/sync-status?collectionId=${collectionId}`,
+  );
+  if (!response.ok) {
+    throw new Error("Failed to fetch sync status.");
+  }
   return response.json();
 };

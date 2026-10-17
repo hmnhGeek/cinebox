@@ -7,6 +7,7 @@ import CollectionVideosPage from "./pages/CollectionsVideoPage/CollectionsVideoP
 import Header from "./components/Header/Header";
 import { SyncProvider } from "./context/SyncContext";
 import { Toaster } from "react-hot-toast";
+import ScrollToTop from "./components/ScrollToTop/ScrollToTop";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
       />
 
       <BrowserRouter>
+        <ScrollToTop />
         <Header
           onUploadClick={() => setIsUploadModalOpen(true)}
           onCreateCollectionClick={() => setCollectionModalOpen(true)}

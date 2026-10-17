@@ -1,0 +1,302 @@
+/* =========================================
+   CineBox — Immersive Collection Hero
+   ========================================= */
+
+.library-hero {
+  position: relative;
+  isolation: isolate;
+  width: calc(100% + 88px);
+  height: clamp(400px, 46vw, 620px);
+
+  /* Extend behind the content padding */
+  margin: -32px -44px 0;
+  overflow: hidden;
+
+  background: #141413;
+  color: #f0eee8;
+
+  /* Fade the hero into the page */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 7%,
+    #000 68%,
+    rgba(0, 0, 0, 0.88) 79%,
+    rgba(0, 0, 0, 0.45) 91%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 7%,
+    #000 68%,
+    rgba(0, 0, 0, 0.88) 79%,
+    rgba(0, 0, 0, 0.45) 91%,
+    transparent 100%
+  );
+}
+
+/* Full-bleed collection artwork */
+.library-hero-image {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+
+  width: 100%;
+  height: 100%;
+  max-width: none;
+
+  object-fit: cover;
+  object-position: center 45%;
+
+  transform: scale(1.025);
+  animation: hero-image-reveal 1.2s ease-out both;
+}
+
+/* Predictable cinematic overlay */
+.library-hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(20, 20, 19, 0.2) 0%,
+      transparent 22%,
+      rgba(20, 20, 19, 0.08) 48%,
+      rgba(20, 20, 19, 0.62) 72%,
+      #141413 100%
+    ),
+    linear-gradient(
+      to right,
+      rgba(20, 20, 19, 0.82) 0%,
+      rgba(20, 20, 19, 0.58) 28%,
+      rgba(20, 20, 19, 0.16) 62%,
+      transparent 100%
+    );
+}
+
+/* Hero text */
+.library-hero-content {
+  position: absolute;
+  top: 43%;
+  left: clamp(44px, 7vw, 120px);
+
+  width: min(620px, 75%);
+  transform: translateY(-50%);
+
+  animation: hero-content-reveal 850ms 120ms ease-out both;
+}
+
+/* Eyebrow */
+.library-hero-eyebrow {
+  display: inline-block;
+  margin-bottom: 20px;
+
+  color: #dec58e;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3.2px;
+
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.65);
+}
+
+/* Collection title */
+.library-hero-content h1 {
+  max-width: 600px;
+  margin: 0;
+
+  color: #f0eee8;
+  font-size: clamp(34px, 4.2vw, 62px);
+  font-weight: 650;
+  letter-spacing: -2px;
+  line-height: 1.08;
+  text-wrap: balance;
+
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* Collection tagline */
+.library-hero-content p {
+  max-width: 420px;
+  margin: 20px 0 0;
+
+  color: rgba(240, 238, 232, 0.88);
+  font-size: clamp(13px, 1.15vw, 16px);
+  line-height: 1.8;
+
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.75);
+}
+
+/* Gold accent divider */
+.library-hero-divider {
+  width: 54px;
+  height: 2px;
+  margin-top: 26px;
+
+  background: linear-gradient(90deg, #c4a66a, rgba(196, 166, 106, 0));
+}
+
+/* Bottom labels */
+.library-hero-bottom {
+  position: absolute;
+  right: clamp(44px, 7vw, 120px);
+  bottom: 66px;
+  left: clamp(44px, 7vw, 120px);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  color: rgba(240, 238, 232, 0.76);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2px;
+
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.8);
+}
+
+.library-hero-scroll {
+  white-space: nowrap;
+}
+
+/* Blend hero into the video section */
+.collection-videos-heading {
+  position: relative;
+  margin-top: -12px;
+}
+
+/* Entrance animations */
+@keyframes hero-image-reveal {
+  from {
+    opacity: 0.5;
+    transform: scale(1.07);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.025);
+  }
+}
+
+@keyframes hero-content-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-50% + 18px));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(-50%);
+  }
+}
+
+/* Scroll fade */
+@supports (animation-timeline: view()) {
+  .library-hero {
+    animation: hero-scroll-fade linear both;
+    animation-timeline: view();
+    animation-range: exit 0% exit 85%;
+  }
+
+  @keyframes hero-scroll-fade {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    to {
+      opacity: 0;
+      transform: translateY(-45px);
+    }
+  }
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .library-hero {
+    width: calc(100% + 40px);
+    height: 410px;
+    margin: -24px -20px 0;
+
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 5%,
+      #000 65%,
+      rgba(0, 0, 0, 0.7) 83%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 5%,
+      #000 65%,
+      rgba(0, 0, 0, 0.7) 83%,
+      transparent 100%
+    );
+  }
+
+  .library-hero-overlay {
+    background:
+      linear-gradient(
+        to bottom,
+        rgba(20, 20, 19, 0.16),
+        transparent 25%,
+        rgba(20, 20, 19, 0.5) 60%,
+        #141413 100%
+      ),
+      linear-gradient(to right, rgba(20, 20, 19, 0.68), rgba(20, 20, 19, 0.08));
+  }
+
+  .library-hero-content {
+    top: 48%;
+    left: 24px;
+    width: calc(100% - 48px);
+  }
+
+  .library-hero-content h1 {
+    font-size: clamp(32px, 8vw, 44px);
+    letter-spacing: -1.3px;
+  }
+
+  .library-hero-content p {
+    max-width: 310px;
+    margin-top: 14px;
+    font-size: 13px;
+  }
+
+  .library-hero-eyebrow {
+    margin-bottom: 14px;
+    font-size: 9px;
+    letter-spacing: 2.2px;
+  }
+
+  .library-hero-divider {
+    margin-top: 20px;
+  }
+
+  .library-hero-bottom {
+    right: 24px;
+    bottom: 44px;
+    left: 24px;
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+
+  .collection-videos-heading {
+    margin-top: -8px;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .library-hero-image,
+  .library-hero-content,
+  .library-hero {
+    animation: none !important;
+  }
+}
