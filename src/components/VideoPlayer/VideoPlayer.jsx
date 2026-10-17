@@ -40,18 +40,22 @@ const Icon = ({ name, size = 22 }) => {
     fullscreen: (
       <path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m8 0h3a2 2 0 0 0 2-2v-3" />
     ),
-    settings: (
-      <>
-        <circle cx="12" cy="12" r="3" />
-        <path
-          d="m19.4 15 .1.1 1.4 1.1-1.5 2.6-1.7-.7a8 8 0 0 1-1.6.9l-.3 1.8h-3l-.3-1.8a8 8 0 0 1-1.6-.9l-1.7.7-1.5-2.6 1.4-1.1a7 7 0 0 1 0-1.9l-1.4-1.1 1.5-2.6 1.7.7a8 8 0 0 1 1.6-.9l.3-1.8h3l.3 1.8a8 8 0 0 1 1.6.9l1.7-.7 1.5 2.6-1.4 1.1a7 7 0 0 1 0 1.8Z"
-          transform="translate(-1 -1) scale(1.08)"
-        />
-      </>
-    ),
     back: <path d="m15 18-6-6 6-6" />,
     forward: <path d="m9 18 6-6-6-6" />,
   };
+
+  // Use Lucide's native gear icon to avoid the old SVG transform
+  // that caused the settings icon to appear displaced.
+  if (name === "settings") {
+    return (
+      <Settings
+        size={size}
+        strokeWidth={1.8}
+        aria-hidden="true"
+        className="cine-player__settings-icon"
+      />
+    );
+  }
 
   return (
     <svg
@@ -64,6 +68,7 @@ const Icon = ({ name, size = 22 }) => {
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
+      className="cine-player__icon"
     >
       {paths[name]}
     </svg>
@@ -81,7 +86,6 @@ export default function VideoPlayer({
   const wrapperRef = useRef(null);
   const videoRef = useRef(null);
   const hideTimerRef = useRef(null);
-  const seekRef = useRef(null);
 
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -93,12 +97,9 @@ export default function VideoPlayer({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [speed, setSpeed] = useState(1);
   const [fullscreen, setFullscreen] = useState(false);
-  const [seeking, setSeeking] = useState(false);
-  const [seekValue, setSeekValue] = useState(0);
   const [playbackError, setPlaybackError] = useState("");
 
-  const actualTime = seeking ? seekValue : currentTime;
-  const progress = duration > 0 ? (actualTime / duration) * 100 : 0;
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
   const bufferedProgress = duration > 0 ? (buffered / duration) * 100 : 0;
 
   const showControls = useCallback(() => {
@@ -146,7 +147,7 @@ export default function VideoPlayer({
     );
   }, []);
 
-  const toggleFullscreen = async () => {
+  const toggleFullscreen = useCallback(async () => {
     const player = wrapperRef.current;
     if (!player) return;
 
@@ -159,9 +160,9 @@ export default function VideoPlayer({
     } catch (error) {
       console.error("Fullscreen failed:", error);
     }
-  };
+  }, []);
 
-  const handleVolumeChange = (value) => {
+  const handleVolumeChange = useCallback((value) => {
     const nextVolume = Number(value);
     setVolume(nextVolume);
 
@@ -170,9 +171,9 @@ export default function VideoPlayer({
       videoRef.current.muted = nextVolume === 0;
       setMuted(nextVolume === 0);
     }
-  };
+  }, []);
 
-  const toggleMute = () => {
+  const toggleMute = useCallback(() => {
     const video = videoRef.current;
     if (!video) return;
 
@@ -183,23 +184,12 @@ export default function VideoPlayer({
       video.volume = 0.5;
       setVolume(0.5);
     }
-  };
-
-  const handleSeekStart = () => {
-    setSeeking(true);
-    setSeekValue(videoRef.current?.currentTime || 0);
-  };
-
-  const handleSeekEnd = () => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = seekValue;
-    }
-    setSeeking(false);
-  };
+  }, []);
 
   const handleKeyDown = useCallback(
     (event) => {
       const target = event.target;
+
       if (
         target instanceof HTMLInputElement ||
         target instanceof HTMLButtonElement ||
@@ -214,38 +204,57 @@ export default function VideoPlayer({
           event.preventDefault();
           togglePlayback();
           break;
+
         case "arrowleft":
           event.preventDefault();
           seekBy(-10);
           showControls();
           break;
+
         case "arrowright":
           event.preventDefault();
           seekBy(10);
           showControls();
           break;
+
         case "arrowup":
           event.preventDefault();
           handleVolumeChange(Math.min(1, volume + 0.05));
           showControls();
           break;
+
         case "arrowdown":
           event.preventDefault();
           handleVolumeChange(Math.max(0, volume - 0.05));
           showControls();
           break;
+
         case "m":
           toggleMute();
           showControls();
           break;
+
         case "f":
           toggleFullscreen();
           break;
+
+        case "escape":
+          setSettingsOpen(false);
+          break;
+
         default:
           break;
       }
     },
-    [togglePlayback, seekBy, showControls, volume, toggleFullscreen],
+    [
+      togglePlayback,
+      seekBy,
+      showControls,
+      volume,
+      handleVolumeChange,
+      toggleMute,
+      toggleFullscreen,
+    ],
   );
 
   useEffect(() => {
@@ -254,6 +263,7 @@ export default function VideoPlayer({
 
     video.muted = initialMuted;
     video.volume = 1;
+
     setMuted(initialMuted);
     setVolume(1);
     setCurrentTime(0);
@@ -262,6 +272,8 @@ export default function VideoPlayer({
     setPlaying(false);
     setPlaybackError("");
     setControlsVisible(true);
+    setSettingsOpen(false);
+    setSpeed(1);
 
     const onTimeUpdate = () => {
       setCurrentTime(video.currentTime);
@@ -274,7 +286,6 @@ export default function VideoPlayer({
     const onProgress = () => {
       if (!video.duration || !video.buffered.length) return;
 
-      // Report the buffered range containing the playhead, if available.
       for (let i = 0; i < video.buffered.length; i++) {
         const start = video.buffered.start(i);
         const end = video.buffered.end(i);
@@ -302,6 +313,7 @@ export default function VideoPlayer({
     const onEnded = () => {
       setPlaying(false);
       setControlsVisible(true);
+      setSettingsOpen(false);
     };
 
     const onFullscreenChange = () => {
@@ -342,21 +354,31 @@ export default function VideoPlayer({
     if (!wrapper) return;
 
     wrapper.addEventListener("keydown", handleKeyDown);
-    return () => wrapper.removeEventListener("keydown", handleKeyDown);
+
+    return () => {
+      wrapper.removeEventListener("keydown", handleKeyDown);
+    };
   }, [handleKeyDown]);
 
-  useEffect(() => () => clearTimeout(hideTimerRef.current), []);
+  useEffect(() => {
+    return () => clearTimeout(hideTimerRef.current);
+  }, []);
 
   return (
     <div
       ref={wrapperRef}
-      className={`cine-player ${controlsVisible ? "cine-player--controls-visible" : "cine-player--controls-hidden"} ${fullscreen ? "cine-player--fullscreen" : ""}`}
+      className={`cine-player ${
+        controlsVisible
+          ? "cine-player--controls-visible"
+          : "cine-player--controls-hidden"
+      } ${fullscreen ? "cine-player--fullscreen" : ""}`}
       tabIndex={0}
       aria-label={`Video player: ${title}`}
       onMouseMove={showControls}
       onMouseLeave={() => {
         if (playing && !settingsOpen) {
           clearTimeout(hideTimerRef.current);
+
           hideTimerRef.current = setTimeout(() => {
             setControlsVisible(false);
           }, 800);
@@ -416,7 +438,7 @@ export default function VideoPlayer({
 
       <div className="cine-player__bottom">
         <div className="cine-player__timeline">
-          <span className="cine-player__time">{formatTime(actualTime)}</span>
+          <span className="cine-player__time">{formatTime(currentTime)}</span>
 
           <div className="cine-player__seek-wrap">
             <div className="cine-player__seek-track">
@@ -436,7 +458,7 @@ export default function VideoPlayer({
               min={0}
               max={duration || 0}
               step={0.1}
-              value={duration ? currentTime : 0}
+              value={duration ? Math.min(currentTime, duration) : 0}
               onChange={(event) => {
                 const nextTime = Number(event.target.value);
                 const video = videoRef.current;
@@ -446,6 +468,7 @@ export default function VideoPlayer({
                   setCurrentTime(nextTime);
                 }
               }}
+              aria-label="Seek"
             />
           </div>
 
@@ -512,7 +535,9 @@ export default function VideoPlayer({
             <div className="cine-player__settings-wrap">
               <button
                 type="button"
-                className={`cine-player__icon-button ${settingsOpen ? "is-active" : ""}`}
+                className={`cine-player__icon-button ${
+                  settingsOpen ? "is-active" : ""
+                }`}
                 onClick={() => {
                   setSettingsOpen((value) => !value);
                   showControls();
@@ -525,10 +550,14 @@ export default function VideoPlayer({
               </button>
 
               {settingsOpen && (
-                <div className="cine-player__settings">
+                <div
+                  className="cine-player__settings"
+                  onClick={(event) => event.stopPropagation()}
+                >
                   <span className="cine-player__settings-heading">
                     Playback speed
                   </span>
+
                   {[0.5, 0.75, 1, 1.25, 1.5, 2].map((value) => (
                     <button
                       type="button"
@@ -536,10 +565,13 @@ export default function VideoPlayer({
                       className={speed === value ? "is-selected" : ""}
                       onClick={() => {
                         setSpeed(value);
+
                         if (videoRef.current) {
                           videoRef.current.playbackRate = value;
                         }
+
                         setSettingsOpen(false);
+                        showControls();
                       }}
                     >
                       {value === 1 ? "Normal" : `${value}×`}
@@ -548,6 +580,16 @@ export default function VideoPlayer({
                 </div>
               )}
             </div>
+
+            <button
+              type="button"
+              className="cine-player__icon-button"
+              onClick={toggleFullscreen}
+              aria-label={fullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+              title={fullscreen ? "Exit fullscreen (F)" : "Fullscreen (F)"}
+            >
+              <Icon name="fullscreen" />
+            </button>
           </div>
         </div>
       </div>

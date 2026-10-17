@@ -29,24 +29,46 @@
   outline-offset: 3px;
 }
 
-.cine-player:fullscreen {
-  width: 100%;
-  height: 100%;
+/* Fullscreen */
+
+.cine-player:fullscreen,
+.cine-player:-webkit-full-screen {
+  position: fixed;
+  inset: 0;
+
+  width: 100vw;
+  height: 100vh;
   max-width: none;
   max-height: none;
+
   aspect-ratio: auto;
-  border: 0;
+  margin: 0;
+  padding: 0;
+
+  overflow: hidden;
+  border: none;
   border-radius: 0;
   background: #000;
 }
 
-.cine-player:-webkit-full-screen {
+.cine-player:fullscreen .cine-player__video,
+.cine-player:-webkit-full-screen .cine-player__video {
+  display: block;
   width: 100%;
   height: 100%;
-  border: 0;
-  border-radius: 0;
-  background: #000;
+  object-fit: contain;
 }
+
+.cine-player:fullscreen .cine-player__top,
+.cine-player:fullscreen .cine-player__bottom,
+.cine-player:-webkit-full-screen .cine-player__top,
+.cine-player:-webkit-full-screen .cine-player__bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+
+/* Video */
 
 .cine-player__video {
   display: block;
@@ -126,6 +148,22 @@
   white-space: nowrap;
 }
 
+/* Icons */
+
+.cine-player__icon,
+.cine-player__settings-icon {
+  display: block;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+}
+
+.cine-player__settings-icon {
+  margin: 0;
+  transform: none;
+  transform-origin: center;
+}
+
 /* Buttons */
 
 .cine-player__icon-button {
@@ -192,6 +230,7 @@
   width: 76px;
   height: 76px;
   padding: 0;
+
   color: #171510;
   background: var(--player-gold);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -217,6 +256,10 @@
   outline-offset: 4px;
 }
 
+.cine-player__center-play svg {
+  display: block;
+}
+
 /* Timeline */
 
 .cine-player__timeline {
@@ -237,10 +280,10 @@
 
 .cine-player__seek-wrap {
   position: relative;
-  flex: 1;
-  height: 22px;
   display: flex;
+  flex: 1;
   align-items: center;
+  height: 22px;
 }
 
 .cine-player__seek-track {
@@ -279,6 +322,7 @@
 .cine-player__seek {
   position: relative;
   z-index: 2;
+
   width: 100%;
   height: 22px;
   margin: 0;
@@ -326,6 +370,11 @@
 
 .cine-player__seek-wrap:hover .cine-player__seek::-webkit-slider-thumb,
 .cine-player__seek:focus-visible::-webkit-slider-thumb {
+  opacity: 1;
+}
+
+.cine-player__seek-wrap:hover .cine-player__seek::-moz-range-thumb,
+.cine-player__seek:focus-visible::-moz-range-thumb {
   opacity: 1;
 }
 
@@ -517,6 +566,27 @@
   pointer-events: none;
 }
 
+/* Overlay interaction fix: overlays should not block controls */
+
+.cine-player__top,
+.cine-player__bottom {
+  pointer-events: none;
+}
+
+.cine-player__top > *,
+.cine-player__bottom > *,
+.cine-player__seek-wrap,
+.cine-player__seek,
+.cine-player__settings,
+.cine-player__settings button,
+.cine-player__volume {
+  pointer-events: auto;
+}
+
+.cine-player__center-play {
+  pointer-events: auto;
+}
+
 /* Responsive layout */
 
 @media (max-width: 600px) {
@@ -540,6 +610,12 @@
   .cine-player__icon-button {
     width: 32px;
     height: 34px;
+  }
+
+  .cine-player__icon,
+  .cine-player__settings-icon {
+    width: 20px;
+    height: 20px;
   }
 
   .cine-player__volume {
@@ -581,6 +657,8 @@
   }
 }
 
+/* Reduced motion */
+
 @media (prefers-reduced-motion: reduce) {
   .cine-player *,
   .cine-player *::before,
@@ -590,95 +668,8 @@
   }
 }
 
-/* Fix: overlays must not block their own controls */
+/* Remove modal padding while the player is fullscreen */
 
-.cine-player__top,
-.cine-player__bottom {
-  pointer-events: none;
-}
-
-.cine-player__top > *,
-.cine-player__bottom > *,
-.cine-player__seek-wrap,
-.cine-player__seek,
-.cine-player__settings,
-.cine-player__settings button,
-.cine-player__volume {
-  pointer-events: auto;
-}
-
-/* Keep the center play button clickable */
-.cine-player__center-play {
-  pointer-events: auto;
-}
-
-/* Actual fullscreen player */
-.cine-player:fullscreen {
-  width: 100vw;
-  height: 100vh;
-  max-width: none;
-  max-height: none;
-  aspect-ratio: auto;
-  border: none;
-  border-radius: 0;
-  margin: 0;
-  background: #000;
-}
-
-/* Let the video occupy all available player space */
-.cine-player:fullscreen video {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-/* Keep the controls anchored to the fullscreen player */
-.cine-player:fullscreen .cine-player__top,
-.cine-player:fullscreen .cine-player__bottom {
-  position: absolute;
-  left: 0;
-  right: 0;
-}
-
-/* Remove the page-sized overlay's padding in fullscreen */
 .cine-player-overlay:has(.cine-player:fullscreen) {
   padding: 0;
-}
-
-.cine-player:fullscreen,
-.cine-player:-webkit-full-screen {
-  position: fixed;
-  inset: 0;
-
-  width: 100vw;
-  height: 100vh;
-  max-width: none;
-  max-height: none;
-
-  aspect-ratio: auto;
-  margin: 0;
-  padding: 0;
-
-  overflow: hidden;
-  border: none;
-  border-radius: 0;
-  background: #000;
-}
-
-.cine-player:fullscreen .cine-player__video,
-.cine-player:-webkit-full-screen .cine-player__video {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-/* Keep the custom controls over the video */
-.cine-player:fullscreen .cine-player__top,
-.cine-player:fullscreen .cine-player__bottom,
-.cine-player:-webkit-full-screen .cine-player__top,
-.cine-player:-webkit-full-screen .cine-player__bottom {
-  position: absolute;
-  left: 0;
-  right: 0;
 }
