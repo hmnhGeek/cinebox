@@ -4,7 +4,7 @@ import { getVideoMetadata } from "../../service/collectionApi";
 import VideoPlayer from "../../components/VideoPlayer/VideoPlayer";
 import "./VideoPage.css";
 
-const API_BASE = "http://localhost:8080/api/v1/collections";
+const API_BASE = `${import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")}/api/v1/collections`;
 
 function VideoPage() {
   const { collectionId, videoFolderPath } = useParams();

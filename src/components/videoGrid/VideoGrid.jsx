@@ -21,11 +21,11 @@ function VideoGrid({ videos, collectionId }) {
           key={video.id}
           video={video}
           thumbnailUrl={
-            `http://localhost:8080/api/v1/collections/thumbnail` +
+            `${import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")}/api/v1/collections/thumbnail` +
             `?collectionId=${collectionId}&videoFolder=${encodeURIComponent(video.thumbnailPath.split("\\").slice(-2, -1)[0])}`
           }
           previewUrl={
-            `http://localhost:8080/api/v1/collections/preview` +
+            `${import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")}/api/v1/collections/preview` +
             `?collectionId=${collectionId}&videoFolder=${encodeURIComponent(video.videoPath.split("\\").slice(-2, -1)[0])}`
           }
           handleClick={handleVideoClick}
