@@ -7,7 +7,7 @@ import {
 } from "../../service/collectionApi";
 import CreateCollectionModal from "../../components/CreateCollectionModal/CreateCollectionModal";
 import { useSync } from "../../context/SyncContext";
-import toast from "react-hot-toast";
+import cineToast from "../../components/CineToast/CineToast";
 import "./CollectionsPage.css";
 
 const CollectionIcon = () => (
@@ -72,8 +72,12 @@ const CollectionsPage = () => {
       const isSyncing = await checkSyncInProgress(collection.id);
 
       if (isSyncing) {
-        toast.error(
+        cineToast.error(
           `Cannot delete "${collection.title}" while synchronization is in progress.`,
+          {
+            title: "Collection is busy",
+            duration: 5000,
+          },
         );
         return;
       }
@@ -84,10 +88,15 @@ const CollectionsPage = () => {
         previous.filter((item) => item.id !== collection.id),
       );
 
-      toast.success(`"${collection.title}" deleted successfully.`);
+      cineToast.success(`"${collection.title}" deleted successfully.`, {
+        title: "Collection deleted",
+      });
     } catch (error) {
       console.error("Failed to delete collection:", error);
-      toast.error(error.message || "Failed to delete collection.");
+      cineToast.error(error.message || "Failed to delete collection.", {
+        title: "Couldn't delete collection",
+        duration: 5000,
+      });
     }
   };
 
