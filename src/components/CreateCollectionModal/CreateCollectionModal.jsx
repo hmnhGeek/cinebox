@@ -125,7 +125,6 @@ const CreateCollectionModal = ({ isOpen, onClose, onCreate }) => {
                   value={values.tagline}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  maxLength={160}
                 />
 
                 <p className="collection-help">
