@@ -40,7 +40,7 @@
 
   background-image: var(--movie-backdrop);
   background-position: center top;
-  background-size: 100% 100%;
+  background-size: cover;
   background-repeat: no-repeat;
 
   filter: brightness(0.78) saturate(1.05);
