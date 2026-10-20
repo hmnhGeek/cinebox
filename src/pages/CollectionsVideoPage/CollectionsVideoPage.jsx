@@ -102,7 +102,11 @@ const CollectionVideosPage = () => {
   return (
     <div className="app">
       <main className="content">
-        <section className="library-hero">
+        <section
+          className={`library-hero ${
+            heroImageLoaded ? "hero-ready" : "hero-loading"
+          }`}
+        >
           {heroImageUrl && (
             <img
               key={heroImageUrl}
@@ -114,41 +118,64 @@ const CollectionVideosPage = () => {
               onError={(event) => {
                 const image = event.currentTarget;
 
-                // Use the default image only if the API image fails.
                 if (image.dataset.fallback !== "true") {
                   image.dataset.fallback = "true";
                   image.src = libhero;
                 } else {
                   image.style.visibility = "hidden";
+                  setHeroImageLoaded(true);
                 }
               }}
               alt=""
             />
           )}
 
+          {!heroImageLoaded && (
+            <div className="library-hero-skeleton">
+              <div className="hero-skeleton-content">
+                <div className="hero-skeleton-eyebrow" />
+                <div className="hero-skeleton-title" />
+                <div className="hero-skeleton-tagline" />
+                <div className="hero-skeleton-divider" />
+              </div>
+
+              <div className="hero-skeleton-bottom">
+                <span className="hero-skeleton-label" />
+                <span className="hero-skeleton-label hero-skeleton-label-short" />
+              </div>
+
+              <div className="hero-skeleton-status">
+                <span className="hero-skeleton-spinner" />
+                <span>Preparing your collection</span>
+              </div>
+            </div>
+          )}
+
           <div className="library-hero-overlay" />
 
-          <div className="library-hero-content">
-            <span className="library-hero-eyebrow">
-              YOUR PERSONAL COLLECTION
-            </span>
+          {heroImageLoaded && (
+            <>
+              <div className="library-hero-content">
+                <span className="library-hero-eyebrow">
+                  YOUR PERSONAL COLLECTION
+                </span>
 
-            {!loading && <h1>{activeCollection?.title || "Collection"}</h1>}
+                <h1>{activeCollection?.title || "Collection"}</h1>
 
-            {!loading && (
-              <p>
-                {activeCollection?.tagline ||
-                  "Every story worth watching, all in one place."}
-              </p>
-            )}
+                <p>
+                  {activeCollection?.tagline ||
+                    "Every story worth watching, all in one place."}
+                </p>
 
-            <div className="library-hero-divider" />
-          </div>
+                <div className="library-hero-divider" />
+              </div>
 
-          <div className="library-hero-bottom">
-            <span>CURATED FOR YOUR VIEWING PLEASURE</span>
-            <span className="library-hero-scroll">SCROLL TO EXPLORE ↓</span>
-          </div>
+              <div className="library-hero-bottom">
+                <span>CURATED FOR YOUR VIEWING PLEASURE</span>
+                <span className="library-hero-scroll">SCROLL TO EXPLORE ↓</span>
+              </div>
+            </>
+          )}
         </section>
 
         {activeCollection && (
