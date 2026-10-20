@@ -25,6 +25,7 @@
     rgba(0, 0, 0, 0.45) 91%,
     transparent 100%
   );
+
   mask-image: linear-gradient(
     to bottom,
     transparent 0%,
@@ -50,7 +51,18 @@
   object-position: center 45%;
 
   transform: scale(1.025);
-  animation: hero-image-reveal 1.2s ease-out both;
+
+  /* Keep the image hidden until it has loaded */
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.library-hero-image.loaded {
+  opacity: 1;
+}
+
+.library-hero-image.loading {
+  opacity: 0;
 }
 
 /* Predictable cinematic overlay */
@@ -169,19 +181,7 @@
   margin-top: -12px;
 }
 
-/* Entrance animations */
-@keyframes hero-image-reveal {
-  from {
-    opacity: 0.5;
-    transform: scale(1.07);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1.025);
-  }
-}
-
+/* Entrance animation for hero content */
 @keyframes hero-content-reveal {
   from {
     opacity: 0;
@@ -230,6 +230,7 @@
       rgba(0, 0, 0, 0.7) 83%,
       transparent 100%
     );
+
     mask-image: linear-gradient(
       to bottom,
       transparent 0%,
@@ -298,5 +299,6 @@
   .library-hero-content,
   .library-hero {
     animation: none !important;
+    transition: none !important;
   }
 }
