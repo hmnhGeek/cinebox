@@ -13,6 +13,8 @@ import "./CollectionsVideoPage.css";
 import "./LibraryHero.css";
 import libhero from "../../assets/libhero.jpg";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "");
+
 const CollectionVideosPage = () => {
   const { id } = useParams();
 
@@ -24,7 +26,6 @@ const CollectionVideosPage = () => {
     isSyncModalOpen,
     setIsSyncModalOpen,
     startSynchronization,
-    checkSyncInProgress,
   } = useSync();
 
   const syncStatus = syncStatusByCollection[String(id)] ?? "IDLE";
@@ -36,6 +37,7 @@ const CollectionVideosPage = () => {
   const [videos, setVideos] = useState([]);
   const [collection, setCollection] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [heroImageLoaded, setHeroImageLoaded] = useState(false);
 
   const isMounted = useRef(true);
 
@@ -52,6 +54,7 @@ const CollectionVideosPage = () => {
 
     setLoading(true);
     setCollection(null);
+    setHeroImageLoaded(false);
 
     try {
       const [videoData, currentCollection] = await Promise.all([
@@ -86,56 +89,98 @@ const CollectionVideosPage = () => {
     startSynchronization(id, loadCollection, true);
   };
 
+  // Never display an image belonging to the previous collection.
+  const activeCollection =
+    collection && String(collection.id) === String(id) ? collection : null;
+
+  const heroImageUrl = activeCollection
+    ? `${API_BASE_URL}/api/v1/collections/hero-image?collectionId=${encodeURIComponent(
+        activeCollection.id,
+      )}`
+    : null;
+
   return (
     <div className="app">
       <main className="content">
-        <section className="library-hero">
-          <img
-            className="library-hero-image"
-            src={
-              collection
-                ? `${import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")}/api/v1/collections/hero-image?collectionId=${collection.id}`
-                : libhero
-            }
-            onError={(event) => {
-              event.currentTarget.onerror = null;
-              event.currentTarget.src = libhero;
-            }}
-            alt=""
-          />
+        <section
+          className={`library-hero ${
+            heroImageLoaded ? "hero-ready" : "hero-loading"
+          }`}
+        >
+          {heroImageUrl && (
+            <img
+              key={heroImageUrl}
+              className={`library-hero-image ${
+                heroImageLoaded ? "loaded" : "loading"
+              }`}
+              src={heroImageUrl}
+              onLoad={() => setHeroImageLoaded(true)}
+              onError={(event) => {
+                const image = event.currentTarget;
+
+                if (image.dataset.fallback !== "true") {
+                  image.dataset.fallback = "true";
+                  image.src = libhero;
+                } else {
+                  image.style.visibility = "hidden";
+                  setHeroImageLoaded(true);
+                }
+              }}
+              alt=""
+            />
+          )}
+
+          {!heroImageLoaded && (
+            <div className="library-hero-skeleton">
+              <div className="hero-skeleton-content">
+                <div className="hero-skeleton-eyebrow" />
+                <div className="hero-skeleton-title" />
+                <div className="hero-skeleton-tagline" />
+                <div className="hero-skeleton-divider" />
+              </div>
+
+              <div className="hero-skeleton-bottom">
+                <span className="hero-skeleton-label" />
+                <span className="hero-skeleton-label hero-skeleton-label-short" />
+              </div>
+
+              <div className="hero-skeleton-status">
+                <span className="hero-skeleton-spinner" />
+                <span>Preparing your collection</span>
+              </div>
+            </div>
+          )}
 
           <div className="library-hero-overlay" />
 
-          <div className="library-hero-content">
-            <span className="library-hero-eyebrow">
-              YOUR PERSONAL COLLECTION
-            </span>
+          {heroImageLoaded && (
+            <>
+              <div className="library-hero-content">
+                <span className="library-hero-eyebrow">
+                  YOUR PERSONAL COLLECTION
+                </span>
 
-            {!loading && <h1>{collection?.title || "Collection"}</h1>}
+                <h1>{activeCollection?.title || "Collection"}</h1>
 
-            {!loading && (
-              <p>
-                {collection?.tagline ||
-                  "Every story worth watching, all in one place."}
-              </p>
-            )}
+                <p>
+                  {activeCollection?.tagline ||
+                    "Every story worth watching, all in one place."}
+                </p>
 
-            <div className="library-hero-divider" />
-          </div>
+                <div className="library-hero-divider" />
+              </div>
 
-          <div className="library-hero-bottom">
-            <span>CURATED FOR YOUR VIEWING PLEASURE</span>
-            <span className="library-hero-scroll">SCROLL TO EXPLORE ↓</span>
-          </div>
+              <div className="library-hero-bottom">
+                <span>CURATED FOR YOUR VIEWING PLEASURE</span>
+                <span className="library-hero-scroll">SCROLL TO EXPLORE ↓</span>
+              </div>
+            </>
+          )}
         </section>
 
-        {collection && (
+        {activeCollection && (
           <div className="collection-videos-heading">
-            <button
-              className="app-level-button"
-              onClick={handleSynchronize}
-              // disabled={syncStatus === "QUEUED" || syncStatus === "IN_PROGRESS"}
-            >
+            <button className="app-level-button" onClick={handleSynchronize}>
               {syncStatus === "QUEUED" || syncStatus === "IN_PROGRESS" ? (
                 <>
                   <LoaderCircle className="syncing-button-loader" size={21} />

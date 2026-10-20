@@ -25,6 +25,7 @@
     rgba(0, 0, 0, 0.45) 91%,
     transparent 100%
   );
+
   mask-image: linear-gradient(
     to bottom,
     transparent 0%,
@@ -50,7 +51,18 @@
   object-position: center 45%;
 
   transform: scale(1.025);
-  animation: hero-image-reveal 1.2s ease-out both;
+
+  /* Keep the image hidden until it has loaded */
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.library-hero-image.loaded {
+  opacity: 1;
+}
+
+.library-hero-image.loading {
+  opacity: 0;
 }
 
 /* Predictable cinematic overlay */
@@ -169,19 +181,7 @@
   margin-top: -12px;
 }
 
-/* Entrance animations */
-@keyframes hero-image-reveal {
-  from {
-    opacity: 0.5;
-    transform: scale(1.07);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1.025);
-  }
-}
-
+/* Entrance animation for hero content */
 @keyframes hero-content-reveal {
   from {
     opacity: 0;
@@ -230,6 +230,7 @@
       rgba(0, 0, 0, 0.7) 83%,
       transparent 100%
     );
+
     mask-image: linear-gradient(
       to bottom,
       transparent 0%,
@@ -298,5 +299,234 @@
   .library-hero-content,
   .library-hero {
     animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* =========================================
+   CineBox — Full Hero Loading Skeleton
+   ========================================= */
+
+.library-hero-skeleton {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  background: #1a1917;
+}
+
+/* Cinematic shimmer */
+.library-hero-skeleton::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+
+  background: linear-gradient(
+    110deg,
+    transparent 20%,
+    rgba(196, 166, 106, 0.035) 38%,
+    rgba(240, 238, 232, 0.07) 48%,
+    rgba(196, 166, 106, 0.035) 58%,
+    transparent 76%
+  );
+
+  animation: hero-skeleton-shimmer 2s ease-in-out infinite;
+}
+
+.hero-skeleton-content {
+  position: absolute;
+  top: 43%;
+  left: clamp(44px, 7vw, 120px);
+  width: min(620px, 75%);
+  transform: translateY(-50%);
+}
+
+/* Skeleton bars */
+.hero-skeleton-eyebrow,
+.hero-skeleton-title,
+.hero-skeleton-tagline,
+.hero-skeleton-divider,
+.hero-skeleton-label {
+  background: linear-gradient(90deg, #292722 25%, #343129 50%, #292722 75%);
+
+  background-size: 200% 100%;
+  animation: hero-skeleton-pulse 1.8s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.hero-skeleton-eyebrow {
+  width: 190px;
+  height: 10px;
+  margin-bottom: 30px;
+}
+
+.hero-skeleton-title {
+  width: min(460px, 95%);
+  height: clamp(34px, 4.2vw, 62px);
+  margin-bottom: 22px;
+}
+
+.hero-skeleton-tagline {
+  width: min(340px, 85%);
+  height: 12px;
+  margin-bottom: 12px;
+}
+
+.hero-skeleton-tagline::after {
+  content: "";
+  display: block;
+  width: 72%;
+  height: 12px;
+  margin-top: 24px;
+  background: inherit;
+  border-radius: inherit;
+}
+
+.hero-skeleton-divider {
+  width: 54px;
+  height: 2px;
+  margin-top: 38px;
+  background: #8e784c;
+  opacity: 0.65;
+}
+
+/* Bottom labels */
+.hero-skeleton-bottom {
+  position: absolute;
+  right: clamp(44px, 7vw, 120px);
+  bottom: 66px;
+  left: clamp(44px, 7vw, 120px);
+
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.hero-skeleton-label {
+  width: 210px;
+  height: 9px;
+}
+
+.hero-skeleton-label-short {
+  width: 145px;
+}
+
+/* Gold loading indicator */
+.hero-skeleton-status {
+  position: absolute;
+  right: 0;
+  bottom: 112px;
+  left: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  color: #a5a197;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+}
+
+.hero-skeleton-spinner {
+  width: 13px;
+  height: 13px;
+  border: 1.5px solid rgba(196, 166, 106, 0.2);
+  border-top-color: #c4a66a;
+  border-radius: 50%;
+  animation: hero-skeleton-spin 800ms linear infinite;
+}
+
+/* Reveal the actual artwork */
+.library-hero-image.loaded {
+  opacity: 1;
+}
+
+.library-hero-image.loading {
+  opacity: 0;
+}
+
+/* Animations */
+@keyframes hero-skeleton-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes hero-skeleton-pulse {
+  0%,
+  100% {
+    background-position: 100% 0;
+  }
+
+  50% {
+    background-position: 0 0;
+  }
+}
+
+@keyframes hero-skeleton-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 700px) {
+  .hero-skeleton-content {
+    top: 48%;
+    left: 24px;
+    width: calc(100% - 48px);
+  }
+
+  .hero-skeleton-eyebrow {
+    width: 160px;
+    margin-bottom: 24px;
+  }
+
+  .hero-skeleton-title {
+    width: 85%;
+    height: 36px;
+  }
+
+  .hero-skeleton-tagline {
+    width: 75%;
+  }
+
+  .hero-skeleton-divider {
+    margin-top: 32px;
+  }
+
+  .hero-skeleton-bottom {
+    right: 24px;
+    bottom: 44px;
+    left: 24px;
+    gap: 12px;
+  }
+
+  .hero-skeleton-label {
+    width: 145px;
+  }
+
+  .hero-skeleton-label-short {
+    width: 100px;
+  }
+
+  .hero-skeleton-status {
+    bottom: 78px;
+    font-size: 9px;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .library-hero-skeleton::before,
+  .hero-skeleton-eyebrow,
+  .hero-skeleton-title,
+  .hero-skeleton-tagline,
+  .hero-skeleton-divider,
+  .hero-skeleton-label,
+  .hero-skeleton-spinner {
+    animation: none;
   }
 }
