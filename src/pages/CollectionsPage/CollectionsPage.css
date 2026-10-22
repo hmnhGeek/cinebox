@@ -621,3 +621,67 @@
     width: 220px;
   }
 }
+
+/* Compact collection cards */
+.collections-grid {
+  grid-template-columns: repeat(auto-fill, 260px);
+  gap: 18px;
+  align-items: start;
+}
+
+.collection-card {
+  width: 260px;
+  max-width: 100%;
+  border-radius: 13px;
+}
+
+.collection-card-link {
+  padding: 18px 20px;
+}
+
+.collection-card-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+}
+
+.collection-card-info {
+  margin-top: 15px;
+}
+
+.collection-card-info h3 {
+  font-size: 19px;
+  line-height: 1.3;
+}
+
+.collection-folder {
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  font-size: 12px;
+}
+
+.collection-card-actions {
+  right: 8px;
+  bottom: 7px;
+}
+
+.collection-menu-trigger {
+  width: 32px;
+  height: 30px;
+}
+
+/* Keep cards usable on narrow screens */
+@media (max-width: 280px) {
+  .collections-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .collection-card {
+    width: 100%;
+  }
+
+  .collection-card-link {
+    padding: 16px;
+  }
+}
