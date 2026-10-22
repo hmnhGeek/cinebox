@@ -54,6 +54,28 @@ const CollectionsPage = () => {
     loadCollections();
   }, []);
 
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (!event.target.closest(".collection-card-actions")) {
+        setOpenMenuId(null);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setOpenMenuId(null);
+      }
+    };
+
+    document.addEventListener("click", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("click", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
   const handleCreateCollection = async (request) => {
     try {
       const collection = await createCollection(request);
