@@ -1,42 +1,27 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { LoaderCircle } from "lucide-react";
 import VideoGrid from "../../components/videoGrid/VideoGrid";
 import {
   getCollectionVideos,
   getAllCollectionById,
 } from "../../service/collectionApi";
-import { useSync } from "../../context/SyncContext";
-import SyncModal from "../../components/SyncModal/SyncModal";
 
 import "./CollectionsVideoPage.css";
 import "./LibraryHero.css";
 import libhero from "../../assets/libhero.jpg";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "");
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(
+  /\/$/,
+  "",
+);
 
 const CollectionVideosPage = () => {
   const { id } = useParams();
 
-  const {
-    syncStatusByCollection,
-    syncProgressByCollection,
-    hasReceivedProgressByCollection,
-    errorByCollection,
-    isSyncModalOpen,
-    setIsSyncModalOpen,
-    startSynchronization,
-  } = useSync();
-
-  const syncStatus = syncStatusByCollection[String(id)] ?? "IDLE";
-  const syncProgress = syncProgressByCollection[String(id)] ?? {};
-  const hasReceivedProgress =
-    hasReceivedProgressByCollection[String(id)] ?? false;
-  const error = errorByCollection[String(id)] ?? null;
-
   const [videos, setVideos] = useState([]);
   const [collection, setCollection] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
 
   const isMounted = useRef(true);
@@ -53,7 +38,9 @@ const CollectionVideosPage = () => {
     if (!isMounted.current) return;
 
     setLoading(true);
+    setLoadError(null);
     setCollection(null);
+    setVideos([]);
     setHeroImageLoaded(false);
 
     try {
@@ -74,6 +61,10 @@ const CollectionVideosPage = () => {
       setCollection(currentCollection);
     } catch (err) {
       console.error("Failed to load collection:", err);
+
+      if (isMounted.current) {
+        setLoadError("Failed to load collection. Please try again.");
+      }
     } finally {
       if (isMounted.current) {
         setLoading(false);
@@ -84,10 +75,6 @@ const CollectionVideosPage = () => {
   useEffect(() => {
     loadCollection();
   }, [loadCollection]);
-
-  const handleSynchronize = () => {
-    startSynchronization(id, loadCollection, true);
-  };
 
   // Never display an image belonging to the previous collection.
   const activeCollection =
@@ -178,40 +165,15 @@ const CollectionVideosPage = () => {
           )}
         </section>
 
-        {activeCollection && (
-          <div className="collection-videos-heading">
-            <button className="app-level-button" onClick={handleSynchronize}>
-              {syncStatus === "QUEUED" || syncStatus === "IN_PROGRESS" ? (
-                <>
-                  <LoaderCircle className="syncing-button-loader" size={21} />
-                  Synchronizing...
-                </>
-              ) : (
-                <>⟳ Synchronize</>
-              )}
-            </button>
-          </div>
-        )}
-
-        <SyncModal
-          isOpen={isSyncModalOpen}
-          onClose={() => setIsSyncModalOpen(false)}
-          syncProgress={syncProgress}
-          syncStatus={syncStatus}
-          hasReceivedProgress={hasReceivedProgress}
-          error={error}
-          collectionId={id}
-        />
-
         {loading && <div className="loading">Loading videos...</div>}
 
-        {error && !isSyncModalOpen && <div className="error">{error}</div>}
+        {!loading && loadError && <div className="error">{loadError}</div>}
 
-        {!loading && !error && videos.length === 0 && (
+        {!loading && !loadError && videos.length === 0 && (
           <div className="empty-state">No videos found in this collection.</div>
         )}
 
-        {!loading && !error && videos.length > 0 && (
+        {!loading && !loadError && videos.length > 0 && (
           <VideoGrid videos={videos} collectionId={id} />
         )}
       </main>

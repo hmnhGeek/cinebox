@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { MoreHorizontal, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import {
   getAllCollections,
   createCollection,
@@ -36,7 +36,6 @@ const CollectionsPage = () => {
   const [loading, setLoading] = useState(true);
   const [isCollectionModalOpen, setCollectionModalOpen] = useState(false);
   const [error, setError] = useState(null);
-  const [openMenuId, setOpenMenuId] = useState(null);
 
   useEffect(() => {
     async function loadCollections() {
@@ -52,28 +51,6 @@ const CollectionsPage = () => {
     }
 
     loadCollections();
-  }, []);
-
-  useEffect(() => {
-    const handleOutsideClick = (event) => {
-      if (!event.target.closest(".collection-card-actions")) {
-        setOpenMenuId(null);
-      }
-    };
-
-    const handleEscape = (event) => {
-      if (event.key === "Escape") {
-        setOpenMenuId(null);
-      }
-    };
-
-    document.addEventListener("click", handleOutsideClick);
-    document.addEventListener("keydown", handleEscape);
-
-    return () => {
-      document.removeEventListener("click", handleOutsideClick);
-      document.removeEventListener("keydown", handleEscape);
-    };
   }, []);
 
   const handleCreateCollection = async (request) => {
@@ -92,7 +69,6 @@ const CollectionsPage = () => {
     event.preventDefault();
     event.stopPropagation();
 
-    setOpenMenuId(null);
     startSynchronization(collection.id, () => {}, true);
   };
 
@@ -119,8 +95,6 @@ const CollectionsPage = () => {
       setCollections((previous) =>
         previous.filter((item) => item.id !== collection.id),
       );
-
-      setOpenMenuId((current) => (current === collection.id ? null : current));
 
       cineToast.success(`"${collection.title}" deleted successfully.`, {
         title: "Collection deleted",
@@ -256,45 +230,15 @@ const CollectionsPage = () => {
                     </div>
                   </Link>
 
-                  <div className="collection-card-actions">
-                    <button
-                      type="button"
-                      className="collection-menu-trigger"
-                      aria-label={`Options for ${collection.title}`}
-                      aria-expanded={openMenuId === collection.id}
-                      title="Collection options"
-                      onClick={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-
-                        setOpenMenuId((current) =>
-                          current === collection.id ? null : collection.id,
-                        );
-                      }}
-                    >
-                      <MoreHorizontal size={19} strokeWidth={1.8} />
-                    </button>
-
-                    {openMenuId === collection.id && (
-                      <div
-                        className="collection-context-menu"
-                        role="menu"
-                        onClick={(event) => event.stopPropagation()}
-                      >
-                        <button
-                          type="button"
-                          className="collection-menu-item"
-                          role="menuitem"
-                          onClick={(event) =>
-                            handleSynchronize(event, collection)
-                          }
-                        >
-                          <RefreshCw size={15} strokeWidth={1.8} />
-                          <span>Synchronize collection</span>
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  <button
+                    type="button"
+                    className="synchronize-collection-button"
+                    aria-label={`Synchronize ${collection.title}`}
+                    title="Synchronize collection"
+                    onClick={(event) => handleSynchronize(event, collection)}
+                  >
+                    <RefreshCw size={17} strokeWidth={1.7} />
+                  </button>
 
                   <button
                     type="button"
