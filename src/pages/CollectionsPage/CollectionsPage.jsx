@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { MoreHorizontal, RefreshCw } from "lucide-react";
 import {
   getAllCollections,
   createCollection,
@@ -35,6 +36,7 @@ const CollectionsPage = () => {
   const [loading, setLoading] = useState(true);
   const [isCollectionModalOpen, setCollectionModalOpen] = useState(false);
   const [error, setError] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
 
   useEffect(() => {
     async function loadCollections() {
@@ -64,6 +66,14 @@ const CollectionsPage = () => {
     }
   };
 
+  const handleSynchronize = (event, collection) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    setOpenMenuId(null);
+    startSynchronization(collection.id, () => {}, true);
+  };
+
   const handleDeleteCollection = async (event, collection) => {
     event.preventDefault();
     event.stopPropagation();
@@ -87,6 +97,8 @@ const CollectionsPage = () => {
       setCollections((previous) =>
         previous.filter((item) => item.id !== collection.id),
       );
+
+      setOpenMenuId((current) => (current === collection.id ? null : current));
 
       cineToast.success(`"${collection.title}" deleted successfully.`, {
         title: "Collection deleted",
@@ -149,11 +161,14 @@ const CollectionsPage = () => {
             <div className="empty-icon-tile">
               <CollectionIcon />
             </div>
+
             <h2>Your library starts here</h2>
+
             <p>
               Create your first collection to bring your movie library together
               in one place.
             </p>
+
             <button
               type="button"
               className="app-level-button collections-empty-button"
@@ -172,6 +187,7 @@ const CollectionsPage = () => {
           >
             <div className="collections-section-heading">
               <h2>All collections</h2>
+
               <span className="collections-count">
                 {collections.length}{" "}
                 {collections.length === 1 ? "collection" : "collections"}
@@ -194,6 +210,7 @@ const CollectionsPage = () => {
 
                     <div className="collection-card-info">
                       <h3 title={collection.title}>{collection.title}</h3>
+
                       <p
                         className="collection-folder"
                         title={collection.folder}
@@ -211,10 +228,51 @@ const CollectionsPage = () => {
                         >
                           <path d="M3 7.5A1.5 1.5 0 0 1 4.5 6H10l2 2h7.5A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z" />
                         </svg>
+
                         <span>{collection.folder}</span>
                       </p>
                     </div>
                   </Link>
+
+                  <div className="collection-card-actions">
+                    <button
+                      type="button"
+                      className="collection-menu-trigger"
+                      aria-label={`Options for ${collection.title}`}
+                      aria-expanded={openMenuId === collection.id}
+                      title="Collection options"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+
+                        setOpenMenuId((current) =>
+                          current === collection.id ? null : collection.id,
+                        );
+                      }}
+                    >
+                      <MoreHorizontal size={19} strokeWidth={1.8} />
+                    </button>
+
+                    {openMenuId === collection.id && (
+                      <div
+                        className="collection-context-menu"
+                        role="menu"
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <button
+                          type="button"
+                          className="collection-menu-item"
+                          role="menuitem"
+                          onClick={(event) =>
+                            handleSynchronize(event, collection)
+                          }
+                        >
+                          <RefreshCw size={15} strokeWidth={1.8} />
+                          <span>Synchronize collection</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
 
                   <button
                     type="button"

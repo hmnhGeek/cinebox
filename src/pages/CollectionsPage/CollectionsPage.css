@@ -630,3 +630,106 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Collection actions — added without changing card dimensions */
+
+.collection-card-actions {
+  position: absolute;
+  top: 12px;
+  right: 49px;
+  z-index: 5;
+}
+
+.collection-menu-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 31px;
+  height: 31px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: rgba(20, 20, 19, 0.94);
+  color: var(--cb-text-secondary);
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease;
+}
+
+.collection-menu-trigger:hover,
+.collection-menu-trigger[aria-expanded="true"] {
+  border-color: rgba(196, 166, 106, 0.3);
+  background: var(--cb-gold-soft);
+  color: var(--cb-gold-light);
+}
+
+.collection-menu-trigger:focus-visible,
+.collection-menu-item:focus-visible {
+  outline: 2px solid var(--cb-gold);
+  outline-offset: 2px;
+}
+
+.collection-context-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  width: 220px;
+  padding: 5px;
+  border: 1px solid #403b30;
+  border-radius: 10px;
+  background: #201f1c;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  animation: collection-menu-enter 140ms ease-out;
+}
+
+.collection-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #e7e3da;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+}
+
+.collection-menu-item svg {
+  flex-shrink: 0;
+  color: var(--cb-gold);
+}
+
+.collection-menu-item:hover {
+  background: rgba(196, 166, 106, 0.1);
+  color: var(--cb-gold-light);
+}
+
+@keyframes collection-menu-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collection-context-menu {
+    animation: none;
+  }
+}
