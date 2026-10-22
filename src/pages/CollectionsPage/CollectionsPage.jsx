@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { MoreHorizontal, RefreshCw, Trash2, LoaderCircle } from "lucide-react";
+
 import {
   getAllCollections,
   createCollection,
   deleteCollection,
 } from "../../service/collectionApi";
+
 import CreateCollectionModal from "../../components/CreateCollectionModal/CreateCollectionModal";
+import SyncModal from "../../components/SyncModal/SyncModal";
 import { useSync } from "../../context/SyncContext";
 import cineToast from "../../components/CineToast/CineToast";
 import "./CollectionsPage.css";
@@ -29,20 +33,31 @@ const CollectionIcon = () => (
 );
 
 const CollectionsPage = () => {
-  const { checkSyncInProgress, startSynchronization } = useSync();
+  const {
+    checkSyncInProgress,
+    startSynchronization,
+    syncStatusByCollection,
+    syncProgressByCollection,
+    hasReceivedProgressByCollection,
+    errorByCollection,
+    isSyncModalOpen,
+    setIsSyncModalOpen,
+  } = useSync();
 
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isCollectionModalOpen, setCollectionModalOpen] = useState(false);
   const [error, setError] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const [syncCollectionId, setSyncCollectionId] = useState(null);
 
   useEffect(() => {
     async function loadCollections() {
       try {
         const data = await getAllCollections();
         setCollections(data);
-      } catch (error) {
-        console.error(error);
+      } catch (err) {
+        console.error(err);
         setError("Failed to load collections.");
       } finally {
         setLoading(false);
@@ -52,21 +67,98 @@ const CollectionsPage = () => {
     loadCollections();
   }, []);
 
+  // Close the card menu when clicking elsewhere or pressing Escape.
+  useEffect(() => {
+    if (!openMenuId) return;
+
+    const handlePointerDown = (event) => {
+      if (!event.target.closest(".collection-card-actions")) {
+        setOpenMenuId(null);
+      }
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setOpenMenuId(null);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [openMenuId]);
+
   const handleCreateCollection = async (request) => {
     try {
       const collection = await createCollection(request);
       setCollections((previous) => [...previous, collection]);
-      startSynchronization(collection.id, () => {}, false);
+
+      // Catalog sync is started by the backend when the collection is created.
+      // Do not start a second sync here.
       setCollectionModalOpen(false);
-    } catch (error) {
-      console.error("Failed to create collection:", error);
-      throw error;
+    } catch (err) {
+      console.error("Failed to create collection:", err);
+      throw err;
+    }
+  };
+
+  const handleSynchronizeCollection = async (event, collection) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    setOpenMenuId(null);
+
+    const status = syncStatusByCollection[String(collection.id)];
+
+    if (status === "QUEUED" || status === "IN_PROGRESS") {
+      cineToast.error(`"${collection.title}" is already being synchronized.`, {
+        title: "Synchronization in progress",
+        duration: 4000,
+      });
+      return;
+    }
+
+    try {
+      // Check the existing sync context before starting another sync.
+      const isSyncing = await checkSyncInProgress(collection.id);
+
+      if (isSyncing) {
+        cineToast.error(
+          `"${collection.title}" is already being synchronized.`,
+          {
+            title: "Synchronization in progress",
+            duration: 4000,
+          },
+        );
+        return;
+      }
+
+      setSyncCollectionId(String(collection.id));
+
+      // Reuse the existing progress tracking and SyncModal.
+      startSynchronization(collection.id, () => {}, true);
+    } catch (err) {
+      console.error("Failed to start collection synchronization:", err);
+
+      cineToast.error(
+        err.message || "Failed to start collection synchronization.",
+        {
+          title: "Synchronization failed",
+          duration: 5000,
+        },
+      );
     }
   };
 
   const handleDeleteCollection = async (event, collection) => {
     event.preventDefault();
     event.stopPropagation();
+
+    setOpenMenuId(null);
 
     try {
       const isSyncing = await checkSyncInProgress(collection.id);
@@ -91,14 +183,22 @@ const CollectionsPage = () => {
       cineToast.success(`"${collection.title}" deleted successfully.`, {
         title: "Collection deleted",
       });
-    } catch (error) {
-      console.error("Failed to delete collection:", error);
-      cineToast.error(error.message || "Failed to delete collection.", {
+    } catch (err) {
+      console.error("Failed to delete collection:", err);
+
+      cineToast.error(err.message || "Failed to delete collection.", {
         title: "Couldn't delete collection",
         duration: 5000,
       });
     }
   };
+
+  const activeSyncId = String(syncCollectionId ?? "");
+  const syncStatus = syncStatusByCollection[activeSyncId] ?? "IDLE";
+  const syncProgress = syncProgressByCollection[activeSyncId] ?? {};
+  const hasReceivedProgress =
+    hasReceivedProgressByCollection[activeSyncId] ?? false;
+  const syncError = errorByCollection[activeSyncId] ?? null;
 
   return (
     <div className="app collections-page">
@@ -106,6 +206,16 @@ const CollectionsPage = () => {
         isOpen={isCollectionModalOpen}
         onClose={() => setCollectionModalOpen(false)}
         onCreate={handleCreateCollection}
+      />
+
+      <SyncModal
+        isOpen={isSyncModalOpen}
+        onClose={() => setIsSyncModalOpen(false)}
+        syncProgress={syncProgress}
+        syncStatus={syncStatus}
+        hasReceivedProgress={hasReceivedProgress}
+        error={syncError}
+        collectionId={activeSyncId}
       />
 
       <main className="content collections-content">
@@ -179,67 +289,125 @@ const CollectionsPage = () => {
             </div>
 
             <div className="collections-grid">
-              {collections.map((collection) => (
-                <article className="collection-card" key={collection.id}>
-                  <Link
-                    className="collection-card-link"
-                    to={`/collections/${collection.id}`}
-                    aria-label={`Open collection ${collection.title}`}
-                  >
-                    <div className="collection-card-top">
-                      <div className="collection-card-icon">
-                        <CollectionIcon />
-                      </div>
-                    </div>
+              {collections.map((collection) => {
+                const status =
+                  syncStatusByCollection[String(collection.id)] ?? "IDLE";
 
-                    <div className="collection-card-info">
-                      <h3 title={collection.title}>{collection.title}</h3>
-                      <p
-                        className="collection-folder"
-                        title={collection.folder}
-                      >
-                        <svg
-                          viewBox="0 0 24 24"
-                          width="14"
-                          height="14"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.7"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d="M3 7.5A1.5 1.5 0 0 1 4.5 6H10l2 2h7.5A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z" />
-                        </svg>
-                        <span>{collection.folder}</span>
-                      </p>
-                    </div>
-                  </Link>
+                const isSyncing =
+                  status === "QUEUED" || status === "IN_PROGRESS";
 
-                  <button
-                    type="button"
-                    className="delete-collection-button"
-                    aria-label={`Delete ${collection.title}`}
-                    title="Delete collection"
-                    onClick={(event) =>
-                      handleDeleteCollection(event, collection)
-                    }
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      width="17"
-                      height="17"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.7"
-                      strokeLinecap="round"
-                      aria-hidden="true"
+                const isMenuOpen = openMenuId === String(collection.id);
+
+                return (
+                  <article className="collection-card" key={collection.id}>
+                    <Link
+                      className="collection-card-link"
+                      to={`/collections/${collection.id}`}
+                      aria-label={`Open collection ${collection.title}`}
                     >
-                      <path d="M4 7h16M10 11v6m4-6v6M5.5 7l1 13h11l1-13M9 7V4h6v3" />
-                    </svg>
-                  </button>
-                </article>
-              ))}
+                      <div className="collection-card-top">
+                        <div className="collection-card-icon">
+                          <CollectionIcon />
+                        </div>
+                      </div>
+
+                      <div className="collection-card-info">
+                        <h3 title={collection.title}>{collection.title}</h3>
+                        <p
+                          className="collection-folder"
+                          title={collection.folder}
+                        >
+                          <svg
+                            viewBox="0 0 24 24"
+                            width="14"
+                            height="14"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.7"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path d="M3 7.5A1.5 1.5 0 0 1 4.5 6H10l2 2h7.5A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z" />
+                          </svg>
+                          <span>{collection.folder}</span>
+                        </p>
+                      </div>
+                    </Link>
+
+                    <div className="collection-card-actions">
+                      <button
+                        type="button"
+                        className={`collection-menu-trigger ${
+                          isMenuOpen ? "is-open" : ""
+                        }`}
+                        aria-label={`More actions for ${collection.title}`}
+                        aria-haspopup="menu"
+                        aria-expanded={isMenuOpen}
+                        title="Collection options"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+
+                          setOpenMenuId((current) =>
+                            current === String(collection.id)
+                              ? null
+                              : String(collection.id),
+                          );
+                        }}
+                      >
+                        <MoreHorizontal size={20} strokeWidth={2} />
+                      </button>
+
+                      {isMenuOpen && (
+                        <div
+                          className="collection-context-menu"
+                          role="menu"
+                          aria-label={`${collection.title} actions`}
+                        >
+                          <button
+                            type="button"
+                            className="collection-menu-item"
+                            role="menuitem"
+                            disabled={isSyncing}
+                            onClick={(event) =>
+                              handleSynchronizeCollection(event, collection)
+                            }
+                          >
+                            {isSyncing ? (
+                              <LoaderCircle
+                                size={16}
+                                className="collection-menu-spinner"
+                              />
+                            ) : (
+                              <RefreshCw size={16} />
+                            )}
+                            <span>
+                              {isSyncing
+                                ? "Synchronizing..."
+                                : "Synchronize collection"}
+                            </span>
+                          </button>
+
+                          <div className="collection-menu-divider" />
+
+                          <button
+                            type="button"
+                            className="collection-menu-item collection-menu-item-danger"
+                            role="menuitem"
+                            onClick={(event) =>
+                              handleDeleteCollection(event, collection)
+                            }
+                          >
+                            <Trash2 size={16} />
+                            <span>Delete collection</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </section>
         )}
