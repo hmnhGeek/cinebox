@@ -673,3 +673,30 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+.synchronize-collection-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.sync-progress-circle {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.sync-progress-track {
+  stroke: currentColor;
+  opacity: 0.2;
+}
+
+.sync-progress-value {
+  stroke: var(--gold, #c4a66a);
+  transform: rotate(-90deg);
+  transform-origin: 12px 12px;
+  transition: stroke-dashoffset 300ms ease;
+}
+
+.synchronize-collection-button.is-syncing {
+  color: var(--gold, #c4a66a);
+}

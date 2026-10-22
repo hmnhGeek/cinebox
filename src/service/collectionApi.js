@@ -109,7 +109,7 @@ export const getPreviewProgress = async (previewPath) => {
 
 export const getSyncStatus = async (collectionId) => {
   const response = await fetch(
-    `${API_BASE_URL}/sync-status?collectionId=${collectionId}`,
+    `${API_BASE_URL}/sync-status?collectionId=${encodeURIComponent(collectionId)}`,
   );
   if (!response.ok) {
     throw new Error("Failed to fetch sync status.");
