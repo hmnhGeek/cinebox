@@ -364,8 +364,6 @@
     0 25px 65px rgba(0, 0, 0, 0.55),
     0 0 0 1px rgba(196, 166, 106, 0.04);
 
-  transform: perspective(1000px) rotateY(-3deg);
-
   transition:
     transform 250ms ease,
     box-shadow 250ms ease;
