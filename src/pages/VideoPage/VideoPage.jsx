@@ -156,14 +156,75 @@ function VideoPage() {
     Array.isArray(items) ? items.filter(Boolean) : [];
 
   if (loading) {
-    return <div className="video-page page-message">Loading movie...</div>;
+    return (
+      <main className="video-page page-message">
+        <div className="movie-load-state">
+          <span className="movie-load-spinner" aria-hidden="true" />
+          <span className="movie-load-eyebrow">CINEBOX</span>
+          <h1>Preparing your cinema</h1>
+          <p>Getting everything ready for you...</p>
+        </div>
+      </main>
+    );
   }
 
   if (error || !videoMetadata) {
     return (
-      <div className="video-page page-message">
-        {error || "Movie details are unavailable."}
-      </div>
+      <main className="video-page page-message">
+        <section className="movie-unavailable">
+          <div className="unavailable-icon" aria-hidden="true">
+            <svg
+              viewBox="0 0 48 48"
+              width="42"
+              height="42"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="7" y="10" width="34" height="28" rx="4" />
+              <path d="m18 10 5 7m8-7 5 7M7 24h34" />
+              <path d="M24 28v4m0 3h.01" />
+            </svg>
+          </div>
+
+          <span className="unavailable-eyebrow">A LITTLE DETOUR</span>
+
+          <h1>We couldn't find this movie</h1>
+
+          <p>
+            {error ||
+              "This movie's details are unavailable right now. It may have been moved or is temporarily inaccessible."}
+          </p>
+
+          <button
+            type="button"
+            className="unavailable-back-button"
+            onClick={handleBackToCollection}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="18"
+              height="18"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M19 12H5" />
+              <path d="m12 19-7-7 7-7" />
+            </svg>
+            <span>Back to videos</span>
+          </button>
+
+          <span className="unavailable-footnote">
+            YOUR PERSONAL CINEMA · CINEBOX
+          </span>
+        </section>
+      </main>
     );
   }
 
