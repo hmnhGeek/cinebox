@@ -59,9 +59,9 @@ export const getCollectionVideos = async (collectionId) => {
   return response.json();
 };
 
-export async function getVideoMetadata(collectionId, videoFolderPath) {
+export async function getVideoMetadata(mediaItemId) {
   const response = await fetch(
-    `${API_BASE_URL}/metadata?collectionId=${collectionId}&videoFolder=${encodeURIComponent(videoFolderPath)}`,
+    `${API_BASE_URL}/metadata?mediaItemId=${encodeURIComponent(mediaItemId)}`,
   );
 
   if (!response.ok) {
@@ -109,7 +109,7 @@ export const getPreviewProgress = async (previewPath) => {
 
 export const getSyncStatus = async (collectionId) => {
   const response = await fetch(
-    `${API_BASE_URL}/sync-status?collectionId=${collectionId}`,
+    `${API_BASE_URL}/sync-status?collectionId=${encodeURIComponent(collectionId)}`,
   );
   if (!response.ok) {
     throw new Error("Failed to fetch sync status.");

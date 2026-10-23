@@ -358,6 +358,50 @@
   white-space: nowrap;
 }
 
+/* Synchronize control */
+
+.synchronize-collection-button {
+  position: absolute;
+  top: 12px;
+  right: 49px;
+  z-index: 2;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 31px;
+  height: 31px;
+  padding: 0;
+
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: rgba(20, 20, 19, 0.94);
+  color: var(--cb-text-secondary);
+
+  cursor: pointer;
+
+  transition:
+    color 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease;
+}
+
+.synchronize-collection-button:hover {
+  border-color: rgba(196, 166, 106, 0.3);
+  background: var(--cb-gold-soft);
+  color: var(--cb-gold-light);
+}
+
+.synchronize-collection-button:active {
+  background: rgba(196, 166, 106, 0.18);
+}
+
+.synchronize-collection-button:focus-visible {
+  outline: 2px solid var(--cb-gold);
+  outline-offset: 2px;
+}
+
 /* Delete control */
 
 .delete-collection-button {
@@ -380,23 +424,14 @@
   color: var(--cb-text-secondary);
 
   cursor: pointer;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-
-  transition:
-    opacity 180ms ease,
-    visibility 180ms ease,
-    color 180ms ease,
-    background 180ms ease,
-    border-color 180ms ease;
-}
-
-.collection-card:hover .delete-collection-button,
-.collection-card:focus-within .delete-collection-button {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
+
+  transition:
+    color 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease;
 }
 
 .delete-collection-button:hover {
@@ -410,11 +445,15 @@
 }
 
 .delete-collection-button:focus-visible {
+  outline: 2px solid var(--cb-gold);
+  outline-offset: 2px;
+}
+
+.collection-card:hover .delete-collection-button,
+.collection-card:focus-within .delete-collection-button {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  outline: 2px solid var(--cb-gold);
-  outline-offset: 2px;
 }
 
 /* =========================================
@@ -556,6 +595,10 @@
     background: rgba(20, 20, 19, 0.94);
   }
 
+  .synchronize-collection-button {
+    background: rgba(20, 20, 19, 0.94);
+  }
+
   .collection-open-indicator {
     opacity: 1;
   }
@@ -629,4 +672,31 @@
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+.synchronize-collection-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.sync-progress-circle {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.sync-progress-track {
+  stroke: currentColor;
+  opacity: 0.2;
+}
+
+.sync-progress-value {
+  stroke: var(--gold, #c4a66a);
+  transform: rotate(-90deg);
+  transform-origin: 12px 12px;
+  transition: stroke-dashoffset 300ms ease;
+}
+
+.synchronize-collection-button.is-syncing {
+  color: var(--gold, #c4a66a);
 }
