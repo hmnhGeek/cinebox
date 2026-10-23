@@ -1,7 +1,13 @@
 import { useState } from "react";
 import "./VideoCard.css";
 
-function VideoCard({ video, thumbnailUrl, previewUrl, handleClick }) {
+function VideoCard({
+  video,
+  thumbnailUrl,
+  fallbackThumbnailUrl,
+  previewUrl,
+  handleClick,
+}) {
   const [isHovered, setIsHovered] = useState(false);
   const [previewReady, setPreviewReady] = useState(false);
 
@@ -12,6 +18,17 @@ function VideoCard({ video, thumbnailUrl, previewUrl, handleClick }) {
   const handleMouseLeave = () => {
     setIsHovered(false);
     setPreviewReady(false);
+  };
+
+  const handleThumbnailError = (event) => {
+    const image = event.currentTarget;
+
+    // Prevent repeated attempts if the fallback image also fails.
+    image.onerror = null;
+
+    if (image.src !== fallbackThumbnailUrl) {
+      image.src = fallbackThumbnailUrl;
+    }
   };
 
   return (
@@ -26,6 +43,7 @@ function VideoCard({ video, thumbnailUrl, previewUrl, handleClick }) {
           className={`video-thumbnail ${previewReady ? "hidden" : ""}`}
           src={thumbnailUrl}
           alt={video.title}
+          onError={handleThumbnailError}
         />
 
         {isHovered && (

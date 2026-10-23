@@ -39,6 +39,7 @@ function VideoGrid({ videos, collectionId }) {
             key={video.id ?? video.videoPath}
             video={video}
             thumbnailUrl={thumbnailUrl}
+            fallbackThumbnailUrl={libhero}
             previewUrl={previewUrl}
             handleClick={handleVideoClick}
           />
