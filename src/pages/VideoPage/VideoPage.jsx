@@ -7,7 +7,7 @@ import "./VideoPage.css";
 const API_BASE = `${import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")}/api/v1/collections`;
 
 function VideoPage() {
-  const { collectionId, videoFolderPath } = useParams();
+  const { collectionId, mediaItemId } = useParams();
   const navigate = useNavigate();
 
   const pageRef = useRef(null);
@@ -19,25 +19,23 @@ function VideoPage() {
   const [playError, setPlayError] = useState("");
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
 
-  const encodedFolder = encodeURIComponent(videoFolderPath || "");
+  const thumbnailUrl = videoMetadata?.thumbnailUrl
+    ? `${import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")}${videoMetadata.thumbnailUrl}`
+    : "";
 
-  const thumbnailUrl =
-    `${API_BASE}/thumbnail?collectionId=${collectionId}` +
-    `&videoFolder=${encodedFolder}`;
+  const posterUrl = mediaItemId
+    ? `${API_BASE}/poster` + `?mediaItemId=${encodeURIComponent(mediaItemId)}`
+    : null;
 
-  const posterUrl =
-    `${API_BASE}/poster?collectionId=${collectionId}` +
-    `&videoFolder=${encodedFolder}`;
-
-  const videoUrl =
-    `${API_BASE}/video?collectionId=${collectionId}` +
-    `&videoFolder=${encodedFolder}`;
+  const videoUrl = mediaItemId
+    ? `${API_BASE}/video` + `?mediaItemId=${encodeURIComponent(mediaItemId)}`
+    : null;
 
   const handleBackToCollection = useCallback(() => {
     navigate(`/collections/${collectionId}`);
   }, [navigate, collectionId]);
 
-  const handlePlay = useCallback(async () => {
+  const handlePlay = useCallback(() => {
     setPlayError("");
     setIsPlayerOpen(true);
   }, []);
@@ -62,8 +60,14 @@ function VideoPage() {
       setError("");
       setVideoMetadata(null);
 
+      if (!mediaItemId) {
+        setError("The movie ID is missing from the page URL.");
+        setLoading(false);
+        return;
+      }
+
       try {
-        const data = await getVideoMetadata(collectionId, videoFolderPath);
+        const data = await getVideoMetadata(mediaItemId);
 
         if (!cancelled) {
           setVideoMetadata(data);
@@ -86,9 +90,9 @@ function VideoPage() {
     return () => {
       cancelled = true;
     };
-  }, [collectionId, videoFolderPath]);
+  }, [mediaItemId]);
 
-  // Escape exits fullscreen. Close the overlay after fullscreen has ended.
+  // Close the player overlay when fullscreen ends.
   useEffect(() => {
     if (!isPlayerOpen) return;
 
@@ -105,7 +109,7 @@ function VideoPage() {
     };
   }, [isPlayerOpen]);
 
-  // Keep the background page from scrolling behind the player.
+  // Prevent the background page from scrolling behind the player.
   useEffect(() => {
     if (!isPlayerOpen) return;
 
@@ -117,11 +121,11 @@ function VideoPage() {
     };
   }, [isPlayerOpen]);
 
+  // Request fullscreen after the player has mounted.
   useEffect(() => {
     if (!isPlayerOpen) return;
 
     const enterFullscreen = async () => {
-      // Wait for React to mount the player.
       await new Promise((resolve) => requestAnimationFrame(resolve));
 
       const player = pageRef.current?.querySelector(".cine-player");
@@ -130,8 +134,8 @@ function VideoPage() {
 
       try {
         await player.requestFullscreen();
-      } catch (error) {
-        console.warn("Could not enter player fullscreen:", error);
+      } catch (err) {
+        console.warn("Could not enter player fullscreen:", err);
       }
     };
 

@@ -11,41 +11,32 @@ function VideoGrid({ videos, collectionId }) {
 
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "");
 
-  const getVideoFolder = (path) => {
-    if (!path) return null;
-
-    return path.split("\\").slice(-2, -1)[0] || null;
-  };
-
   const handleVideoClick = (video) => {
-    const videoFolder = getVideoFolder(video.videoPath);
+    if (!video.id) {
+      console.error("Cannot open movie: media item ID is missing.", video);
+      return;
+    }
 
-    if (!videoFolder) return;
-
-    navigate(`/videos/${collectionId}/${encodeURIComponent(videoFolder)}`);
+    navigate(
+      `/videos/${encodeURIComponent(collectionId)}/${encodeURIComponent(video.id)}`,
+    );
   };
 
   return (
     <div className="video-grid">
       {videos.map((video) => {
-        const thumbnailFolder = getVideoFolder(video.thumbnailPath);
-        const videoFolder = getVideoFolder(video.videoPath);
-
-        const thumbnailUrl = thumbnailFolder
-          ? `${apiBaseUrl}/api/v1/collections/thumbnail` +
-            `?collectionId=${encodeURIComponent(collectionId)}` +
-            `&videoFolder=${encodeURIComponent(thumbnailFolder)}`
+        const thumbnailUrl = video.thumbnailUrl
+          ? `${apiBaseUrl}${video.thumbnailUrl}`
           : libhero;
 
-        const previewUrl = videoFolder
+        const previewUrl = video.id
           ? `${apiBaseUrl}/api/v1/collections/preview` +
-            `?collectionId=${encodeURIComponent(collectionId)}` +
-            `&videoFolder=${encodeURIComponent(videoFolder)}`
+            `?mediaItemId=${encodeURIComponent(video.id)}`
           : null;
 
         return (
           <VideoCard
-            key={video.id}
+            key={video.id ?? video.videoPath}
             video={video}
             thumbnailUrl={thumbnailUrl}
             previewUrl={previewUrl}

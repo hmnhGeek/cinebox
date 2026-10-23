@@ -34,7 +34,7 @@ function App() {
         <Routes>
           <Route path="/" element={<CollectionsPage />} />
           <Route
-            path="/videos/:collectionId/:videoFolderPath"
+            path="/videos/:collectionId/:mediaItemId"
             element={<VideoPage />}
           />
           <Route path="/collections/:id" element={<CollectionVideosPage />} />
