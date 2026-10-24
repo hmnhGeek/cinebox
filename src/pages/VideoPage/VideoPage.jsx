@@ -51,7 +51,9 @@ function VideoPage() {
 
   const handleBackToCollection = useCallback(() => {
     if (discoveryReturnPath) {
-      navigate(discoveryReturnPath);
+      // Return to the previous history entry rather than pushing
+      // another copy of the Discovery route onto the history stack.
+      navigate(-1);
       return;
     }
 
