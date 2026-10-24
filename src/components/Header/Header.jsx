@@ -65,14 +65,22 @@ function Header() {
     (video) => {
       if (!video?.collectionId || !video?.mediaItemId) return;
 
+      const searchTerm = trimmedQuery;
+
       closeSuggestions();
       setQuery("");
 
       navigate(
         `/videos/${encodeURIComponent(video.collectionId)}/${encodeURIComponent(video.mediaItemId)}`,
+        {
+          state: {
+            fromSearch: true,
+            returnTo: `/search?q=${encodeURIComponent(searchTerm)}`,
+          },
+        },
       );
     },
-    [closeSuggestions, navigate],
+    [closeSuggestions, navigate, trimmedQuery],
   );
 
   const viewAllResults = useCallback(
@@ -116,6 +124,7 @@ function Header() {
       } catch (err) {
         if (requestId !== requestIdRef.current) return;
 
+        console.error("Failed to load search suggestions:", err);
         setSuggestions([]);
         setHasMore(false);
         setError("Search is temporarily unavailable.");

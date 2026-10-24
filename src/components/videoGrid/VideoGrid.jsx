@@ -2,7 +2,7 @@ import VideoCard from "../videoCard/VideoCard";
 import { useNavigate } from "react-router-dom";
 import libhero from "../../assets/libhero.jpg";
 
-function VideoGrid({ videos, collectionId }) {
+function VideoGrid({ videos, collectionId, returnTo }) {
   const navigate = useNavigate();
 
   if (!videos || videos.length === 0) {
@@ -27,6 +27,14 @@ function VideoGrid({ videos, collectionId }) {
 
     navigate(
       `/videos/${encodeURIComponent(targetCollectionId)}/${encodeURIComponent(video.id)}`,
+      {
+        state: returnTo
+          ? {
+              fromSearch: true,
+              returnTo,
+            }
+          : undefined,
+      },
     );
   };
 

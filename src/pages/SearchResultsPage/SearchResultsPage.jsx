@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { LoaderCircle, Search } from "lucide-react";
 import VideoGrid from "../../components/videoGrid/VideoGrid";
 import { getSearchResults } from "../../service/searchApis";
 import "./SearchResultsPage.css";
 
 function SearchResultsPage() {
+  const location = useLocation();
   const [searchParams] = useSearchParams();
+
   const query = (searchParams.get("q") || "").trim();
 
   const [page, setPage] = useState(0);
@@ -41,6 +43,7 @@ function SearchResultsPage() {
         }
       } catch (err) {
         if (!cancelled) {
+          console.error("Failed to load search results:", err);
           setError("We couldn't load your search results. Please try again.");
           setData(null);
         }
@@ -59,6 +62,9 @@ function SearchResultsPage() {
   }, [query, page, retryCount]);
 
   const videos = data?.content || [];
+
+  // Preserve the current search URL when opening a movie.
+  const returnTo = `${location.pathname}${location.search}`;
 
   return (
     <main className="search-results-page">
@@ -113,7 +119,7 @@ function SearchResultsPage() {
         </div>
       ) : (
         <>
-          <VideoGrid videos={videos} />
+          <VideoGrid videos={videos} returnTo={returnTo} />
 
           {data && data.totalPages > 1 && (
             <nav
