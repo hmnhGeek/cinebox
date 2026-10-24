@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createCollection } from "./service/collectionApi";
 import CollectionsPage from "./pages/CollectionsPage/CollectionsPage";
 import CollectionVideosPage from "./pages/CollectionsVideoPage/CollectionsVideoPage";
+import DiscoveryPage from "./pages/DiscoveryPage/DiscoveryPage";
 import Header from "./components/Header/Header";
 import { SyncProvider } from "./context/SyncContext";
 import { Toaster } from "react-hot-toast";
@@ -38,6 +39,7 @@ function App() {
             element={<VideoPage />}
           />
           <Route path="/collections/:id" element={<CollectionVideosPage />} />
+          <Route path="/discover/:type/:id" element={<DiscoveryPage />} />
         </Routes>
       </BrowserRouter>
     </SyncProvider>

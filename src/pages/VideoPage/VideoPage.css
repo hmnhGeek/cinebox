@@ -1056,3 +1056,151 @@
     transition: none;
   }
 }
+
+/* =========================================
+   CineBox — Clickable Discovery Metadata
+   ========================================= */
+
+.video-page .metadata-link {
+  display: inline;
+  padding: 0;
+  margin: 0;
+
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: inherit;
+
+  font: inherit;
+  text-align: inherit;
+  line-height: inherit;
+
+  cursor: pointer;
+
+  transition:
+    color 180ms ease,
+    background 180ms ease;
+}
+
+.video-page .metadata-link:hover:not(:disabled) {
+  color: var(--cb-gold-light);
+}
+
+.video-page .metadata-link:focus-visible {
+  outline: 1px solid var(--cb-gold);
+  outline-offset: 4px;
+}
+
+.video-page .metadata-link:disabled,
+.video-page .metadata-link-disabled {
+  cursor: default;
+}
+
+/* Genre links retain the existing separators and spacing. */
+
+.video-page .hero-genres .metadata-link {
+  color: #d0cbc1;
+  font-size: 13px;
+}
+
+.video-page .hero-genres .metadata-link:not(:last-child)::after {
+  content: "•";
+  margin-left: 9px;
+  color: var(--cb-gold);
+}
+
+.video-page .hero-genres .metadata-link:hover:not(:disabled) {
+  color: var(--cb-gold-light);
+}
+
+/* Tag links retain the existing tag-chip appearance. */
+
+.video-page .tag-list .metadata-link {
+  padding: 7px 12px;
+
+  border: 1px solid #403d35;
+  border-radius: 5px;
+
+  background: rgba(196, 166, 106, 0.055);
+  color: #c8c1b5;
+
+  font-size: 12px;
+
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.video-page .tag-list .metadata-link:hover:not(:disabled) {
+  border-color: var(--cb-border-hover);
+  background: var(--cb-gold-soft);
+  color: var(--cb-gold-light);
+}
+
+/* Actor cards remain visually identical, with a subtle interactive state. */
+
+.video-page .cast-card-discoverable {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.video-page .cast-card-discoverable .cast-avatar,
+.video-page .cast-card-discoverable .cast-name {
+  transition:
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.video-page .cast-card-discoverable:hover:not(:disabled) .cast-avatar {
+  border-color: var(--cb-gold);
+}
+
+.video-page .cast-card-discoverable:hover:not(:disabled) .cast-name {
+  color: var(--cb-gold-light);
+}
+
+.video-page .cast-card-discoverable:focus-visible {
+  outline: 1px solid var(--cb-gold);
+  outline-offset: 5px;
+  border-radius: 4px;
+}
+
+/* Studio links stay inline in the existing details grid. */
+
+.video-page .studio-link-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.video-page .studio-link-list .metadata-link {
+  color: #e2ddd4;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.video-page .studio-link-list .metadata-link:not(:last-child)::after {
+  content: ",";
+}
+
+.video-page .studio-link-list .metadata-link:hover:not(:disabled) {
+  color: var(--cb-gold-light);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .video-page .metadata-link,
+  .video-page .cast-card-discoverable .cast-avatar,
+  .video-page .cast-card-discoverable .cast-name {
+    transition: none;
+  }
+}

@@ -1,0 +1,340 @@
+.discovery-page {
+  min-height: calc(100vh - 80px);
+  padding: 36px 5% 64px;
+  background: #141413;
+  color: #f0eee8;
+}
+
+.discovery-header {
+  position: relative;
+  margin-bottom: 32px;
+}
+
+/* =========================================
+   Back Navigation — Matching Video Page
+   ========================================= */
+
+.discovery-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+
+  margin: 0 0 30px;
+  padding: 8px 0;
+
+  border: none;
+  background: transparent;
+  color: #a5a197;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.15px;
+
+  cursor: pointer;
+
+  transition:
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.discovery-back-button svg {
+  flex-shrink: 0;
+  color: #c4a66a;
+
+  transition: transform 180ms ease;
+}
+
+.discovery-back-button:hover {
+  color: #dec58e;
+  background: transparent;
+}
+
+.discovery-back-button:hover svg {
+  transform: translateX(-4px);
+}
+
+.discovery-back-button:focus-visible {
+  outline: 2px solid #c4a66a;
+  outline-offset: 5px;
+  border-radius: 3px;
+}
+
+/* =========================================
+   Discovery Heading
+   ========================================= */
+
+.discovery-heading {
+  min-width: 0;
+}
+
+.discovery-eyebrow {
+  display: inline-block;
+  margin-bottom: 10px;
+  color: #c4a66a;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.discovery-heading h1 {
+  margin: 0;
+  color: #f0eee8;
+  font-size: clamp(26px, 3vw, 36px);
+  font-weight: 600;
+  letter-spacing: -0.8px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.discovery-heading p {
+  margin: 10px 0 0;
+  color: #a5a197;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* =========================================
+   Result Count
+   ========================================= */
+
+.discovery-result-count {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 22px;
+  color: #a5a197;
+  font-size: 13px;
+}
+
+.discovery-result-number {
+  color: #dec58e;
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================================
+   Video Grid
+   ========================================= */
+
+.discovery-video-grid {
+  margin-top: 0;
+}
+
+/* =========================================
+   Loading and Empty States
+   ========================================= */
+
+.discovery-state {
+  display: flex;
+  min-height: 260px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 16px;
+  text-align: center;
+  color: #a5a197;
+}
+
+.discovery-state h2 {
+  margin: 0;
+  color: #f0eee8;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.discovery-state p {
+  max-width: 480px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.discovery-spinner {
+  color: #c4a66a;
+  animation: discovery-spin 1s linear infinite;
+}
+
+@keyframes discovery-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================
+   Error State
+   ========================================= */
+
+.discovery-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+
+  border: 1px solid #51352f;
+  border-radius: 10px;
+
+  background: #211a18;
+  color: #d9847c;
+
+  font-size: 14px;
+}
+
+.discovery-error p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.discovery-error button {
+  flex-shrink: 0;
+  padding: 8px 12px;
+
+  border: 1px solid #6b443c;
+  border-radius: 7px;
+
+  background: transparent;
+  color: #d9847c;
+
+  font: inherit;
+  cursor: pointer;
+
+  transition: background 180ms ease;
+}
+
+.discovery-error button:hover {
+  background: #30201d;
+}
+
+.discovery-error button:focus-visible {
+  outline: 2px solid #d9847c;
+  outline-offset: 3px;
+}
+
+/* =========================================
+   Pagination
+   ========================================= */
+
+.discovery-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 40px;
+}
+
+.discovery-page-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  min-height: 38px;
+  padding: 8px 13px;
+
+  border: 1px solid #35332e;
+  border-radius: 8px;
+
+  background: #1c1b19;
+  color: #f0eee8;
+
+  font: inherit;
+  font-size: 13px;
+
+  cursor: pointer;
+
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    color 180ms ease;
+}
+
+.discovery-page-button:hover:not(:disabled) {
+  border-color: #c4a66a;
+  background: #23221f;
+  color: #dec58e;
+}
+
+.discovery-page-button:focus-visible {
+  outline: 2px solid #c4a66a;
+  outline-offset: 3px;
+}
+
+.discovery-page-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.discovery-page-indicator {
+  color: #a5a197;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.discovery-page-indicator strong {
+  color: #dec58e;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================================
+   Desktop
+   ========================================= */
+
+@media (min-width: 1200px) {
+  .discovery-result-count {
+    margin-top: 18px;
+  }
+}
+
+/* =========================================
+   Mobile
+   ========================================= */
+
+@media (max-width: 640px) {
+  .discovery-page {
+    padding: 24px 16px 44px;
+  }
+
+  .discovery-header {
+    margin-bottom: 24px;
+  }
+
+  .discovery-back-button {
+    margin-bottom: 24px;
+    font-size: 13px;
+  }
+
+  .discovery-heading h1 {
+    font-size: 28px;
+  }
+
+  .discovery-pagination {
+    gap: 12px;
+    margin-top: 30px;
+  }
+
+  .discovery-page-button {
+    gap: 4px;
+    padding: 8px 10px;
+  }
+}
+
+/* =========================================
+   Reduced Motion
+   ========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .discovery-back-button,
+  .discovery-back-button svg,
+  .discovery-page-button,
+  .discovery-error button {
+    transition: none;
+  }
+
+  .discovery-spinner {
+    animation: none;
+  }
+}
