@@ -69,10 +69,8 @@ function SearchResultsPage() {
         </div>
 
         <h1>
-          Search results
-          {query && (
-            <span className="search-results-query"> for “{query}”</span>
-          )}
+          Search results for
+          {query && <span className="search-results-query"> “{query}”</span>}
         </h1>
 
         <p className="search-results-subtitle">
