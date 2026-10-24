@@ -159,6 +159,15 @@ function VideoPage() {
   const displayList = (items) =>
     Array.isArray(items) ? items.filter(Boolean) : [];
 
+  // Support both the previous string format and the new ID/name DTO format.
+  const getItemName = (item) =>
+    typeof item === "string" ? item : item?.name || "";
+
+  const getItemKey = (item, index) =>
+    typeof item === "string"
+      ? `${item}-${index}`
+      : `${item?.id || getItemName(item)}-${index}`;
+
   if (loading) {
     return (
       <main className="video-page page-message">
@@ -319,8 +328,10 @@ function VideoPage() {
 
             {genres.length > 0 && (
               <div className="hero-genres">
-                {genres.map((genre) => (
-                  <span key={genre}>{genre}</span>
+                {genres.map((genre, index) => (
+                  <span key={getItemKey(genre, index)}>
+                    {getItemName(genre)}
+                  </span>
                 ))}
               </div>
             )}
@@ -395,7 +406,10 @@ function VideoPage() {
 
               <div className="cast-grid">
                 {actors.map((actor, index) => (
-                  <div className="cast-card" key={`${actor.name}-${index}`}>
+                  <div
+                    className="cast-card"
+                    key={actor.id || `${actor.name}-${index}`}
+                  >
                     <div className="cast-avatar">
                       {(actor.name || "?").charAt(0)}
                     </div>
@@ -419,14 +433,18 @@ function VideoPage() {
               {directors.length > 0 && (
                 <div className="detail-row">
                   <span>Director</span>
-                  <strong>{directors.join(", ")}</strong>
+                  <strong>
+                    {directors.map(getItemName).filter(Boolean).join(", ")}
+                  </strong>
                 </div>
               )}
 
               {writers.length > 0 && (
                 <div className="detail-row">
                   <span>Writer</span>
-                  <strong>{writers.join(", ")}</strong>
+                  <strong>
+                    {writers.map(getItemName).filter(Boolean).join(", ")}
+                  </strong>
                 </div>
               )}
             </div>
@@ -453,7 +471,9 @@ function VideoPage() {
                 ],
                 [
                   "Studio",
-                  studios.length > 0 ? studios.join(", ") : metadata.studio,
+                  studios.length > 0
+                    ? studios.map(getItemName).filter(Boolean).join(", ")
+                    : getItemName(metadata.studio),
                 ],
               ]
                 .filter(([, value]) => value != null && value !== "")
@@ -471,8 +491,8 @@ function VideoPage() {
               <h2>Tags</h2>
 
               <div className="tag-list">
-                {tags.map((tag) => (
-                  <span key={tag}>{tag}</span>
+                {tags.map((tag, index) => (
+                  <span key={getItemKey(tag, index)}>{getItemName(tag)}</span>
                 ))}
               </div>
             </div>
