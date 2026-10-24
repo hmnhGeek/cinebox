@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getVideoMetadata } from "../../service/collectionApi";
 import VideoPlayer from "../../components/VideoPlayer/VideoPlayer";
 import "./VideoPage.css";
 
-const API_BASE = `${import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")}/api/v1/collections`;
+const API_BASE = `${(import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "")}/api/v1/collections`;
 
 function VideoPage() {
   const { collectionId, mediaItemId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const pageRef = useRef(null);
   const lastPlaybackTimeRef = useRef(0);
@@ -19,21 +20,45 @@ function VideoPage() {
   const [playError, setPlayError] = useState("");
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
 
+  // Use the originating discovery route when available.
+  const discoveryReturnPath =
+    location.state?.from?.type === "discovery" &&
+    typeof location.state.from.pathname === "string" &&
+    location.state.from.pathname.startsWith("/") &&
+    !location.state.from.pathname.startsWith("//")
+      ? `${location.state.from.pathname}${
+          typeof location.state.from.search === "string"
+            ? location.state.from.search
+            : ""
+        }`
+      : null;
+
+  const backLabel = discoveryReturnPath
+    ? "Back to Discovery"
+    : "Back to Collection";
+
   const thumbnailUrl = videoMetadata?.thumbnailUrl
-    ? `${import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")}${videoMetadata.thumbnailUrl}`
+    ? `${(import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "")}${videoMetadata.thumbnailUrl}`
     : "";
 
   const posterUrl = mediaItemId
-    ? `${API_BASE}/poster` + `?mediaItemId=${encodeURIComponent(mediaItemId)}`
+    ? `${API_BASE}/poster?mediaItemId=${encodeURIComponent(mediaItemId)}`
     : null;
 
   const videoUrl = mediaItemId
-    ? `${API_BASE}/video` + `?mediaItemId=${encodeURIComponent(mediaItemId)}`
+    ? `${API_BASE}/video?mediaItemId=${encodeURIComponent(mediaItemId)}`
     : null;
 
   const handleBackToCollection = useCallback(() => {
-    navigate(`/collections/${collectionId}`);
-  }, [navigate, collectionId]);
+    if (discoveryReturnPath) {
+      // Return to the previous history entry rather than pushing
+      // another copy of the Discovery route onto the history stack.
+      navigate(-1);
+      return;
+    }
+
+    navigate(`/collections/${encodeURIComponent(collectionId)}`);
+  }, [navigate, collectionId, discoveryReturnPath]);
 
   const handlePlay = useCallback(() => {
     setPlayError("");
@@ -51,6 +76,16 @@ function VideoPage() {
       }
     }
   }, []);
+
+  // Open discovery results using the metadata entity's stable ID.
+  const handleDiscover = useCallback(
+    (type, item) => {
+      if (!item || typeof item !== "object" || !item.id) return;
+
+      navigate(`/discover/${type}/${encodeURIComponent(item.id)}`);
+    },
+    [navigate],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -159,7 +194,7 @@ function VideoPage() {
   const displayList = (items) =>
     Array.isArray(items) ? items.filter(Boolean) : [];
 
-  // Support both the previous string format and the new ID/name DTO format.
+  // Support both the previous string format and the ID/name DTO format.
   const getItemName = (item) =>
     typeof item === "string" ? item : item?.name || "";
 
@@ -167,6 +202,31 @@ function VideoPage() {
     typeof item === "string"
       ? `${item}-${index}`
       : `${item?.id || getItemName(item)}-${index}`;
+
+  const renderDiscoverableList = (items, type) =>
+    items.map((item, index) => {
+      const name = getItemName(item);
+      const hasId = typeof item === "object" && Boolean(item?.id);
+
+      if (!name) return null;
+
+      return (
+        <button
+          type="button"
+          key={getItemKey(item, index)}
+          className={`metadata-link${hasId ? "" : " metadata-link-disabled"}`}
+          onClick={() => handleDiscover(type, item)}
+          disabled={!hasId}
+          aria-label={
+            hasId
+              ? `Explore movies ${type === "actors" ? "featuring" : "associated with"} ${name}`
+              : undefined
+          }
+        >
+          {name}
+        </button>
+      );
+    });
 
   if (loading) {
     return (
@@ -203,7 +263,6 @@ function VideoPage() {
           </div>
 
           <span className="unavailable-eyebrow">A LITTLE DETOUR</span>
-
           <h1>We couldn't find this movie</h1>
 
           <p>
@@ -215,6 +274,7 @@ function VideoPage() {
             type="button"
             className="unavailable-back-button"
             onClick={handleBackToCollection}
+            aria-label={backLabel}
           >
             <svg
               viewBox="0 0 24 24"
@@ -230,7 +290,7 @@ function VideoPage() {
               <path d="M19 12H5" />
               <path d="m12 19-7-7 7-7" />
             </svg>
-            <span>Back to videos</span>
+            <span>{backLabel}</span>
           </button>
 
           <span className="unavailable-footnote">
@@ -248,6 +308,10 @@ function VideoPage() {
   const directors = displayList(metadata.directors);
   const writers = displayList(metadata.writers);
   const studios = displayList(metadata.studios);
+  const primaryStudio = metadata.studio;
+
+  const allStudios =
+    studios.length > 0 ? studios : primaryStudio ? [primaryStudio] : [];
 
   return (
     <main
@@ -293,7 +357,7 @@ function VideoPage() {
               type="button"
               className="back-to-collection"
               onClick={handleBackToCollection}
-              aria-label="Back to collection"
+              aria-label={backLabel}
             >
               <svg
                 viewBox="0 0 24 24"
@@ -309,7 +373,7 @@ function VideoPage() {
                 <path d="M19 12H5" />
                 <path d="m12 19-7-7 7-7" />
               </svg>
-              <span>Back to Collection</span>
+              <span>{backLabel}</span>
             </button>
 
             <div className="eyebrow">
@@ -328,11 +392,7 @@ function VideoPage() {
 
             {genres.length > 0 && (
               <div className="hero-genres">
-                {genres.map((genre, index) => (
-                  <span key={getItemKey(genre, index)}>
-                    {getItemName(genre)}
-                  </span>
-                ))}
+                {renderDiscoverableList(genres, "genres")}
               </div>
             )}
 
@@ -405,23 +465,36 @@ function VideoPage() {
               <h2>Cast</h2>
 
               <div className="cast-grid">
-                {actors.map((actor, index) => (
-                  <div
-                    className="cast-card"
-                    key={actor.id || `${actor.name}-${index}`}
-                  >
-                    <div className="cast-avatar">
-                      {(actor.name || "?").charAt(0)}
-                    </div>
+                {actors.map((actor, index) => {
+                  const actorName = getItemName(actor);
+                  const hasId = typeof actor === "object" && Boolean(actor?.id);
 
-                    <div className="cast-info">
-                      <span className="cast-name">{actor.name}</span>
-                      {actor.role && (
-                        <span className="cast-role">{actor.role}</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  return (
+                    <button
+                      type="button"
+                      className={`cast-card cast-card-discoverable${hasId ? "" : " metadata-link-disabled"}`}
+                      key={getItemKey(actor, index)}
+                      onClick={() => handleDiscover("actors", actor)}
+                      disabled={!hasId}
+                      aria-label={
+                        hasId
+                          ? `Explore movies featuring ${actorName}`
+                          : undefined
+                      }
+                    >
+                      <div className="cast-avatar">
+                        {(actorName || "?").charAt(0)}
+                      </div>
+
+                      <div className="cast-info">
+                        <span className="cast-name">{actorName}</span>
+                        {actor.role && (
+                          <span className="cast-role">{actor.role}</span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -469,12 +542,6 @@ function VideoPage() {
                     ? `${metadata.runtime} minutes`
                     : null,
                 ],
-                [
-                  "Studio",
-                  studios.length > 0
-                    ? studios.map(getItemName).filter(Boolean).join(", ")
-                    : getItemName(metadata.studio),
-                ],
               ]
                 .filter(([, value]) => value != null && value !== "")
                 .map(([label, value]) => (
@@ -483,6 +550,15 @@ function VideoPage() {
                     <strong>{value}</strong>
                   </div>
                 ))}
+
+              {allStudios.length > 0 && (
+                <div className="detail-item" key="Studio">
+                  <span>Studio</span>
+                  <strong className="studio-link-list">
+                    {renderDiscoverableList(allStudios, "studios")}
+                  </strong>
+                </div>
+              )}
             </div>
           </div>
 
@@ -491,9 +567,7 @@ function VideoPage() {
               <h2>Tags</h2>
 
               <div className="tag-list">
-                {tags.map((tag, index) => (
-                  <span key={getItemKey(tag, index)}>{getItemName(tag)}</span>
-                ))}
+                {renderDiscoverableList(tags, "tags")}
               </div>
             </div>
           )}
