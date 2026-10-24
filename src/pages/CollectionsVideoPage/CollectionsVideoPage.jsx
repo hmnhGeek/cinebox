@@ -51,7 +51,7 @@ const CollectionVideosPage = () => {
 
       if (!isMounted.current) return;
 
-      setVideos(videoData);
+      setVideos(Array.isArray(videoData) ? videoData : []);
 
       if (!currentCollection) {
         setCollection(null);
@@ -164,6 +164,27 @@ const CollectionVideosPage = () => {
             </>
           )}
         </section>
+
+        {/* Movie count — styled to match Discovery Page */}
+        {!loading && !loadError && (
+          <section className="collection-results-heading">
+            <div className="collection-results-title">
+              <span className="collection-section-eyebrow">
+                YOUR COLLECTION
+              </span>
+            </div>
+
+            <div className="collection-result-count">
+              <span className="collection-result-number">
+                {videos.length.toLocaleString()}
+              </span>
+
+              <span>
+                {videos.length === 1 ? "movie available" : "movies available"}
+              </span>
+            </div>
+          </section>
+        )}
 
         {loading && <div className="loading">Loading videos...</div>}
 
