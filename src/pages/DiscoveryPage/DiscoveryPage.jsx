@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight, LoaderCircle } from "lucide-react";
 import VideoCard from "../../components/videoCard/VideoCard";
 import "./DiscoveryPage.css";
@@ -42,6 +42,7 @@ const DISCOVERY_TYPES = {
 function DiscoveryPage() {
   const { type, id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [videos, setVideos] = useState([]);
   const [page, setPage] = useState(0);
@@ -177,6 +178,15 @@ function DiscoveryPage() {
       `/videos/${encodeURIComponent(collectionId)}/${encodeURIComponent(
         video.id,
       )}`,
+      {
+        state: {
+          from: {
+            type: "discovery",
+            pathname: location.pathname,
+            search: location.search,
+          },
+        },
+      },
     );
   };
 

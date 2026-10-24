@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getVideoMetadata } from "../../service/collectionApi";
 import VideoPlayer from "../../components/VideoPlayer/VideoPlayer";
 import "./VideoPage.css";
 
-const API_BASE = `${import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")}/api/v1/collections`;
+const API_BASE = `${(import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "")}/api/v1/collections`;
 
 function VideoPage() {
   const { collectionId, mediaItemId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const pageRef = useRef(null);
   const lastPlaybackTimeRef = useRef(0);
@@ -19,8 +20,25 @@ function VideoPage() {
   const [playError, setPlayError] = useState("");
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
 
+  // Use the originating discovery route when available.
+  const discoveryReturnPath =
+    location.state?.from?.type === "discovery" &&
+    typeof location.state.from.pathname === "string" &&
+    location.state.from.pathname.startsWith("/") &&
+    !location.state.from.pathname.startsWith("//")
+      ? `${location.state.from.pathname}${
+          typeof location.state.from.search === "string"
+            ? location.state.from.search
+            : ""
+        }`
+      : null;
+
+  const backLabel = discoveryReturnPath
+    ? "Back to Discovery"
+    : "Back to Collection";
+
   const thumbnailUrl = videoMetadata?.thumbnailUrl
-    ? `${import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")}${videoMetadata.thumbnailUrl}`
+    ? `${(import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "")}${videoMetadata.thumbnailUrl}`
     : "";
 
   const posterUrl = mediaItemId
@@ -32,8 +50,13 @@ function VideoPage() {
     : null;
 
   const handleBackToCollection = useCallback(() => {
-    navigate(`/collections/${collectionId}`);
-  }, [navigate, collectionId]);
+    if (discoveryReturnPath) {
+      navigate(discoveryReturnPath);
+      return;
+    }
+
+    navigate(`/collections/${encodeURIComponent(collectionId)}`);
+  }, [navigate, collectionId, discoveryReturnPath]);
 
   const handlePlay = useCallback(() => {
     setPlayError("");
@@ -249,6 +272,7 @@ function VideoPage() {
             type="button"
             className="unavailable-back-button"
             onClick={handleBackToCollection}
+            aria-label={backLabel}
           >
             <svg
               viewBox="0 0 24 24"
@@ -264,7 +288,7 @@ function VideoPage() {
               <path d="M19 12H5" />
               <path d="m12 19-7-7 7-7" />
             </svg>
-            <span>Back to videos</span>
+            <span>{backLabel}</span>
           </button>
 
           <span className="unavailable-footnote">
@@ -331,7 +355,7 @@ function VideoPage() {
               type="button"
               className="back-to-collection"
               onClick={handleBackToCollection}
-              aria-label="Back to collection"
+              aria-label={backLabel}
             >
               <svg
                 viewBox="0 0 24 24"
@@ -347,7 +371,7 @@ function VideoPage() {
                 <path d="M19 12H5" />
                 <path d="m12 19-7-7 7-7" />
               </svg>
-              <span>Back to Collection</span>
+              <span>{backLabel}</span>
             </button>
 
             <div className="eyebrow">
