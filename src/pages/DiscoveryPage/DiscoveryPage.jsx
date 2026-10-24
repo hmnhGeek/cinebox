@@ -15,22 +15,26 @@ const PAGE_SIZE = 24;
 const DISCOVERY_TYPES = {
   tags: {
     title: "Tag",
-    description: "Movies connected to this tag.",
+    description: (name) => `Movies connected to ${name} tag.`,
+    fallbackDescription: "Explore movies connected to this tag.",
     metadataKey: "tags",
   },
   genres: {
     title: "Genre",
-    description: "Explore movies in this genre.",
+    description: (name) => `Explore movies in ${name} genre.`,
+    fallbackDescription: "Explore movies in this genre.",
     metadataKey: "genres",
   },
   actors: {
     title: "Actor",
-    description: "Explore movies featuring this actor.",
+    description: (name) => `Explore movies featuring ${name}.`,
+    fallbackDescription: "Explore movies featuring this actor.",
     metadataKey: "actors",
   },
   studios: {
     title: "Studio",
-    description: "Explore movies from this studio.",
+    description: (name) => `Explore movies from ${name}.`,
+    fallbackDescription: "Explore movies from this studio.",
     metadataKey: "studios",
   },
 };
@@ -45,6 +49,8 @@ function DiscoveryPage() {
   const [totalElements, setTotalElements] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [heroImageLoaded, setHeroImageLoaded] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
 
   const discoveryType = DISCOVERY_TYPES[type];
 
@@ -69,6 +75,10 @@ function DiscoveryPage() {
 
     return null;
   }, [videos, discoveryType, id]);
+
+  const discoveryDescription = discoveryName
+    ? discoveryType.description(discoveryName)
+    : discoveryType?.fallbackDescription;
 
   const fetchVideos = useCallback(
     async (signal) => {
@@ -99,6 +109,8 @@ function DiscoveryPage() {
 
         const data = await response.json();
 
+        if (signal.aborted) return;
+
         setVideos(Array.isArray(data.content) ? data.content : []);
         setTotalPages(Number(data.totalPages) || 0);
         setTotalElements(Number(data.totalElements) || 0);
@@ -124,16 +136,36 @@ function DiscoveryPage() {
     fetchVideos(controller.signal);
 
     return () => controller.abort();
-  }, [fetchVideos]);
+  }, [fetchVideos, retryKey]);
+
+  // Reset the hero when the discovery route changes.
+  useEffect(() => {
+    setHeroImageLoaded(false);
+  }, [type, id]);
+
+  const handleHeroImageLoad = (event) => {
+    if (event.currentTarget.naturalWidth > 0) {
+      setHeroImageLoaded(true);
+    }
+  };
+
+  const handleHeroImageError = (event) => {
+    event.currentTarget.style.visibility = "hidden";
+    setHeroImageLoaded(true);
+  };
 
   const handleVideoClick = (video) => {
-    console.log("video is", video);
     const collectionId =
       video.collectionId ||
       video.collection?.id ||
       video.collection?.collectionId;
 
     if (!collectionId || !video.id) {
+      console.error("Cannot navigate to video: required IDs are missing.", {
+        videoId: video.id,
+        collectionId,
+      });
+
       setError(
         "This movie is missing its collection information. " +
           "Include collectionId in the discovery API response to enable playback.",
@@ -141,7 +173,11 @@ function DiscoveryPage() {
       return;
     }
 
-    navigate(`/videos/${collectionId}/${video.id}`);
+    navigate(
+      `/videos/${encodeURIComponent(collectionId)}/${encodeURIComponent(
+        video.id,
+      )}`,
+    );
   };
 
   const getThumbnailUrl = (video) => {
@@ -174,12 +210,18 @@ function DiscoveryPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const retryLoading = () => {
+    setRetryKey((current) => current + 1);
+  };
+
   if (!discoveryType) {
     return (
       <main className="discovery-page">
-        <div className="discovery-state">
+        <div className="discovery-state discovery-state-panel">
+          <span className="discovery-eyebrow">CINEBOX DISCOVERY</span>
           <h2>Discovery unavailable</h2>
           <p>This discovery category does not exist.</p>
+
           <button
             className="discovery-back-button"
             onClick={() => navigate(-1)}
@@ -194,108 +236,194 @@ function DiscoveryPage() {
 
   return (
     <main className="discovery-page">
-      <section className="discovery-header">
-        <button
-          className="discovery-back-button"
-          onClick={() => navigate(-1)}
-          aria-label="Go back"
-        >
-          <ChevronLeft size={18} />
-          Back
-        </button>
+      <section
+        className={`discovery-hero ${
+          heroImageLoaded ? "hero-ready" : "hero-loading"
+        }`}
+        aria-label="Discovery collection"
+      >
+        <img
+          key={`${type}-${id}-${libhero}`}
+          className={`discovery-hero-image ${
+            heroImageLoaded ? "loaded" : "loading"
+          }`}
+          src={libhero}
+          alt=""
+          fetchPriority="high"
+          onLoad={handleHeroImageLoad}
+          onError={handleHeroImageError}
+          ref={(image) => {
+            if (!image || !image.complete) return;
 
-        <div className="discovery-heading">
-          <span className="discovery-eyebrow">CINEBOX DISCOVERY</span>
-          <h1>{discoveryName || `${discoveryType.title} Collection`}</h1>
-          <p>{discoveryType.description}</p>
-        </div>
+            if (image.naturalWidth > 0) {
+              setHeroImageLoaded(true);
+            } else {
+              handleHeroImageError({ currentTarget: image });
+            }
+          }}
+        />
 
-        {!loading && !error && (
-          <div className="discovery-result-count">
-            <span className="discovery-result-number">
-              {totalElements.toLocaleString()}
-            </span>
-            <span>{totalElements === 1 ? "movie found" : "movies found"}</span>
+        {!heroImageLoaded && (
+          <div className="discovery-hero-skeleton" aria-hidden="true">
+            <div className="discovery-skeleton-content">
+              <div className="discovery-skeleton-back" />
+              <div className="discovery-skeleton-eyebrow" />
+              <div className="discovery-skeleton-title" />
+              <div className="discovery-skeleton-description" />
+              <div className="discovery-skeleton-divider" />
+            </div>
+
+            <div className="discovery-skeleton-bottom">
+              <span className="discovery-skeleton-label" />
+              <span className="discovery-skeleton-label short" />
+            </div>
+
+            <div className="discovery-skeleton-status">
+              <span className="discovery-skeleton-spinner" />
+              <span>Preparing your discovery experience</span>
+            </div>
           </div>
+        )}
+
+        <div className="discovery-hero-overlay" />
+
+        {heroImageLoaded && (
+          <>
+            <div className="discovery-hero-content">
+              <button
+                className="discovery-back-button"
+                onClick={() => navigate(-1)}
+                aria-label="Go back"
+              >
+                <ChevronLeft size={18} />
+                Back
+              </button>
+
+              <span className="discovery-eyebrow">
+                CINEBOX <span className="discovery-eyebrow-separator">/</span>{" "}
+                DISCOVERY
+              </span>
+
+              <h1>{discoveryName || `${discoveryType.title} Collection`}</h1>
+
+              <p>{discoveryDescription}</p>
+
+              <div className="discovery-hero-divider" />
+            </div>
+          </>
         )}
       </section>
 
-      {error && (
-        <div className="discovery-error" role="alert">
-          <p>{error}</p>
-          <button
-            onClick={() => {
-              setPage(0);
-              setError("");
-              setLoading(true);
-              window.location.reload();
-            }}
-          >
-            Try again
-          </button>
-        </div>
-      )}
+      <div className="discovery-content">
+        <section className="discovery-results-heading">
+          <div className="discovery-results-title">
+            <span className="discovery-section-eyebrow">YOUR DISCOVERIES</span>
+          </div>
 
-      {loading ? (
-        <div className="discovery-state">
-          <LoaderCircle className="discovery-spinner" size={32} />
-          <p>Finding movies...</p>
-        </div>
-      ) : !error && videos.length === 0 ? (
-        <div className="discovery-state">
-          <h2>No movies found</h2>
-          <p>
-            There are no movies associated with this{" "}
-            {discoveryType.title.toLowerCase()} yet.
-          </p>
-        </div>
-      ) : !error ? (
-        <>
-          <section className="video-grid discovery-video-grid">
-            {videos.map((video, index) => (
-              <VideoCard
-                key={video.id || `${video.title}-${index}`}
-                video={video}
-                thumbnailUrl={getThumbnailUrl(video)}
-                fallbackThumbnailUrl={libhero}
-                previewUrl={getPreviewUrl(video)}
-                handleClick={() => handleVideoClick(video)}
-              />
-            ))}
-          </section>
-
-          {totalPages > 1 && (
-            <nav
-              className="discovery-pagination"
-              aria-label="Discovery results pages"
-            >
-              <button
-                className="discovery-page-button"
-                onClick={() => goToPage(page - 1)}
-                disabled={page === 0}
-                aria-label="Previous page"
-              >
-                <ChevronLeft size={18} />
-                Previous
-              </button>
-
-              <span className="discovery-page-indicator">
-                Page <strong>{page + 1}</strong> of {totalPages}
+          {!loading && !error && (
+            <div className="discovery-result-count">
+              <span className="discovery-result-number">
+                {totalElements.toLocaleString()}
               </span>
 
-              <button
-                className="discovery-page-button"
-                onClick={() => goToPage(page + 1)}
-                disabled={page >= totalPages - 1}
-                aria-label="Next page"
-              >
-                Next
-                <ChevronRight size={18} />
-              </button>
-            </nav>
+              <span>
+                {totalElements === 1 ? "movie available" : "movies available"}
+              </span>
+            </div>
           )}
-        </>
-      ) : null}
+        </section>
+
+        {error && (
+          <div className="discovery-error" role="alert">
+            <div className="discovery-error-copy">
+              <span className="discovery-error-title">
+                Something went wrong
+              </span>
+              <p>{error}</p>
+            </div>
+
+            <button onClick={retryLoading}>Try again</button>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="discovery-state" aria-live="polite">
+            <LoaderCircle
+              className="discovery-spinner"
+              size={30}
+              strokeWidth={1.5}
+            />
+            <h2>Finding your next watch</h2>
+            <p>Curating the titles in this collection...</p>
+          </div>
+        ) : !error && videos.length === 0 ? (
+          <div className="discovery-state discovery-state-panel">
+            <span className="discovery-empty-mark">
+              <span />
+            </span>
+
+            <h2>Nothing here just yet</h2>
+
+            <p>
+              There are no movies associated with this{" "}
+              {discoveryType.title.toLowerCase()} yet. Check back when your
+              collection grows.
+            </p>
+          </div>
+        ) : !error ? (
+          <>
+            <section
+              className="video-grid discovery-video-grid"
+              aria-label="Discovery movies"
+            >
+              {videos.map((video, index) => (
+                <VideoCard
+                  key={video.id || `${video.title}-${index}`}
+                  video={video}
+                  thumbnailUrl={getThumbnailUrl(video)}
+                  fallbackThumbnailUrl={libhero}
+                  previewUrl={getPreviewUrl(video)}
+                  handleClick={() => handleVideoClick(video)}
+                />
+              ))}
+            </section>
+
+            {totalPages > 1 && (
+              <nav
+                className="discovery-pagination"
+                aria-label="Discovery results pages"
+              >
+                <button
+                  className="discovery-page-button"
+                  onClick={() => goToPage(page - 1)}
+                  disabled={page === 0}
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft size={17} />
+                  Previous
+                </button>
+
+                <span className="discovery-page-indicator">
+                  <span>PAGE</span>
+                  <strong>{page + 1}</strong>
+                  <span className="discovery-page-of">OF</span>
+                  <strong>{totalPages}</strong>
+                </span>
+
+                <button
+                  className="discovery-page-button"
+                  onClick={() => goToPage(page + 1)}
+                  disabled={page >= totalPages - 1}
+                  aria-label="Next page"
+                >
+                  Next
+                  <ChevronRight size={17} />
+                </button>
+              </nav>
+            )}
+          </>
+        ) : null}
+      </div>
     </main>
   );
 }
