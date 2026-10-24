@@ -9,16 +9,24 @@ function VideoGrid({ videos, collectionId }) {
     return <div className="empty-state">No videos found.</div>;
   }
 
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "");
+  const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || "").replace(
+    /\/$/,
+    "",
+  );
 
   const handleVideoClick = (video) => {
-    if (!video.id) {
-      console.error("Cannot open movie: media item ID is missing.", video);
+    const targetCollectionId = collectionId || video.collectionId;
+
+    if (!targetCollectionId || !video.id) {
+      console.error(
+        "Cannot open movie: collection ID or media item ID is missing.",
+        video,
+      );
       return;
     }
 
     navigate(
-      `/videos/${encodeURIComponent(collectionId)}/${encodeURIComponent(video.id)}`,
+      `/videos/${encodeURIComponent(targetCollectionId)}/${encodeURIComponent(video.id)}`,
     );
   };
 
@@ -26,7 +34,7 @@ function VideoGrid({ videos, collectionId }) {
     <div className="video-grid">
       {videos.map((video) => {
         const thumbnailUrl = video.thumbnailUrl
-          ? `${apiBaseUrl}${video.thumbnailUrl}`
+          ? `${apiBaseUrl}${video.thumbnailUrl.startsWith("/") ? "" : "/"}${video.thumbnailUrl}`
           : libhero;
 
         const previewUrl = video.id

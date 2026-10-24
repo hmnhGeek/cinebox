@@ -1,10 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import VideoPage from "./pages/VideoPage/VideoPage";
-import { useState } from "react";
-import { createCollection } from "./service/collectionApi";
 import CollectionsPage from "./pages/CollectionsPage/CollectionsPage";
 import CollectionVideosPage from "./pages/CollectionsVideoPage/CollectionsVideoPage";
 import DiscoveryPage from "./pages/DiscoveryPage/DiscoveryPage";
+import SearchResultsPage from "./pages/SearchResultsPage/SearchResultsPage";
 import Header from "./components/Header/Header";
 import { SyncProvider } from "./context/SyncContext";
 import { Toaster } from "react-hot-toast";
@@ -28,18 +27,21 @@ function App() {
 
       <BrowserRouter>
         <ScrollToTop />
-        <Header
-          onUploadClick={() => setIsUploadModalOpen(true)}
-          onCreateCollectionClick={() => setCollectionModalOpen(true)}
-        />
+        <Header />
+
         <Routes>
           <Route path="/" element={<CollectionsPage />} />
+
           <Route
             path="/videos/:collectionId/:mediaItemId"
             element={<VideoPage />}
           />
+
           <Route path="/collections/:id" element={<CollectionVideosPage />} />
+
           <Route path="/discover/:type/:id" element={<DiscoveryPage />} />
+
+          <Route path="/search" element={<SearchResultsPage />} />
         </Routes>
       </BrowserRouter>
     </SyncProvider>
