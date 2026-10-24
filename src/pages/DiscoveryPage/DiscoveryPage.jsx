@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight, LoaderCircle } from "lucide-react";
 import VideoCard from "../../components/videoCard/VideoCard";
-import libhero from "../../assets/libhero.jpg";
 import "./DiscoveryPage.css";
+import discoveryhero from "../../assets/discoveryhero.jpg";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(
   /\/$/,
@@ -181,7 +181,7 @@ function DiscoveryPage() {
   };
 
   const getThumbnailUrl = (video) => {
-    if (!video.thumbnailUrl) return libhero;
+    if (!video.thumbnailUrl) return discoveryhero;
 
     if (/^https?:\/\//i.test(video.thumbnailUrl)) {
       return video.thumbnailUrl;
@@ -243,11 +243,11 @@ function DiscoveryPage() {
         aria-label="Discovery collection"
       >
         <img
-          key={`${type}-${id}-${libhero}`}
+          key={`${type}-${id}-${discoveryhero}`}
           className={`discovery-hero-image ${
             heroImageLoaded ? "loaded" : "loading"
           }`}
-          src={libhero}
+          src={discoveryhero}
           alt=""
           fetchPriority="high"
           onLoad={handleHeroImageLoad}
@@ -381,7 +381,7 @@ function DiscoveryPage() {
                   key={video.id || `${video.title}-${index}`}
                   video={video}
                   thumbnailUrl={getThumbnailUrl(video)}
-                  fallbackThumbnailUrl={libhero}
+                  fallbackThumbnailUrl={discoveryhero}
                   previewUrl={getPreviewUrl(video)}
                   handleClick={() => handleVideoClick(video)}
                 />

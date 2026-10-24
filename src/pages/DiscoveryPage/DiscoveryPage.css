@@ -31,7 +31,6 @@
 
 /* =========================================
    Immersive Discovery Hero
-   Mirrors the Collections Video Page
    ========================================= */
 
 .discovery-hero {
@@ -124,12 +123,18 @@
     );
 }
 
-/* Hero content */
+/* =========================================
+   Hero Content
+   ========================================= */
 
 .discovery-hero-content {
   position: absolute;
   top: 43%;
   left: clamp(32px, 7vw, 120px);
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 
   width: min(660px, 78%);
   transform: translateY(-50%);
@@ -137,8 +142,10 @@
   animation: discovery-content-reveal 850ms 100ms ease-out both;
 }
 
+/* Back navigation spacing */
+
 .discovery-hero-content .discovery-back-button {
-  margin: 0 0 34px;
+  margin: 0 0 24px;
 }
 
 /* Back navigation */
@@ -152,6 +159,7 @@
   width: fit-content;
   min-height: 34px;
   padding: 7px 0;
+  margin: 0;
 
   border: none;
   border-radius: 3px;
@@ -195,8 +203,8 @@
 /* Eyebrow */
 
 .discovery-eyebrow {
-  display: inline-block;
-  margin-bottom: 19px;
+  display: block;
+  margin: 0 0 19px;
 
   color: var(--cinebox-gold-light);
   font-size: 10px;
@@ -366,7 +374,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Existing video grid — retain VideoCard styling */
+/* Existing video grid */
 
 .discovery-video-grid {
   margin-top: 0;
@@ -434,7 +442,7 @@
   margin-bottom: 0;
 }
 
-/* Minimal gold detail for the empty state */
+/* Empty state detail */
 
 .discovery-empty-mark {
   display: grid;
@@ -948,12 +956,29 @@
     padding-left: 16px;
   }
 
+  /* Keep the section label and result count on one line */
+
   .discovery-results-heading {
-    align-items: flex-start;
-    gap: 12px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
 
     margin-bottom: 22px;
     padding-bottom: 19px;
+  }
+
+  .discovery-results-title {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .discovery-section-eyebrow {
+    margin-bottom: 0;
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    white-space: nowrap;
   }
 
   .discovery-results-title h2 {
@@ -966,17 +991,23 @@
   }
 
   .discovery-result-count {
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 4px;
 
-    padding-top: 22px;
-    font-size: 10px;
+    padding-top: 0;
+    padding-bottom: 0;
+
+    font-size: 9px;
     text-align: right;
+    white-space: nowrap;
   }
 
   .discovery-result-number {
-    font-size: 17px;
+    font-size: 15px;
   }
 
   .discovery-state {
@@ -1074,17 +1105,32 @@
   }
 }
 
+/* =========================================
+   Very Small Mobile Screens
+   ========================================= */
+
 @media (max-width: 380px) {
   .discovery-results-heading {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .discovery-section-eyebrow {
+    font-size: 7px;
+    letter-spacing: 1px;
   }
 
   .discovery-result-count {
     flex-direction: row;
     align-items: baseline;
+    gap: 3px;
     padding-top: 0;
-    text-align: left;
+    font-size: 8px;
+  }
+
+  .discovery-result-number {
+    font-size: 14px;
   }
 
   .discovery-hero-bottom {
