@@ -1,4 +1,18 @@
+/* =========================================
+   CineBox — Global Header
+   ========================================= */
+
 .app-header {
+  --cinebox-bg: #080808;
+  --cinebox-surface: #1c1b19;
+  --cinebox-surface-hover: #23221f;
+  --cinebox-border: #35332e;
+  --cinebox-gold: #c4a66a;
+  --cinebox-gold-light: #dec58e;
+  --cinebox-text: #f0eee8;
+  --cinebox-secondary: #a5a197;
+  --cinebox-muted: #77736a;
+
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -8,8 +22,10 @@
 
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 28px;
 
-  background: #080808;
+  background: var(--cinebox-bg);
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
@@ -17,6 +33,7 @@
   display: flex;
   align-items: center;
   min-width: 0;
+  flex-shrink: 0;
 }
 
 .header-logo-button {
@@ -36,7 +53,6 @@
   display: block;
   width: auto;
   height: 44px;
-
   object-fit: contain;
 
   transition: opacity 180ms ease;
@@ -47,32 +63,520 @@
 }
 
 .header-logo-button:focus-visible {
-  outline: 2px solid #aaa;
+  outline: 2px solid var(--cinebox-gold);
   outline-offset: 4px;
+}
+
+/* =========================================
+   Header Search
+   Right-aligned, compact desktop width
+   ========================================= */
+
+.header-search {
+  position: relative;
+  width: min(100%, 400px);
+  min-width: 0;
+  margin-left: auto;
+  flex-shrink: 1;
+}
+
+.header-search-form {
+  height: 43px;
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  padding: 0 13px;
+
+  color: var(--cinebox-secondary);
+  background: #141413;
+  border: 1px solid #2d2b27;
+  border-radius: 8px;
+
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.header-search-form:hover {
+  border-color: #454139;
+}
+
+.header-search-form:focus-within,
+.header-search-form.is-active {
+  background: #181715;
+  border-color: rgba(196, 166, 106, 0.72);
+  box-shadow: 0 0 0 3px rgba(196, 166, 106, 0.08);
+}
+
+.header-search-icon {
+  flex-shrink: 0;
+  color: var(--cinebox-gold);
+}
+
+.header-search-input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+
+  color: var(--cinebox-text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.header-search-input::placeholder {
+  color: #77736a;
+}
+
+.header-search-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.header-search-shortcut {
+  flex-shrink: 0;
+  padding: 3px 6px;
+
+  color: #817c70;
+  border: 1px solid #38352e;
+  border-radius: 4px;
+
+  font-family: inherit;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.header-search-clear {
+  flex-shrink: 0;
+  width: 27px;
+  height: 27px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+
+  color: var(--cinebox-secondary);
+  cursor: pointer;
+
+  transition:
+    color 150ms ease,
+    background 150ms ease;
+}
+
+.header-search-clear:hover {
+  color: var(--cinebox-text);
+  background: #302e29;
+}
+
+.header-search-spinner {
+  flex-shrink: 0;
+  color: var(--cinebox-gold);
+  animation: cinebox-search-spin 850ms linear infinite;
+}
+
+.header-actions {
+  display: none;
+}
+
+/* =========================================
+   Search Dropdown
+   ========================================= */
+
+.search-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  right: 0;
+  z-index: 1100;
+
+  overflow: hidden;
+
+  background: #171614;
+  border: 1px solid #38352e;
+  border-radius: 10px;
+
+  box-shadow:
+    0 20px 55px rgba(0, 0, 0, 0.58),
+    0 3px 10px rgba(0, 0, 0, 0.25);
+
+  animation: cinebox-search-appear 140ms ease-out;
+}
+
+.search-dropdown-heading {
+  min-height: 39px;
+  padding: 0 15px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  color: #898477;
+  border-bottom: 1px solid #2c2a25;
+
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.25px;
+}
+
+.search-result-count {
+  color: var(--cinebox-gold);
+  font-size: 11px;
+  letter-spacing: 0;
+}
+
+.search-suggestion-list {
+  max-height: min(490px, calc(100vh - 190px));
+  overflow-y: auto;
+  padding: 5px;
+
+  scrollbar-width: thin;
+  scrollbar-color: #484239 transparent;
+}
+
+.search-suggestion-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.search-suggestion-list::-webkit-scrollbar-thumb {
+  background: #484239;
+  border-radius: 8px;
+}
+
+.search-suggestion {
+  width: 100%;
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 10px;
+  text-align: left;
+
+  color: var(--cinebox-text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 7px;
+
+  cursor: pointer;
+
+  transition:
+    background 150ms ease,
+    border-color 150ms ease;
+}
+
+.search-suggestion:hover,
+.search-suggestion.is-highlighted {
+  background: #24221e;
+  border-color: #37332a;
+}
+
+.search-suggestion-thumbnail {
+  position: relative;
+  flex-shrink: 0;
+
+  width: 96px;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+
+  background: #26241f;
+  border: 1px solid #353129;
+  border-radius: 5px;
+}
+
+.search-suggestion-thumbnail img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+
+  transition: transform 220ms ease;
+}
+
+.search-suggestion:hover .search-suggestion-thumbnail img {
+  transform: scale(1.045);
+}
+
+.search-suggestion-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.search-suggestion-title {
+  overflow: hidden;
+
+  color: #f0eee8;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-suggestion-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  margin-top: 4px;
+
+  color: #b8a16e;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.search-meta-separator {
+  color: #625c4e;
+}
+
+.search-suggestion-description {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+
+  margin: 5px 0 0;
+
+  color: #938e82;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.search-suggestion-arrow {
+  flex-shrink: 0;
+
+  color: #716b5d;
+  opacity: 0;
+  transform: translate(-3px, 3px);
+
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+.search-suggestion:hover .search-suggestion-arrow,
+.search-suggestion.is-highlighted .search-suggestion-arrow {
+  color: var(--cinebox-gold);
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+/* =========================================
+   Loading, Empty and Error States
+   ========================================= */
+
+.search-dropdown-state {
+  min-height: 135px;
+  padding: 24px 18px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+
+  color: #aaa498;
+  text-align: center;
+  font-size: 12px;
+}
+
+.search-dropdown-state > svg {
+  color: #a99870;
+}
+
+.search-dropdown-state small {
+  max-width: 260px;
+
+  color: #77736a;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.search-dropdown-error {
+  color: #d9847c;
+}
+
+.search-state-spinner {
+  animation: cinebox-search-spin 850ms linear infinite;
+}
+
+/* =========================================
+   View All Results
+   ========================================= */
+
+.search-view-all {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  color: #c9b17c;
+  background: #1b1916;
+  border: 0;
+  border-top: 1px solid #302d26;
+
+  text-align: left;
+  font: inherit;
+  font-size: 12px;
+
+  cursor: pointer;
+
+  transition:
+    color 150ms ease,
+    background 150ms ease;
+}
+
+.search-view-all strong {
+  color: #e0c991;
+  font-weight: 600;
+}
+
+.search-view-all > svg {
+  flex-shrink: 0;
+  transition: transform 150ms ease;
+}
+
+.search-view-all:hover {
+  color: #e0c991;
+  background: #24211b;
+}
+
+.search-view-all:hover > svg {
+  transform: translate(2px, -2px);
+}
+
+/* =========================================
+   Animations
+   ========================================= */
+
+@keyframes cinebox-search-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes cinebox-search-appear {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* =========================================
    Responsive Layout
    ========================================= */
 
+@media (max-width: 900px) {
+  .app-header {
+    gap: 24px;
+  }
+
+  .header-search {
+    width: min(100%, 360px);
+  }
+}
+
 @media (max-width: 700px) {
   .app-header {
     height: 64px;
     padding: 0 18px;
+    gap: 20px;
   }
 
   .app-logo {
     height: 39px;
   }
+
+  .header-search {
+    width: min(100%, 340px);
+  }
+
+  .header-search-form {
+    height: 40px;
+    gap: 8px;
+    padding: 0 10px;
+  }
+
+  .header-search-input {
+    font-size: 13px;
+  }
+
+  .search-dropdown {
+    position: fixed;
+    top: 64px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-height: calc(100vh - 78px);
+    overflow-y: auto;
+  }
+
+  .search-suggestion-thumbnail {
+    width: 84px;
+  }
+
+  .search-suggestion {
+    gap: 10px;
+    padding: 9px 7px;
+  }
+
+  .search-suggestion-description {
+    -webkit-line-clamp: 1;
+  }
 }
 
-@media (max-width: 380px) {
+@media (max-width: 430px) {
   .app-header {
     padding: 0 12px;
+    gap: 13px;
   }
 
   .app-logo {
     height: 34px;
+  }
+
+  .header-search {
+    width: auto;
+    flex: 1;
+  }
+
+  .header-search-form {
+    gap: 7px;
+  }
+
+  .header-search-shortcut {
+    display: none;
+  }
+
+  .search-suggestion-thumbnail {
+    width: 76px;
+  }
+
+  .search-suggestion-title {
+    font-size: 12px;
   }
 }
 
@@ -81,7 +585,23 @@
    ========================================= */
 
 @media (prefers-reduced-motion: reduce) {
-  .app-logo {
+  .app-logo,
+  .header-search-form,
+  .header-search-clear,
+  .search-suggestion,
+  .search-suggestion-thumbnail img,
+  .search-suggestion-arrow,
+  .search-view-all,
+  .search-view-all > svg {
     transition: none;
+  }
+
+  .search-dropdown {
+    animation: none;
+  }
+
+  .header-search-spinner,
+  .search-state-spinner {
+    animation-duration: 2s;
   }
 }

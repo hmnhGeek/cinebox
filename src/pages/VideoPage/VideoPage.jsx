@@ -20,7 +20,7 @@ function VideoPage() {
   const [playError, setPlayError] = useState("");
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
 
-  // Use the originating discovery route when available.
+  // Preserve the originating Discovery route when available.
   const discoveryReturnPath =
     location.state?.from?.type === "discovery" &&
     typeof location.state.from.pathname === "string" &&
@@ -33,9 +33,21 @@ function VideoPage() {
         }`
       : null;
 
-  const backLabel = discoveryReturnPath
-    ? "Back to Discovery"
-    : "Back to Collection";
+  // Preserve the search results URL, including the query and page.
+  const searchReturnPath =
+    location.state?.fromSearch === true &&
+    typeof location.state.returnTo === "string" &&
+    location.state.returnTo.startsWith("/") &&
+    !location.state.returnTo.startsWith("//") &&
+    location.state.returnTo.split(/[?#]/)[0] === "/search"
+      ? location.state.returnTo
+      : null;
+
+  const backLabel = searchReturnPath
+    ? "Back to Search Results"
+    : discoveryReturnPath
+      ? "Back to Discovery"
+      : "Back to Collection";
 
   const thumbnailUrl = videoMetadata?.thumbnailUrl
     ? `${(import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "")}${videoMetadata.thumbnailUrl}`
@@ -50,15 +62,21 @@ function VideoPage() {
     : null;
 
   const handleBackToCollection = useCallback(() => {
+    // Return to the originating search results page.
+    if (searchReturnPath) {
+      navigate(searchReturnPath);
+      return;
+    }
+
+    // Return to the previous Discovery history entry.
     if (discoveryReturnPath) {
-      // Return to the previous history entry rather than pushing
-      // another copy of the Discovery route onto the history stack.
       navigate(-1);
       return;
     }
 
+    // Preserve the original collection fallback.
     navigate(`/collections/${encodeURIComponent(collectionId)}`);
-  }, [navigate, collectionId, discoveryReturnPath]);
+  }, [navigate, collectionId, searchReturnPath, discoveryReturnPath]);
 
   const handlePlay = useCallback(() => {
     setPlayError("");
@@ -77,7 +95,7 @@ function VideoPage() {
     }
   }, []);
 
-  // Open discovery results using the metadata entity's stable ID.
+  // Open Discovery results using the metadata entity's stable ID.
   const handleDiscover = useCallback(
     (type, item) => {
       if (!item || typeof item !== "object" || !item.id) return;
