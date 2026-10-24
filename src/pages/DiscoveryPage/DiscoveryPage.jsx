@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { ChevronLeft, ChevronRight, LoaderCircle } from "lucide-react";
+import { ChevronRight, LoaderCircle } from "lucide-react";
 import VideoCard from "../../components/videoCard/VideoCard";
 import "./DiscoveryPage.css";
 import discoveryhero from "../../assets/discoveryhero.jpg";
@@ -236,7 +236,20 @@ function DiscoveryPage() {
             className="discovery-back-button"
             onClick={() => navigate(-1)}
           >
-            <ChevronLeft size={18} />
+            <svg
+              viewBox="0 0 24 24"
+              width="19"
+              height="19"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M19 12H5" />
+              <path d="m12 19-7-7 7-7" />
+            </svg>
             Go back
           </button>
         </div>
@@ -305,7 +318,20 @@ function DiscoveryPage() {
                 onClick={() => navigate(-1)}
                 aria-label="Go back"
               >
-                <ChevronLeft size={18} />
+                <svg
+                  viewBox="0 0 24 24"
+                  width="19"
+                  height="19"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M19 12H5" />
+                  <path d="m12 19-7-7 7-7" />
+                </svg>
                 Back
               </button>
 
@@ -409,7 +435,20 @@ function DiscoveryPage() {
                   disabled={page === 0}
                   aria-label="Previous page"
                 >
-                  <ChevronLeft size={17} />
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="17"
+                    height="17"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M19 12H5" />
+                    <path d="m12 19-7-7 7-7" />
+                  </svg>
                   Previous
                 </button>
 
