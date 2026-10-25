@@ -129,8 +129,6 @@
   scroll-behavior: smooth;
   scroll-snap-type: x proximity;
   overscroll-behavior-x: contain;
-
-  /* Hide scrollbar while retaining horizontal scrolling. */
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -301,250 +299,62 @@
 }
 
 /* =========================================
-   Immersive Lightbox
+   Simple Viewport Image Overlay
    ========================================= */
+
+/*
+ * The lightbox is rendered through createPortal
+ * directly into document.body.
+ *
+ * No modal background, header, footer, caption,
+ * or navigation controls.
+ *
+ * The image is centered within the viewport and
+ * cannot exceed the available screen dimensions.
+ */
 
 .movie-gallery-lightbox {
   position: fixed;
-  z-index: 2000;
   inset: 0;
-  display: grid;
+  z-index: 2147483647;
 
-  /*
-   * The image viewer gets a bounded central row.
-   * This prevents tall images from extending beneath
-   * the top header or pushing against the footer.
-   */
-  grid-template-columns: 64px minmax(0, 1fr) 64px;
-  grid-template-rows: 68px minmax(0, 1fr) 45px;
-  align-items: stretch;
-  min-width: 0;
-  min-height: 0;
-  padding: 0 28px;
-  box-sizing: border-box;
-  overflow: hidden;
-  background: rgba(8, 8, 7, 0.97);
-  color: var(--gallery-text);
-  backdrop-filter: blur(18px);
-  animation: movie-gallery-lightbox-in 180ms ease-out;
-}
-
-@keyframes movie-gallery-lightbox-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-.movie-gallery-lightbox-top {
-  grid-column: 1 / -1;
-  grid-row: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  min-width: 0;
-  min-height: 0;
-  border-bottom: 1px solid rgba(240, 238, 232, 0.08);
-}
-
-.movie-gallery-lightbox-brand {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  min-width: 0;
-  color: var(--gallery-text);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 2px;
-}
-
-.movie-gallery-lightbox-brand > span:last-child > span {
-  color: var(--gallery-secondary);
-  font-weight: 500;
-}
-
-.movie-gallery-lightbox-mark {
-  width: 7px;
-  height: 7px;
-  flex: 0 0 7px;
-  border-radius: 50%;
-  background: var(--gallery-gold);
-  box-shadow: 0 0 13px rgba(196, 166, 106, 0.4);
-}
-
-.movie-gallery-close {
-  display: grid;
-  flex-shrink: 0;
-  width: 39px;
-  height: 39px;
-  place-items: center;
-  border: 1px solid transparent;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--gallery-secondary);
-  cursor: pointer;
-  transition:
-    color 180ms ease,
-    border-color 180ms ease,
-    background 180ms ease;
-}
-
-.movie-gallery-close svg {
-  width: 21px;
-  height: 21px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-}
-
-.movie-gallery-close:hover {
-  border-color: var(--gallery-border);
-  background: var(--gallery-surface);
-  color: var(--gallery-gold-light);
-}
-
-.movie-gallery-close:focus-visible,
-.movie-gallery-lightbox-nav:focus-visible {
-  outline: 2px solid var(--gallery-gold-light);
-  outline-offset: 3px;
-}
-
-/* Image and caption are centered inside the middle grid row. */
-
-.movie-gallery-lightbox-content {
-  grid-column: 2;
-  grid-row: 2;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
-  gap: 14px;
+
   width: 100%;
-  height: 100%;
-  min-width: 0;
-  min-height: 0;
-  padding: 14px 0;
+  height: 100vh;
+  height: 100dvh;
+
+  padding: 24px;
   box-sizing: border-box;
+
+  background: transparent;
   overflow: hidden;
+  cursor: zoom-out;
 }
 
-.movie-gallery-lightbox-content img {
+.movie-gallery-lightbox-image {
   display: block;
-  flex: 0 1 auto;
+
   width: auto;
   height: auto;
+
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 48px);
   max-width: 100%;
-  max-height: calc(100dvh - 205px);
+  max-height: 100%;
+
   object-fit: contain;
   object-position: center;
+
+  margin: auto;
+  flex: 0 1 auto;
+
   border-radius: 2px;
-  box-shadow: 0 18px 65px rgba(0, 0, 0, 0.3);
-}
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
 
-.movie-gallery-lightbox-caption {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  width: 100%;
-  max-width: 900px;
-  min-width: 0;
-  color: var(--gallery-secondary);
-  font-size: 11px;
-}
-
-.movie-gallery-lightbox-caption > span:first-child {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.movie-gallery-lightbox-caption > span:last-child {
-  flex-shrink: 0;
-  color: var(--gallery-text);
-  font-variant-numeric: tabular-nums;
-}
-
-.movie-gallery-lightbox-caption i,
-.movie-gallery-lightbox-footer i {
-  padding: 0 5px;
-  color: var(--gallery-gold);
-  font-style: normal;
-}
-
-/* Lightbox navigation */
-
-.movie-gallery-lightbox-nav {
-  display: grid;
-  grid-row: 2;
-  align-self: center;
-  justify-self: center;
-  width: 47px;
-  height: 47px;
-  place-items: center;
-  border: 1px solid rgba(240, 238, 232, 0.13);
-  border-radius: 50%;
-  background: rgba(28, 27, 25, 0.75);
-  color: var(--gallery-text);
-  cursor: pointer;
-  transition:
-    background 180ms ease,
-    border-color 180ms ease,
-    color 180ms ease,
-    transform 180ms ease;
-}
-
-.movie-gallery-lightbox-nav svg {
-  width: 22px;
-  height: 22px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.movie-gallery-lightbox-nav:hover:not(:disabled) {
-  border-color: var(--gallery-gold);
-  background: #242119;
-  color: var(--gallery-gold-light);
-}
-
-.movie-gallery-lightbox-nav:disabled {
-  opacity: 0.3;
   cursor: default;
-}
-
-.movie-gallery-lightbox-prev {
-  grid-column: 1;
-}
-
-.movie-gallery-lightbox-next {
-  grid-column: 3;
-}
-
-/* Footer hints */
-
-.movie-gallery-lightbox-footer {
-  grid-column: 1 / -1;
-  grid-row: 3;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
-  min-width: 0;
-  border-top: 1px solid rgba(240, 238, 232, 0.08);
-  color: var(--gallery-muted);
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 1.2px;
 }
 
 /* =========================================
@@ -555,20 +365,6 @@
   .movie-gallery-card,
   .movie-gallery-skeleton {
     flex-basis: 34%;
-  }
-
-  .movie-gallery-lightbox {
-    grid-template-columns: 52px minmax(0, 1fr) 52px;
-    padding: 0 16px;
-  }
-
-  .movie-gallery-lightbox-nav {
-    width: 42px;
-    height: 42px;
-  }
-
-  .movie-gallery-lightbox-content img {
-    max-height: calc(100dvh - 195px);
   }
 }
 
@@ -631,8 +427,10 @@
     position: absolute;
     right: 9px;
     bottom: 9px;
+
     width: 31px;
     height: 31px;
+
     border-color: rgba(240, 238, 232, 0.2);
     background: rgba(20, 20, 19, 0.65);
   }
@@ -643,77 +441,18 @@
   }
 
   .movie-gallery-lightbox {
-    grid-template-columns: 36px minmax(0, 1fr) 36px;
-    grid-template-rows: 58px minmax(0, 1fr) 38px;
-    gap: 0;
-    padding: 0 7px;
+    padding: 12px;
   }
 
-  .movie-gallery-lightbox-top {
-    gap: 10px;
-  }
-
-  .movie-gallery-lightbox-brand {
-    gap: 8px;
-    font-size: 9px;
-    letter-spacing: 1.1px;
-  }
-
-  .movie-gallery-close {
-    width: 36px;
-    height: 36px;
-  }
-
-  .movie-gallery-lightbox-content {
-    gap: 10px;
-    padding: 10px 0;
-  }
-
-  .movie-gallery-lightbox-content img {
+  .movie-gallery-lightbox-image {
     max-width: 100%;
-    max-height: calc(100dvh - 175px);
-  }
-
-  .movie-gallery-lightbox-nav {
-    width: 32px;
-    height: 32px;
-    border-color: rgba(240, 238, 232, 0.1);
-    background: rgba(28, 27, 25, 0.8);
-  }
-
-  .movie-gallery-lightbox-nav svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  .movie-gallery-lightbox-caption {
-    gap: 8px;
-    font-size: 10px;
-  }
-
-  .movie-gallery-lightbox-footer {
-    font-size: 8px;
-    letter-spacing: 0.5px;
+    max-height: 100%;
   }
 }
 
 @media (max-width: 360px) {
   .movie-gallery-lightbox {
-    grid-template-columns: 29px minmax(0, 1fr) 29px;
-    padding: 0 4px;
-  }
-
-  .movie-gallery-lightbox-nav {
-    width: 27px;
-    height: 27px;
-  }
-
-  .movie-gallery-lightbox-footer {
-    letter-spacing: 0.2px;
-  }
-
-  .movie-gallery-lightbox-brand {
-    letter-spacing: 0.7px;
+    padding: 8px;
   }
 }
 

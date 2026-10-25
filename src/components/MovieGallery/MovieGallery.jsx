@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   getGalleryImages,
   resolveGalleryImageUrl,
@@ -22,7 +23,8 @@ function MovieGallery({ collectionId, mediaItemId }) {
   const requestIdRef = useRef(0);
   const touchStartXRef = useRef(null);
 
-  const selectedImage = selectedIndex >= 0 ? images[selectedIndex] : null;
+  const selectedImage =
+    selectedIndex >= 0 ? (images[selectedIndex] ?? null) : null;
 
   const loadMore = useCallback(async () => {
     if (!hasNext || loadingMoreRef.current || !collectionId || !mediaItemId) {
@@ -214,6 +216,34 @@ function MovieGallery({ collectionId, mediaItemId }) {
     touchStartXRef.current = null;
   };
 
+  // Render the lightbox directly under document.body so ancestor stacking
+  // contexts cannot place it underneath the application header.
+
+  const lightbox = selectedImage
+    ? createPortal(
+        <div
+          className="movie-gallery-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Gallery image viewer"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeLightbox();
+          }}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <img
+            className="movie-gallery-lightbox-image"
+            src={resolveGalleryImageUrl(selectedImage.url)}
+            alt={selectedImage.filename || "Gallery image"}
+            onMouseDown={(event) => event.stopPropagation()}
+            onError={() => markImageFailed(selectedImage.id)}
+          />
+        </div>,
+        document.body,
+      )
+    : null;
+
   // Avoid showing an empty gallery when no images exist.
   if (!loading && images.length === 0 && !error) {
     return null;
@@ -349,90 +379,7 @@ function MovieGallery({ collectionId, mediaItemId }) {
         )}
       </section>
 
-      {selectedImage && (
-        <div
-          className="movie-gallery-lightbox"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Gallery image viewer"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) closeLightbox();
-          }}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
-          <div className="movie-gallery-lightbox-top">
-            <div className="movie-gallery-lightbox-brand">
-              <span className="movie-gallery-lightbox-mark" />
-
-              <span>
-                CINEBOX <span>/ FRAMES &amp; STILLS</span>
-              </span>
-            </div>
-
-            <button
-              type="button"
-              className="movie-gallery-close"
-              onClick={closeLightbox}
-              aria-label="Close gallery"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m18 6-12 12M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          <button
-            type="button"
-            className="movie-gallery-lightbox-nav movie-gallery-lightbox-prev"
-            onClick={showPrevious}
-            aria-label="Previous image"
-            disabled={images.length < 2}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="m15 18-6-6 6-6" />
-            </svg>
-          </button>
-
-          <div className="movie-gallery-lightbox-content">
-            <img
-              key={selectedImage.id}
-              src={resolveGalleryImageUrl(selectedImage.url)}
-              alt={selectedImage.filename || "Gallery image"}
-              onError={() => markImageFailed(selectedImage.id)}
-            />
-
-            <div className="movie-gallery-lightbox-caption">
-              <span>{selectedImage.filename}</span>
-
-              <span>
-                {selectedIndex + 1} <i>/</i> {images.length}
-                {hasNext ? "+" : ""}
-              </span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="movie-gallery-lightbox-nav movie-gallery-lightbox-next"
-            onClick={showNext}
-            aria-label="Next image"
-            disabled={images.length < 2}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="m9 18 6-6-6-6" />
-            </svg>
-          </button>
-
-          <div className="movie-gallery-lightbox-footer">
-            <span>ESC TO CLOSE</span>
-
-            <span>
-              ← PREVIOUS <i>/</i> NEXT →
-            </span>
-          </div>
-        </div>
-      )}
+      {lightbox}
     </>
   );
 }
