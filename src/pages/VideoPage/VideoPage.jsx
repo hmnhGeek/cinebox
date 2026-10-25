@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getVideoMetadata } from "../../service/collectionApi";
 import VideoPlayer from "../../components/VideoPlayer/VideoPlayer";
+import MovieGallery from "../../components/MovieGallery/MovieGallery";
 import "./VideoPage.css";
 
 const API_BASE = `${(import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "")}/api/v1/collections`;
@@ -589,6 +590,9 @@ function VideoPage() {
               </div>
             </div>
           )}
+
+          {/* Gallery is inside the details box, at the very end. */}
+          <MovieGallery collectionId={collectionId} mediaItemId={mediaItemId} />
         </section>
       </div>
     </main>
