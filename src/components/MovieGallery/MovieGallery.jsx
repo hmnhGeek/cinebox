@@ -218,7 +218,6 @@ function MovieGallery({ collectionId, mediaItemId }) {
 
   // Render the lightbox directly under document.body so ancestor stacking
   // contexts cannot place it underneath the application header.
-
   const lightbox = selectedImage
     ? createPortal(
         <div
@@ -244,140 +243,152 @@ function MovieGallery({ collectionId, mediaItemId }) {
       )
     : null;
 
-  // Avoid showing an empty gallery when no images exist.
+  // Hide the entire section, including its heading, when no images exist.
   if (!loading && images.length === 0 && !error) {
     return null;
   }
 
   return (
     <>
-      <section className="movie-gallery" aria-label="Movie gallery">
-        <div className="movie-gallery-heading">
-          <div className="movie-gallery-heading-copy">
-            <span className="movie-gallery-eyebrow">BEHIND THE FRAME</span>
+      <div className="detail-section movie-gallery-section">
+        <h2>Frames and Stills</h2>
 
-            <h2>Frames &amp; Stills</h2>
-          </div>
-
-          {images.length > 1 && (
-            <div className="movie-gallery-controls">
-              <button
-                type="button"
-                className="movie-gallery-arrow"
-                onClick={() =>
-                  trackRef.current?.scrollBy({
-                    left: -trackRef.current.clientWidth * 0.75,
-                    behavior: "smooth",
-                  })
-                }
-                aria-label="Scroll gallery left"
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="m15 18-6-6 6-6" />
-                </svg>
-              </button>
-
-              <button
-                type="button"
-                className="movie-gallery-arrow"
-                onClick={() =>
-                  trackRef.current?.scrollBy({
-                    left: trackRef.current.clientWidth * 0.75,
-                    behavior: "smooth",
-                  })
-                }
-                aria-label="Scroll gallery right"
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="m9 18 6-6-6-6" />
-                </svg>
-              </button>
+        <section className="movie-gallery" aria-label="Movie gallery">
+          <div className="movie-gallery-heading">
+            <div className="movie-gallery-count">
+              {loading ? (
+                "Loading images..."
+              ) : (
+                <>
+                  <span className="count-number">
+                    {images.length}
+                    {hasNext ? "+" : ""}
+                  </span>
+                  {images.length === 1 ? "Frame" : "Frames"}
+                </>
+              )}
             </div>
-          )}
-        </div>
 
-        {error && images.length === 0 ? (
-          <div className="movie-gallery-message" role="status">
-            <p>{error}</p>
-
-            <button
-              type="button"
-              onClick={() => {
-                setError("");
-                setLoading(true);
-
-                const controller = new AbortController();
-                const requestId = ++requestIdRef.current;
-
-                loadGallery(controller.signal, requestId);
-              }}
-            >
-              Try again
-            </button>
-          </div>
-        ) : (
-          <div
-            ref={trackRef}
-            className="movie-gallery-track"
-            onScroll={handleTrackScroll}
-            aria-busy={loading || loadingMore}
-          >
-            {loading &&
-              Array.from({ length: 4 }, (_, index) => (
-                <div
-                  className="movie-gallery-skeleton"
-                  key={`gallery-skeleton-${index}`}
-                  aria-hidden="true"
-                />
-              ))}
-
-            {images.map((image, index) => {
-              if (failedImages.has(image.id)) return null;
-
-              return (
+            {images.length > 1 && (
+              <div className="movie-gallery-controls">
                 <button
                   type="button"
-                  className="movie-gallery-card"
-                  key={image.id}
-                  onClick={() => setSelectedIndex(index)}
-                  aria-label={`View image ${index + 1}: ${image.filename}`}
+                  className="movie-gallery-arrow"
+                  onClick={() =>
+                    trackRef.current?.scrollBy({
+                      left: -trackRef.current.clientWidth * 0.75,
+                      behavior: "smooth",
+                    })
+                  }
+                  aria-label="Scroll gallery left"
                 >
-                  <img
-                    src={resolveGalleryImageUrl(image.url)}
-                    alt={image.filename || `Gallery image ${index + 1}`}
-                    loading={index < 4 ? "eager" : "lazy"}
-                    decoding="async"
-                    onError={() => markImageFailed(image.id)}
-                  />
-
-                  <span className="movie-gallery-card-overlay">
-                    <span className="movie-gallery-expand" aria-hidden="true">
-                      <svg viewBox="0 0 24 24">
-                        <path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m8 0h3a2 2 0 0 0 2-2v-3" />
-                      </svg>
-                    </span>
-                  </span>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m15 18-6-6 6-6" />
+                  </svg>
                 </button>
-              );
-            })}
 
-            {loadingMore && (
-              <div
-                className="movie-gallery-more-loading"
-                aria-label="Loading more images"
-              >
-                <span />
+                <button
+                  type="button"
+                  className="movie-gallery-arrow"
+                  onClick={() =>
+                    trackRef.current?.scrollBy({
+                      left: trackRef.current.clientWidth * 0.75,
+                      behavior: "smooth",
+                    })
+                  }
+                  aria-label="Scroll gallery right"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                </button>
               </div>
             )}
           </div>
-        )}
 
-        {error && images.length > 0 && (
-          <p className="movie-gallery-inline-error" role="status">
-            {error}
-          </p>
-        )}
-      </section>
+          {error && images.length === 0 ? (
+            <div className="movie-gallery-message" role="status">
+              <p>{error}</p>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setError("");
+                  setLoading(true);
+
+                  const controller = new AbortController();
+                  const requestId = ++requestIdRef.current;
+
+                  loadGallery(controller.signal, requestId);
+                }}
+              >
+                Try again
+              </button>
+            </div>
+          ) : (
+            <div
+              ref={trackRef}
+              className="movie-gallery-track"
+              onScroll={handleTrackScroll}
+              aria-busy={loading || loadingMore}
+            >
+              {loading &&
+                Array.from({ length: 4 }, (_, index) => (
+                  <div
+                    className="movie-gallery-skeleton"
+                    key={`gallery-skeleton-${index}`}
+                    aria-hidden="true"
+                  />
+                ))}
+
+              {images.map((image, index) => {
+                if (failedImages.has(image.id)) return null;
+
+                return (
+                  <button
+                    type="button"
+                    className="movie-gallery-card"
+                    key={image.id}
+                    onClick={() => setSelectedIndex(index)}
+                    aria-label={`View image ${index + 1}: ${image.filename}`}
+                  >
+                    <img
+                      src={resolveGalleryImageUrl(image.url)}
+                      alt={image.filename || `Gallery image ${index + 1}`}
+                      loading={index < 4 ? "eager" : "lazy"}
+                      decoding="async"
+                      onError={() => markImageFailed(image.id)}
+                    />
+
+                    <span className="movie-gallery-card-overlay">
+                      <span className="movie-gallery-expand" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                          <path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m8 0h3a2 2 0 0 0 2-2v-3" />
+                        </svg>
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+
+              {loadingMore && (
+                <div
+                  className="movie-gallery-more-loading"
+                  aria-label="Loading more images"
+                >
+                  <span />
+                </div>
+              )}
+            </div>
+          )}
+
+          {error && images.length > 0 && (
+            <p className="movie-gallery-inline-error" role="status">
+              {error}
+            </p>
+          )}
+        </section>
+      </div>
 
       {lightbox}
     </>

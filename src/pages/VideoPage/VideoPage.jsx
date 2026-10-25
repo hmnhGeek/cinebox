@@ -591,13 +591,7 @@ function VideoPage() {
             </div>
           )}
 
-          <div className="detail-section">
-            <h2>Frames and Stills</h2>
-            <MovieGallery
-              collectionId={collectionId}
-              mediaItemId={mediaItemId}
-            />
-          </div>
+          <MovieGallery collectionId={collectionId} mediaItemId={mediaItemId} />
         </section>
       </div>
     </main>
