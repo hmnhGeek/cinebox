@@ -591,8 +591,13 @@ function VideoPage() {
             </div>
           )}
 
-          {/* Gallery is inside the details box, at the very end. */}
-          <MovieGallery collectionId={collectionId} mediaItemId={mediaItemId} />
+          <div className="detail-section">
+            <h2>Frames and Stills</h2>
+            <MovieGallery
+              collectionId={collectionId}
+              mediaItemId={mediaItemId}
+            />
+          </div>
         </section>
       </div>
     </main>
