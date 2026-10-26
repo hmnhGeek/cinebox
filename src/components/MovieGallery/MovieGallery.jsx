@@ -28,7 +28,7 @@ function MovieGallery({ collectionId, mediaItemId }) {
 
   const loadMore = useCallback(async () => {
     if (!hasNext || loadingMoreRef.current || !collectionId || !mediaItemId) {
-      return;
+      return 0;
     }
 
     loadingMoreRef.current = true;
@@ -44,21 +44,26 @@ function MovieGallery({ collectionId, mediaItemId }) {
       );
 
       const newImages = Array.isArray(data.images) ? data.images : [];
+      let addedCount = 0;
 
       setImages((current) => {
         const knownIds = new Set(current.map((image) => image.id));
+        const uniqueNewImages = newImages.filter(
+          (image) => !knownIds.has(image.id),
+        );
 
-        return [
-          ...current,
-          ...newImages.filter((image) => !knownIds.has(image.id)),
-        ];
+        addedCount = uniqueNewImages.length;
+        return [...current, ...uniqueNewImages];
       });
 
       nextPageRef.current = data.page + 1;
       setHasNext(Boolean(data.hasNext));
+
+      return addedCount;
     } catch (err) {
       console.error("Failed to load more gallery images:", err);
       setError("Couldn't load more images. Please try again.");
+      return 0;
     } finally {
       loadingMoreRef.current = false;
       setLoadingMore(false);
@@ -121,7 +126,7 @@ function MovieGallery({ collectionId, mediaItemId }) {
     return () => controller.abort();
   }, [collectionId, mediaItemId, loadGallery]);
 
-  // Fetch another page as the user approaches the end of the strip.
+  // Fetch another page as the user approaches the end of the thumbnail strip.
   const handleTrackScroll = useCallback(() => {
     const track = trackRef.current;
 
@@ -138,17 +143,29 @@ function MovieGallery({ collectionId, mediaItemId }) {
     setSelectedIndex(-1);
   }, []);
 
+  // Do not wrap to the last image when the first image is selected.
   const showPrevious = useCallback(() => {
-    setSelectedIndex((current) =>
-      current > 0 ? current - 1 : images.length - 1,
-    );
-  }, [images.length]);
+    setSelectedIndex((current) => (current > 0 ? current - 1 : current));
+  }, []);
 
-  const showNext = useCallback(() => {
-    setSelectedIndex((current) =>
-      current < images.length - 1 ? current + 1 : 0,
-    );
-  }, [images.length]);
+  // Load the next page when the user reaches the last currently loaded image.
+  const showNext = useCallback(async () => {
+    if (selectedIndex < 0 || loadingMoreRef.current) return;
+
+    if (selectedIndex < images.length - 1) {
+      setSelectedIndex((current) => current + 1);
+      return;
+    }
+
+    if (hasNext) {
+      const previousLength = images.length;
+      const addedCount = await loadMore();
+
+      if (addedCount > 0) {
+        setSelectedIndex(previousLength);
+      }
+    }
+  }, [selectedIndex, images.length, hasNext, loadMore]);
 
   // Keyboard controls and background scroll locking for the lightbox.
   useEffect(() => {
@@ -171,13 +188,13 @@ function MovieGallery({ collectionId, mediaItemId }) {
     };
   }, [selectedImage, closeLightbox, showPrevious, showNext]);
 
-  // Preload adjacent images for smoother lightbox navigation.
+  // Preload adjacent images without wrapping around the gallery.
   useEffect(() => {
     if (selectedIndex < 0 || images.length < 2) return;
 
     const adjacent = [
-      images[(selectedIndex + 1) % images.length],
-      images[(selectedIndex - 1 + images.length) % images.length],
+      selectedIndex < images.length - 1 ? images[selectedIndex + 1] : null,
+      selectedIndex > 0 ? images[selectedIndex - 1] : null,
     ];
 
     adjacent.forEach((image) => {
@@ -209,15 +226,20 @@ function MovieGallery({ collectionId, mediaItemId }) {
     const difference = endX - startX;
 
     if (Math.abs(difference) > 45) {
-      if (difference > 0) showPrevious();
-      else showNext();
+      if (difference > 0) {
+        showPrevious();
+      } else {
+        showNext();
+      }
     }
 
     touchStartXRef.current = null;
   };
 
-  // Render the lightbox directly under document.body so ancestor stacking
-  // contexts cannot place it underneath the application header.
+  const isFirstImage = selectedIndex <= 0;
+  const isLastImage = selectedIndex === images.length - 1 && !hasNext;
+
+  // Render the lightbox directly under document.body.
   const lightbox = selectedImage
     ? createPortal(
         <div
@@ -231,6 +253,45 @@ function MovieGallery({ collectionId, mediaItemId }) {
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
+          <button
+            type="button"
+            className="movie-gallery-lightbox-arrow movie-gallery-lightbox-arrow-previous"
+            onClick={showPrevious}
+            disabled={isFirstImage}
+            aria-label="Previous gallery image"
+            style={{
+              position: "absolute",
+              left: "clamp(12px, 3vw, 36px)",
+              top: "50%",
+              transform: "translateY(-50%)",
+              zIndex: 2,
+              display: "grid",
+              placeItems: "center",
+              width: 48,
+              height: 48,
+              border: "1px solid rgba(196, 166, 106, 0.45)",
+              borderRadius: "50%",
+              background: "rgba(28, 27, 25, 0.88)",
+              color: "#dec58e",
+              cursor: isFirstImage ? "not-allowed" : "pointer",
+              opacity: isFirstImage ? 0.35 : 1,
+            }}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+          </button>
+
           <img
             className="movie-gallery-lightbox-image"
             src={resolveGalleryImageUrl(selectedImage.url)}
@@ -238,6 +299,47 @@ function MovieGallery({ collectionId, mediaItemId }) {
             onMouseDown={(event) => event.stopPropagation()}
             onError={() => markImageFailed(selectedImage.id)}
           />
+
+          <button
+            type="button"
+            className="movie-gallery-lightbox-arrow movie-gallery-lightbox-arrow-next"
+            onClick={showNext}
+            disabled={loadingMore || isLastImage}
+            aria-label={
+              loadingMore ? "Loading next gallery images" : "Next gallery image"
+            }
+            style={{
+              position: "absolute",
+              right: "clamp(12px, 3vw, 36px)",
+              top: "50%",
+              transform: "translateY(-50%)",
+              zIndex: 2,
+              display: "grid",
+              placeItems: "center",
+              width: 48,
+              height: 48,
+              border: "1px solid rgba(196, 166, 106, 0.45)",
+              borderRadius: "50%",
+              background: "rgba(28, 27, 25, 0.88)",
+              color: "#dec58e",
+              cursor: loadingMore || isLastImage ? "not-allowed" : "pointer",
+              opacity: loadingMore || isLastImage ? 0.35 : 1,
+            }}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </button>
         </div>,
         document.body,
       )
