@@ -525,8 +525,8 @@ function VideoPage() {
               {directors.length > 0 && (
                 <div className="detail-row">
                   <span>Director</span>
-                  <strong>
-                    {directors.map(getItemName).filter(Boolean).join(", ")}
+                  <strong className="studio-link-list">
+                    {renderDiscoverableList(directors, "directors")}
                   </strong>
                 </div>
               )}

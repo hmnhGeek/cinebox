@@ -18,6 +18,7 @@ const MATCH_LABELS = {
   TAG: "Tag",
   GENRE: "Genre",
   ACTOR: "Cast",
+  DIRECTOR: "Director",
   STUDIO: "Studio",
 };
 
@@ -306,7 +307,9 @@ function Header() {
               <div className="search-dropdown-state">
                 <Search size={22} />
                 <span>No matches found for “{trimmedQuery}”</span>
-                <small>Try another title, actor, genre, tag, or studio.</small>
+                <small>
+                  Try another title, actor, director, genre, tag, or studio.
+                </small>
               </div>
             ) : (
               <div className="search-suggestion-list">

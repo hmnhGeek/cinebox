@@ -37,6 +37,12 @@ const DISCOVERY_TYPES = {
     fallbackDescription: "Explore movies from this studio.",
     metadataKey: "studios",
   },
+  directors: {
+    title: "Director",
+    description: (name) => `Explore movies directed by ${name}.`,
+    fallbackDescription: "Explore movies directed by this person.",
+    metadataKey: "directors",
+  },
 };
 
 function DiscoveryPage() {
