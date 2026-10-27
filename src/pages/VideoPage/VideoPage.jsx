@@ -525,7 +525,7 @@ function VideoPage() {
               {directors.length > 0 && (
                 <div className="detail-row">
                   <span>Director</span>
-                  <strong className="studio-link-list">
+                  <strong className="metadata-link-list">
                     {renderDiscoverableList(directors, "directors")}
                   </strong>
                 </div>
@@ -573,7 +573,7 @@ function VideoPage() {
               {allStudios.length > 0 && (
                 <div className="detail-item" key="Studio">
                   <span>Studio</span>
-                  <strong className="studio-link-list">
+                  <strong className="metadata-link-list">
                     {renderDiscoverableList(allStudios, "studios")}
                   </strong>
                 </div>

@@ -1174,14 +1174,14 @@
 
 /* Studio links stay inline in the existing details grid. */
 
-.video-page .studio-link-list {
+.video-page .metadata-link-list {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   align-items: baseline;
 }
 
-.video-page .studio-link-list .metadata-link {
+.video-page .metadata-link-list .metadata-link {
   color: #e2ddd4;
   font-size: 14px;
   font-weight: 500;
@@ -1189,11 +1189,11 @@
   overflow-wrap: anywhere;
 }
 
-.video-page .studio-link-list .metadata-link:not(:last-child)::after {
+.video-page .metadata-link-list .metadata-link:not(:last-child)::after {
   content: ",";
 }
 
-.video-page .studio-link-list .metadata-link:hover:not(:disabled) {
+.video-page .metadata-link-list .metadata-link:hover:not(:disabled) {
   color: var(--cb-gold-light);
 }
 
@@ -1293,14 +1293,14 @@
 
 /* Studios */
 
-.video-page .studio-link-list {
+.video-page .metadata-link-list {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0 8px;
 }
 
-.video-page .studio-link-list .metadata-link {
+.video-page .metadata-link-list .metadata-link {
   position: relative;
   display: inline;
   padding: 0;
@@ -1324,7 +1324,7 @@
 }
 
 /* Underline spans the studio name only, not the comma. */
-.video-page .studio-link-list .metadata-link::before {
+.video-page .metadata-link-list .metadata-link::before {
   content: "";
   position: absolute;
   right: 0;
@@ -1337,7 +1337,7 @@
 }
 
 /* Place the comma in the gap between studio names. */
-.video-page .studio-link-list .metadata-link:not(:last-child)::after {
+.video-page .metadata-link-list .metadata-link:not(:last-child)::after {
   content: ",";
   position: absolute;
   top: 0;
@@ -1348,33 +1348,33 @@
   pointer-events: none;
 }
 
-.video-page .studio-link-list .metadata-link:hover:not(:disabled) {
+.video-page .metadata-link-list .metadata-link:hover:not(:disabled) {
   color: var(--cb-gold-light);
   text-shadow: 0 0 14px rgba(196, 166, 106, 0.16);
 }
 
-.video-page .studio-link-list .metadata-link:hover:not(:disabled)::before {
+.video-page .metadata-link-list .metadata-link:hover:not(:disabled)::before {
   background: var(--cb-gold-light);
 }
 
-.video-page .studio-link-list .metadata-link:focus-visible {
+.video-page .metadata-link-list .metadata-link:focus-visible {
   outline: 1px solid var(--cb-gold);
   outline-offset: 4px;
   border-radius: 2px;
 }
 
-.video-page .studio-link-list .metadata-link:disabled {
+.video-page .metadata-link-list .metadata-link:disabled {
   color: var(--cb-text-secondary);
   cursor: default;
 }
 
-.video-page .studio-link-list .metadata-link:disabled::before {
+.video-page .metadata-link-list .metadata-link:disabled::before {
   background: rgba(165, 161, 151, 0.45);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .video-page .hero-genres .metadata-link,
-  .video-page .studio-link-list .metadata-link {
+  .video-page .metadata-link-list .metadata-link {
     transition: none;
   }
 }
