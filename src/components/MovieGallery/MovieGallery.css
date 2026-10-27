@@ -1,0 +1,527 @@
+/* =========================================
+   CineBox — Cinematic Movie Gallery
+   ========================================= */
+
+.movie-gallery {
+  --gallery-bg: #141413;
+  --gallery-surface: #1c1b19;
+  --gallery-hover: #23221f;
+  --gallery-border: #35332e;
+  --gallery-gold: #c4a66a;
+  --gallery-gold-light: #dec58e;
+  --gallery-text: #f0eee8;
+  --gallery-secondary: #a5a197;
+  --gallery-muted: #77736a;
+
+  position: relative;
+  min-width: 0;
+  margin-top: 42px;
+  color: var(--gallery-text);
+}
+
+/* Premium heading */
+.movie-gallery-heading {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: 12px;
+  padding-top: 0;
+}
+
+.movie-gallery-heading-copy {
+  min-width: 0;
+}
+
+.movie-gallery-eyebrow {
+  display: block;
+  margin-bottom: 9px;
+  color: var(--gallery-gold);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2.4px;
+}
+
+.movie-gallery-heading h2 {
+  position: relative;
+  width: fit-content;
+  margin: 0;
+  color: var(--gallery-text);
+  font-size: clamp(23px, 3vw, 29px);
+  font-weight: 650;
+  letter-spacing: -0.8px;
+  line-height: 1.25;
+}
+
+.movie-gallery-heading h2::after {
+  display: block;
+  width: 38px;
+  height: 2px;
+  margin-top: 12px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--gallery-gold),
+    rgba(196, 166, 106, 0.12)
+  );
+  content: "";
+}
+
+/* Arrow controls */
+
+.movie-gallery-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.movie-gallery-arrow {
+  display: grid;
+  width: 39px;
+  height: 39px;
+  place-items: center;
+  border: 1px solid var(--gallery-border);
+  border-radius: 50%;
+  background: var(--gallery-surface);
+  color: var(--gallery-text);
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.movie-gallery-arrow svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.movie-gallery-arrow:hover {
+  border-color: var(--gallery-gold);
+  background: var(--gallery-hover);
+  color: var(--gallery-gold-light);
+  transform: translateY(-1px);
+}
+
+.movie-gallery-arrow:focus-visible,
+.movie-gallery-card:focus-visible {
+  outline: 2px solid var(--cinebox-gold, #c4a66a);
+  outline-offset: -2px;
+  border-radius: inherit;
+}
+
+/* Horizontal image strip */
+
+.movie-gallery-track {
+  display: flex;
+  align-items: stretch;
+  gap: 15px;
+  width: 100%;
+  min-width: 0;
+  padding: 3px 3px 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.movie-gallery-track::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Individual image */
+
+.movie-gallery-card {
+  position: relative;
+  display: block;
+  flex: 0 0 clamp(220px, 27%, 340px);
+  aspect-ratio: 3 / 2;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgba(240, 238, 232, 0.09);
+  border-radius: 7px;
+  background: var(--gallery-surface);
+  color: var(--gallery-text);
+  cursor: pointer;
+  scroll-snap-align: start;
+  isolation: isolate;
+  outline: none,
+  transition:
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.movie-gallery-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--gallery-surface);
+  transition:
+    transform 450ms cubic-bezier(0.2, 0.65, 0.3, 1),
+    filter 300ms ease;
+}
+
+.movie-gallery-card:hover {
+  border-color: rgba(196, 166, 106, 0.6);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.movie-gallery-card:hover img {
+  transform: scale(1.045);
+  filter: brightness(0.8);
+}
+
+.movie-gallery-card-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.02) 30%,
+    rgba(0, 0, 0, 0.32) 100%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+.movie-gallery-card:hover .movie-gallery-card-overlay,
+.movie-gallery-card:focus-visible .movie-gallery-card-overlay {
+  opacity: 1;
+}
+
+.movie-gallery-expand {
+  display: grid;
+  width: 43px;
+  height: 43px;
+  place-items: center;
+  border: 1px solid rgba(240, 238, 232, 0.45);
+  border-radius: 50%;
+  background: rgba(20, 20, 19, 0.58);
+  color: var(--gallery-gold-light);
+  backdrop-filter: blur(8px);
+}
+
+.movie-gallery-expand svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Loading skeletons */
+
+.movie-gallery-skeleton {
+  flex: 0 0 clamp(220px, 27%, 340px);
+  aspect-ratio: 3 / 2;
+  border: 1px solid rgba(240, 238, 232, 0.035);
+  border-radius: 7px;
+  background: linear-gradient(105deg, #1c1b19 15%, #282620 35%, #1c1b19 55%);
+  background-size: 220% 100%;
+  animation: movie-gallery-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes movie-gallery-shimmer {
+  to {
+    background-position-x: -220%;
+  }
+}
+
+.movie-gallery-more-loading {
+  display: grid;
+  flex: 0 0 55px;
+  place-items: center;
+}
+
+.movie-gallery-more-loading span {
+  width: 23px;
+  height: 23px;
+  border: 2px solid var(--gallery-border);
+  border-top-color: var(--gallery-gold);
+  border-radius: 50%;
+  animation: movie-gallery-spin 700ms linear infinite;
+}
+
+@keyframes movie-gallery-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.movie-gallery-message {
+  padding: 22px;
+  border: 1px solid var(--gallery-border);
+  border-radius: 7px;
+  background: var(--gallery-surface);
+}
+
+.movie-gallery-message p,
+.movie-gallery-inline-error {
+  color: var(--gallery-secondary);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.movie-gallery-message button {
+  margin-top: 8px;
+  padding: 9px 13px;
+  border: 1px solid var(--gallery-border);
+  border-radius: 5px;
+  background: var(--gallery-hover);
+  color: var(--gallery-gold-light);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.movie-gallery-message button:hover {
+  border-color: var(--gallery-gold);
+}
+
+.movie-gallery-inline-error {
+  margin: 10px 0 0;
+}
+
+/* =========================================
+   Simple Viewport Image Overlay
+   ========================================= */
+
+/*
+ * The lightbox is rendered through createPortal
+ * directly into document.body.
+ *
+ * No modal background, header, footer, caption,
+ * or navigation controls.
+ *
+ * The image is centered within the viewport and
+ * cannot exceed the available screen dimensions.
+ */
+
+.movie-gallery-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+
+  padding: 24px;
+  box-sizing: border-box;
+
+  /* Subtle blur without an opaque black modal */
+  background: rgba(20, 20, 19, 0.12);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+
+  overflow: hidden;
+  cursor: zoom-out;
+}
+
+.movie-gallery-lightbox-image {
+  display: block;
+
+  width: auto;
+  height: auto;
+
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 48px);
+  max-width: 100%;
+  max-height: 100%;
+
+  object-fit: contain;
+  object-position: center;
+
+  margin: auto;
+  flex: 0 1 auto;
+
+  border-radius: 2px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+
+  cursor: default;
+}
+
+/* =========================================
+   Responsive Layout
+   ========================================= */
+
+@media (max-width: 1000px) {
+  .movie-gallery-card,
+  .movie-gallery-skeleton {
+    flex-basis: 34%;
+  }
+}
+
+@media (max-width: 650px) {
+  .movie-gallery {
+    margin-top: 32px;
+  }
+
+  .movie-gallery-heading {
+    margin-bottom: 17px;
+    gap: 12px;
+  }
+
+  .movie-gallery-eyebrow {
+    margin-bottom: 8px;
+    font-size: 8px;
+    letter-spacing: 1.8px;
+  }
+
+  .movie-gallery-heading h2 {
+    font-size: 24px;
+  }
+
+  .movie-gallery-heading h2::after {
+    margin-top: 9px;
+  }
+
+  .movie-gallery-controls {
+    gap: 6px;
+  }
+
+  .movie-gallery-arrow {
+    width: 34px;
+    height: 34px;
+  }
+
+  .movie-gallery-track {
+    gap: 11px;
+    margin-right: -20px;
+    padding-right: 20px;
+    scroll-padding-left: 2px;
+  }
+
+  .movie-gallery-card,
+  .movie-gallery-skeleton {
+    flex-basis: min(76%, 290px);
+    border-radius: 6px;
+  }
+
+  .movie-gallery-card-overlay {
+    opacity: 1;
+    background: linear-gradient(
+      180deg,
+      transparent 55%,
+      rgba(0, 0, 0, 0.22) 100%
+    );
+  }
+
+  .movie-gallery-expand {
+    position: absolute;
+    right: 9px;
+    bottom: 9px;
+
+    width: 31px;
+    height: 31px;
+
+    border-color: rgba(240, 238, 232, 0.2);
+    background: rgba(20, 20, 19, 0.65);
+  }
+
+  .movie-gallery-expand svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .movie-gallery-lightbox {
+    padding: 12px;
+  }
+
+  .movie-gallery-lightbox-image {
+    max-width: 100%;
+    max-height: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .movie-gallery-lightbox {
+    padding: 8px;
+  }
+}
+
+/* Accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+  .movie-gallery *,
+  .movie-gallery *::before,
+  .movie-gallery *::after,
+  .movie-gallery-lightbox,
+  .movie-gallery-lightbox * {
+    animation: none !important;
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}
+
+.movie-gallery-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  position: relative;
+  padding: 0; /* Remove extra vertical padding */
+  margin: 0;
+  color: var(--cinebox-text-secondary, #a5a197);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.035em;
+  line-height: 1.3;
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+.movie-gallery-count::before {
+  content: "";
+  width: 2px;
+  height: 21px;
+  flex-shrink: 0;
+  border-radius: 2px;
+  background: linear-gradient(
+    180deg,
+    #dec58e 0%,
+    #c4a66a 55%,
+    rgb(196 166 106 / 25%) 100%
+  );
+  box-shadow: 0 0 8px rgb(196 166 106 / 18%);
+}
+
+.movie-gallery-count .count-number {
+  color: #c4a66a;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  font-variant-numeric: tabular-nums;
+  text-shadow: none;
+}
+
+.movie-gallery-count:hover {
+  background: none;
+  border: none;
+  box-shadow: none;
+}
