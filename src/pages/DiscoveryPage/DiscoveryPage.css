@@ -1439,7 +1439,7 @@
   min-height: 39px;
   padding: 10px 15px;
   border: 1px solid rgba(196, 166, 106, 0.55);
-  border-radius: 6px;
+  border-radius: 7px;
   background: rgba(196, 166, 106, 0.08);
   color: var(--cinebox-gold-light);
   font-family: inherit;

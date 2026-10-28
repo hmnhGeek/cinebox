@@ -513,7 +513,7 @@ function DiscoveryPage() {
           <div className="actor-profile-action-row">
             <button
               type="button"
-              className="app-level-button"
+              className="actor-profile-edit-button"
               onClick={() => setProfileEditorOpen(true)}
               aria-label={profileEditorLabel}
             >
