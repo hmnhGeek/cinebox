@@ -94,20 +94,16 @@ function DiscoveryPage() {
     [actorProfile?.heroImageUrl],
   );
 
-  // Use the clean actor banner only when valid actor hero artwork exists.
-  // If artwork is missing or fails, the standard discovery banner is used.
   const useCleanActorHero =
     isActorPage && Boolean(profileHeroUrl) && failedHeroUrl !== profileHeroUrl;
 
   const heroSrc = useCleanActorHero ? profileHeroUrl : discoveryhero;
 
-  // Reset hero state when navigating to another discovery item.
   useEffect(() => {
     setFailedHeroUrl(null);
     setHeroImageLoaded(false);
   }, [type, id]);
 
-  // Load actor profile independently of the movie results.
   useEffect(() => {
     if (!isActorPage || !id) {
       setActorProfile(null);
@@ -171,7 +167,6 @@ function DiscoveryPage() {
     ? discoveryType.description(discoveryName)
     : discoveryType?.fallbackDescription;
 
-  // Fetch paginated discovery results.
   const fetchVideos = useCallback(
     async (signal) => {
       if (!discoveryType || !id) {
@@ -230,7 +225,6 @@ function DiscoveryPage() {
     return () => controller.abort();
   }, [fetchVideos, retryKey]);
 
-  // Reset hero loading state whenever the selected image changes.
   useEffect(() => {
     setHeroImageLoaded(false);
   }, [heroSrc]);
@@ -246,14 +240,12 @@ function DiscoveryPage() {
   };
 
   const handleHeroImageError = () => {
-    // Failed actor artwork switches the page to the standard discovery hero.
     if (useCleanActorHero && profileHeroUrl) {
       setFailedHeroUrl(profileHeroUrl);
       setHeroImageLoaded(false);
       return;
     }
 
-    // Avoid leaving the page in a loading state if the fallback also fails.
     setHeroImageLoaded(true);
   };
 
@@ -336,11 +328,10 @@ function DiscoveryPage() {
     Boolean(biography);
 
   const profileEditorLabel = isActorProfileComplete
-    ? "Edit Profile"
-    : "Add Profile";
+    ? "Edit Actor Profile"
+    : "Add Actor Profile";
 
   const handleActorProfileSaved = async () => {
-    // Refresh profile data before closing the editor.
     const updatedProfile = await actorProfileApi.getProfile(id);
 
     setActorProfile(updatedProfile);
@@ -518,36 +509,24 @@ function DiscoveryPage() {
       )}
 
       <div className="discovery-content">
-        {/* Actor profile management */}
         {isActorPage && (
-          <div className="actor-profile-toolbar">
-            <div className="actor-profile-toolbar-copy">
-              <span className="discovery-section-eyebrow">
-                PROFILE MANAGEMENT
-              </span>
-              <p>
-                {isActorProfileComplete
-                  ? "Keep this actor's artwork and biography up to date."
-                  : "Complete the artwork and biography for this actor."}
-              </p>
-            </div>
-
+          <div className="actor-profile-action-row">
             <button
               type="button"
-              className="actor-profile-edit-button"
+              className="app-level-button"
               onClick={() => setProfileEditorOpen(true)}
+              aria-label={profileEditorLabel}
             >
               {isActorProfileComplete ? (
                 <Pencil size={15} strokeWidth={1.8} />
               ) : (
                 <Plus size={17} strokeWidth={1.8} />
               )}
-              {profileEditorLabel}
+              <span>{profileEditorLabel}</span>
             </button>
           </div>
         )}
 
-        {/* Actor biography and portrait */}
         {hasActorProfileContent && (
           <section
             className="actor-profile"
@@ -586,7 +565,6 @@ function DiscoveryPage() {
           </section>
         )}
 
-        {/* Filmography / discovery results */}
         <section className="discovery-results-heading">
           <div className="discovery-results-title">
             <span className="discovery-section-eyebrow">
@@ -712,7 +690,6 @@ function DiscoveryPage() {
         ) : null}
       </div>
 
-      {/* Actor profile editor */}
       {isActorPage && profileEditorOpen && (
         <ActorProfileEditor
           personId={id}

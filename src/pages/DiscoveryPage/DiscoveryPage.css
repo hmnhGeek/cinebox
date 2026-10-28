@@ -1507,3 +1507,67 @@
     transition: none;
   }
 }
+
+/* Standalone actor-profile action; no toolbar box or descriptive copy. */
+.actor-profile-action-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+/* CineBox charcoal and muted-gold action button. */
+.actor-profile-action-row .actor-profile-edit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-height: 40px;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--cinebox-gold, #c4a66a);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--cinebox-gold-light, #dec58e);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.actor-profile-action-row .actor-profile-edit-button:hover {
+  background: rgba(196, 166, 106, 0.12);
+  border-color: var(--cinebox-gold-light, #dec58e);
+  color: #f0eee8;
+}
+
+.actor-profile-action-row .actor-profile-edit-button:active {
+  transform: translateY(1px);
+}
+
+.actor-profile-action-row .actor-profile-edit-button:focus-visible {
+  outline: 2px solid var(--cinebox-gold-light, #dec58e);
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .actor-profile-action-row {
+    margin-bottom: 1.1rem;
+  }
+
+  .actor-profile-action-row .actor-profile-edit-button {
+    min-height: 38px;
+    padding: 0.55rem 0.8rem;
+    font-size: 0.78rem;
+  }
+}

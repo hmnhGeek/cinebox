@@ -94,25 +94,18 @@ function ImageField({
   const handleFileChange = (event) => {
     const file = event.target.files?.[0] || null;
 
-    // Reset the native input so selecting the same file again works.
     event.target.value = "";
 
-    if (!file) {
-      return;
-    }
+    if (!file) return;
 
     const validationError = validateSelectedImage(file, label);
 
     if (validationError) {
-      onFileChange(null);
-      setPreviewError(false);
-
-      // The parent form owns the main error message.
       onFileChange({
         validationError,
         invalidFile: true,
       });
-
+      setPreviewError(false);
       return;
     }
 
@@ -235,7 +228,7 @@ function ActorProfileEditor({ personId, profile, onClose, onSaved }) {
     typeof profile?.biography === "string" &&
     Boolean(profile.biography.trim());
 
-  const modeLabel = isComplete ? "Edit Profile" : "Add Profile";
+  const modeLabel = isComplete ? "Edit Actor Profile" : "Add Actor Profile";
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -278,13 +271,9 @@ function ActorProfileEditor({ personId, profile, onClose, onSaved }) {
   };
 
   const validateForm = () => {
-    if (heroFileError) {
-      return heroFileError;
-    }
+    if (heroFileError) return heroFileError;
 
-    if (portraitFileError) {
-      return portraitFileError;
-    }
+    if (portraitFileError) return portraitFileError;
 
     if (!heroUrl && !heroFile) {
       return "A hero image is required. Choose an image to continue.";
@@ -301,17 +290,13 @@ function ActorProfileEditor({ personId, profile, onClose, onSaved }) {
     if (heroFile) {
       const message = validateSelectedImage(heroFile, "Hero image");
 
-      if (message) {
-        return message;
-      }
+      if (message) return message;
     }
 
     if (portraitFile) {
       const message = validateSelectedImage(portraitFile, "Profile portrait");
 
-      if (message) {
-        return message;
-      }
+      if (message) return message;
     }
 
     if (biography.trim().length > 10000) {
@@ -324,9 +309,7 @@ function ActorProfileEditor({ personId, profile, onClose, onSaved }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (saving) {
-      return;
-    }
+    if (saving) return;
 
     setError("");
     setCompletedSteps([]);
@@ -377,8 +360,6 @@ function ActorProfileEditor({ personId, profile, onClose, onSaved }) {
         );
       }
 
-      // If refreshing fails, the editor stays open and reports the issue.
-      // The individual updates may already have succeeded on the server.
       await onSaved();
     } catch (cause) {
       const savedMessage = completed.length
@@ -423,10 +404,10 @@ function ActorProfileEditor({ personId, profile, onClose, onSaved }) {
 
           <button
             type="button"
-            className="actor-editor-close"
+            className="close-button"
             onClick={onClose}
             disabled={saving}
-            aria-label="Close profile editor"
+            aria-label="Close modal"
           >
             <X size={19} />
           </button>
