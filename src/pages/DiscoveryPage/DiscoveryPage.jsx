@@ -85,14 +85,14 @@ function DiscoveryPage() {
     [actorProfile?.heroImageUrl],
   );
 
-  // Use the actor's hero artwork when available.
+  // Use actor hero artwork when available.
   // Missing or failed artwork falls back to the default discovery image.
   const heroSrc =
     isActorPage && profileHeroUrl && failedHeroUrl !== profileHeroUrl
       ? profileHeroUrl
       : discoveryhero;
 
-  // Reset image failure state when navigating to another discovery item.
+  // Reset hero state when navigating to another discovery item.
   useEffect(() => {
     setFailedHeroUrl(null);
     setHeroImageLoaded(false);
@@ -244,14 +244,14 @@ function DiscoveryPage() {
   };
 
   const handleHeroImageError = () => {
-    // If the actor's image fails, switch to the default hero image.
+    // If actor artwork fails, switch to the default hero image.
     if (isActorPage && profileHeroUrl && heroSrc === profileHeroUrl) {
       setFailedHeroUrl(profileHeroUrl);
       setHeroImageLoaded(false);
       return;
     }
 
-    // Do not leave the hero in a loading state if the fallback also fails.
+    // Do not leave the page in a loading state if the fallback also fails.
     setHeroImageLoaded(true);
   };
 
