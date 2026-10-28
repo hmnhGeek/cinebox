@@ -85,12 +85,12 @@ function DiscoveryPage() {
     [actorProfile?.heroImageUrl],
   );
 
-  // Use actor hero artwork when available.
-  // Missing or failed artwork falls back to the default discovery image.
-  const heroSrc =
-    isActorPage && profileHeroUrl && failedHeroUrl !== profileHeroUrl
-      ? profileHeroUrl
-      : discoveryhero;
+  // Use the clean actor banner only when valid actor hero artwork exists.
+  // If artwork is missing or fails, the standard discovery banner is used.
+  const useCleanActorHero =
+    isActorPage && Boolean(profileHeroUrl) && failedHeroUrl !== profileHeroUrl;
+
+  const heroSrc = useCleanActorHero ? profileHeroUrl : discoveryhero;
 
   // Reset hero state when navigating to another discovery item.
   useEffect(() => {
@@ -244,14 +244,14 @@ function DiscoveryPage() {
   };
 
   const handleHeroImageError = () => {
-    // If actor artwork fails, switch to the default hero image.
-    if (isActorPage && profileHeroUrl && heroSrc === profileHeroUrl) {
+    // Failed actor artwork switches the page to the standard discovery hero.
+    if (useCleanActorHero && profileHeroUrl) {
       setFailedHeroUrl(profileHeroUrl);
       setHeroImageLoaded(false);
       return;
     }
 
-    // Do not leave the page in a loading state if the fallback also fails.
+    // Avoid leaving the page in a loading state if the fallback also fails.
     setHeroImageLoaded(true);
   };
 
@@ -365,8 +365,10 @@ function DiscoveryPage() {
       <section
         className={`discovery-hero ${
           heroImageLoaded ? "hero-ready" : "hero-loading"
-        } ${isActorPage ? "discovery-hero-actor" : ""}`}
-        aria-label={isActorPage ? "Actor profile hero" : "Discovery collection"}
+        } ${useCleanActorHero ? "discovery-hero-actor" : ""}`}
+        aria-label={
+          useCleanActorHero ? "Actor profile hero" : "Discovery collection"
+        }
       >
         <img
           key={`${type}-${id}-${heroSrc}`}
@@ -389,8 +391,9 @@ function DiscoveryPage() {
           }}
         />
 
-        {/* Keep the existing skeleton for non-actor discovery pages. */}
-        {!heroImageLoaded && !isActorPage && (
+        {/* Use the standard discovery skeleton whenever the standard
+            discovery hero layout is active. */}
+        {!heroImageLoaded && !useCleanActorHero && (
           <div className="discovery-hero-skeleton" aria-hidden="true">
             <div className="discovery-skeleton-content">
               <div className="discovery-skeleton-back" />
@@ -452,7 +455,8 @@ function DiscoveryPage() {
           </div>
         )}
 
-        {heroImageLoaded && isActorPage && (
+        {/* Show the filmography footer only for the clean actor banner. */}
+        {heroImageLoaded && useCleanActorHero && (
           <div className="discovery-hero-bottom actor-hero-bottom">
             <span className="actor-hero-caption">
               <span className="actor-hero-caption-dot" />
@@ -467,8 +471,9 @@ function DiscoveryPage() {
         )}
       </section>
 
-      {/* Actor-only back link: same button and navigation behavior as other filters. */}
-      {isActorPage && (
+      {/* The below-banner back link is used only when actor artwork exists.
+          Otherwise, the standard back link is displayed inside the hero. */}
+      {useCleanActorHero && (
         <div className="actor-profile-back-row">
           <button
             className="discovery-back-button"
