@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { LoaderCircle, Search, UsersRound } from "lucide-react";
+import { LoaderCircle, Search, UsersRound, Clapperboard } from "lucide-react";
 import VideoGrid from "../../components/videoGrid/VideoGrid";
 import {
   getSearchResults,
@@ -240,7 +240,7 @@ function SearchResultsPage() {
             aria-labelledby="search-videos-title"
           >
             <div className="search-section-heading search-videos-heading">
-              <Search size={16} strokeWidth={1.6} />
+              <Clapperboard size={16} strokeWidth={1.6} />
               <h2 id="search-videos-title">Videos</h2>
               {!loading && !error && data && (
                 <span className="search-section-count">
