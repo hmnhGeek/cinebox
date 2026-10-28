@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { ChevronRight, LoaderCircle, UserRound } from "lucide-react";
+import {
+  ChevronRight,
+  LoaderCircle,
+  Pencil,
+  Plus,
+  UserRound,
+} from "lucide-react";
 import VideoCard from "../../components/videoCard/VideoCard";
+import ActorProfileEditor from "../../components/actorProfileEditor/ActorProfileEditor";
+import actorProfileApi from "../../service/actorProfileApi";
 import "./DiscoveryPage.css";
 import discoveryhero from "../../assets/discoveryhero.jpg";
 
@@ -71,6 +79,7 @@ function DiscoveryPage() {
   const [profileImageFailed, setProfileImageFailed] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const [actorProfile, setActorProfile] = useState(null);
+  const [profileEditorOpen, setProfileEditorOpen] = useState(false);
 
   const discoveryType = DISCOVERY_TYPES[type];
   const isActorPage = type === "actors";
@@ -112,16 +121,9 @@ function DiscoveryPage() {
 
     async function fetchActorProfile() {
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/api/v1/people/${encodeURIComponent(id)}/profile`,
-          { signal: controller.signal },
-        );
-
-        if (!response.ok) {
-          throw new Error(`Unable to load actor profile (${response.status}).`);
-        }
-
-        const data = await response.json();
+        const data = await actorProfileApi.getProfile(id, {
+          signal: controller.signal,
+        });
 
         if (!controller.signal.aborted) {
           setActorProfile(data);
@@ -319,6 +321,35 @@ function DiscoveryPage() {
     setRetryKey((current) => current + 1);
   };
 
+  const biography =
+    typeof actorProfile?.biography === "string"
+      ? actorProfile.biography.trim()
+      : "";
+
+  const hasActorProfileContent =
+    isActorPage && Boolean(profileImageUrl || biography);
+
+  const isActorProfileComplete =
+    isActorPage &&
+    Boolean(profileHeroUrl) &&
+    Boolean(profileImageUrl) &&
+    Boolean(biography);
+
+  const profileEditorLabel = isActorProfileComplete
+    ? "Edit Profile"
+    : "Add Profile";
+
+  const handleActorProfileSaved = async () => {
+    // Refresh profile data before closing the editor.
+    const updatedProfile = await actorProfileApi.getProfile(id);
+
+    setActorProfile(updatedProfile);
+    setFailedHeroUrl(null);
+    setProfileImageFailed(false);
+    setHeroImageLoaded(false);
+    setProfileEditorOpen(false);
+  };
+
   if (!discoveryType) {
     return (
       <main className="discovery-page">
@@ -352,14 +383,6 @@ function DiscoveryPage() {
     );
   }
 
-  const biography =
-    typeof actorProfile?.biography === "string"
-      ? actorProfile.biography.trim()
-      : "";
-
-  const hasActorProfileContent =
-    isActorPage && Boolean(profileImageUrl || biography);
-
   return (
     <main className="discovery-page">
       <section
@@ -391,8 +414,6 @@ function DiscoveryPage() {
           }}
         />
 
-        {/* Use the standard discovery skeleton whenever the standard
-            discovery hero layout is active. */}
         {!heroImageLoaded && !useCleanActorHero && (
           <div className="discovery-hero-skeleton" aria-hidden="true">
             <div className="discovery-skeleton-content">
@@ -455,7 +476,6 @@ function DiscoveryPage() {
           </div>
         )}
 
-        {/* Show the filmography footer only for the clean actor banner. */}
         {heroImageLoaded && useCleanActorHero && (
           <div className="discovery-hero-bottom actor-hero-bottom">
             <span className="actor-hero-caption">
@@ -471,8 +491,6 @@ function DiscoveryPage() {
         )}
       </section>
 
-      {/* The below-banner back link is used only when actor artwork exists.
-          Otherwise, the standard back link is displayed inside the hero. */}
       {useCleanActorHero && (
         <div className="actor-profile-back-row">
           <button
@@ -500,6 +518,35 @@ function DiscoveryPage() {
       )}
 
       <div className="discovery-content">
+        {/* Actor profile management */}
+        {isActorPage && (
+          <div className="actor-profile-toolbar">
+            <div className="actor-profile-toolbar-copy">
+              <span className="discovery-section-eyebrow">
+                PROFILE MANAGEMENT
+              </span>
+              <p>
+                {isActorProfileComplete
+                  ? "Keep this actor's artwork and biography up to date."
+                  : "Complete the artwork and biography for this actor."}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              className="actor-profile-edit-button"
+              onClick={() => setProfileEditorOpen(true)}
+            >
+              {isActorProfileComplete ? (
+                <Pencil size={15} strokeWidth={1.8} />
+              ) : (
+                <Plus size={17} strokeWidth={1.8} />
+              )}
+              {profileEditorLabel}
+            </button>
+          </div>
+        )}
+
         {/* Actor biography and portrait */}
         {hasActorProfileContent && (
           <section
@@ -664,6 +711,16 @@ function DiscoveryPage() {
           </>
         ) : null}
       </div>
+
+      {/* Actor profile editor */}
+      {isActorPage && profileEditorOpen && (
+        <ActorProfileEditor
+          personId={id}
+          profile={actorProfile}
+          onClose={() => setProfileEditorOpen(false)}
+          onSaved={handleActorProfileSaved}
+        />
+      )}
     </main>
   );
 }
