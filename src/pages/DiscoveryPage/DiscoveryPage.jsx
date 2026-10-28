@@ -85,12 +85,20 @@ function DiscoveryPage() {
     [actorProfile?.heroImageUrl],
   );
 
+  // Use the actor's hero artwork when available.
+  // Missing or failed artwork falls back to the default discovery image.
   const heroSrc =
     isActorPage && profileHeroUrl && failedHeroUrl !== profileHeroUrl
       ? profileHeroUrl
       : discoveryhero;
 
-  // Load the additional actor profile only on actor discovery pages.
+  // Reset image failure state when navigating to another discovery item.
+  useEffect(() => {
+    setFailedHeroUrl(null);
+    setHeroImageLoaded(false);
+  }, [type, id]);
+
+  // Load actor profile independently of the movie results.
   useEffect(() => {
     if (!isActorPage || !id) {
       setActorProfile(null);
@@ -120,7 +128,6 @@ function DiscoveryPage() {
         }
       } catch (err) {
         if (err.name !== "AbortError") {
-          // Profile data is supplementary. Keep movie discovery usable.
           console.warn("Unable to load actor profile.", err);
         }
       }
@@ -134,7 +141,6 @@ function DiscoveryPage() {
   const discoveryName = useMemo(() => {
     if (!discoveryType || !id) return null;
 
-    // Prefer the canonical name returned by the actor profile API.
     if (isActorPage && actorProfile?.name) {
       return actorProfile.name;
     }
@@ -151,6 +157,7 @@ function DiscoveryPage() {
 
       if (match) {
         const name = match.name || match.title;
+
         if (name) return name;
       }
     }
@@ -162,6 +169,7 @@ function DiscoveryPage() {
     ? discoveryType.description(discoveryName)
     : discoveryType?.fallbackDescription;
 
+  // Fetch paginated discovery results.
   const fetchVideos = useCallback(
     async (signal) => {
       if (!discoveryType || !id) {
@@ -220,10 +228,10 @@ function DiscoveryPage() {
     return () => controller.abort();
   }, [fetchVideos, retryKey]);
 
-  // Reset hero loading state whenever the displayed artwork changes.
+  // Reset hero loading state whenever the selected image changes.
   useEffect(() => {
     setHeroImageLoaded(false);
-  }, [type, id, heroSrc]);
+  }, [heroSrc]);
 
   useEffect(() => {
     setProfileImageFailed(false);
@@ -235,15 +243,15 @@ function DiscoveryPage() {
     }
   };
 
-  const handleHeroImageError = (event) => {
+  const handleHeroImageError = () => {
+    // If the actor's image fails, switch to the default hero image.
     if (isActorPage && profileHeroUrl && heroSrc === profileHeroUrl) {
-      // A broken actor hero should fall back to the existing artwork.
       setFailedHeroUrl(profileHeroUrl);
       setHeroImageLoaded(false);
       return;
     }
 
-    event.currentTarget.style.visibility = "hidden";
+    // Do not leave the hero in a loading state if the fallback also fails.
     setHeroImageLoaded(true);
   };
 
@@ -263,6 +271,7 @@ function DiscoveryPage() {
         "This movie is missing its collection information. " +
           "Include collectionId in the discovery API response to enable playback.",
       );
+
       return;
     }
 
@@ -348,7 +357,8 @@ function DiscoveryPage() {
       ? actorProfile.biography.trim()
       : "";
 
-  const hasActorProfileContent = isActorPage && (profileImageUrl || biography);
+  const hasActorProfileContent =
+    isActorPage && Boolean(profileImageUrl || biography);
 
   return (
     <main className="discovery-page">
@@ -356,7 +366,7 @@ function DiscoveryPage() {
         className={`discovery-hero ${
           heroImageLoaded ? "hero-ready" : "hero-loading"
         } ${isActorPage ? "discovery-hero-actor" : ""}`}
-        aria-label="Discovery collection"
+        aria-label={isActorPage ? "Actor profile hero" : "Discovery collection"}
       >
         <img
           key={`${type}-${id}-${heroSrc}`}
@@ -374,12 +384,13 @@ function DiscoveryPage() {
             if (image.naturalWidth > 0) {
               setHeroImageLoaded(true);
             } else {
-              handleHeroImageError({ currentTarget: image });
+              handleHeroImageError();
             }
           }}
         />
 
-        {!heroImageLoaded && (
+        {/* Keep the existing skeleton for non-actor discovery pages. */}
+        {!heroImageLoaded && !isActorPage && (
           <div className="discovery-hero-skeleton" aria-hidden="true">
             <div className="discovery-skeleton-content">
               <div className="discovery-skeleton-back" />
@@ -428,8 +439,9 @@ function DiscoveryPage() {
             </button>
 
             <span className="discovery-eyebrow">
-              CINEBOX <span className="discovery-eyebrow-separator">/</span>{" "}
-              DISCOVERY
+              CINEBOX
+              <span className="discovery-eyebrow-separator">/</span>
+              {isActorPage ? "ACTOR PROFILE" : "DISCOVERY"}
             </span>
 
             <h1>{discoveryName || `${discoveryType.title} Collection`}</h1>
@@ -439,9 +451,24 @@ function DiscoveryPage() {
             <div className="discovery-hero-divider" />
           </div>
         )}
+
+        {heroImageLoaded && isActorPage && (
+          <div className="discovery-hero-bottom actor-hero-bottom">
+            <span className="actor-hero-caption">
+              <span className="actor-hero-caption-dot" />
+              ACTOR PROFILE
+            </span>
+
+            <span className="discovery-hero-stat actor-hero-stat">
+              <strong>{totalElements.toLocaleString()}</strong> FILMOGRAPHY
+              TITLES
+            </span>
+          </div>
+        )}
       </section>
 
       <div className="discovery-content">
+        {/* Actor biography and portrait */}
         {hasActorProfileContent && (
           <section
             className="actor-profile"
@@ -458,7 +485,7 @@ function DiscoveryPage() {
               </div>
             ) : (
               <div className="actor-profile-portrait actor-profile-portrait-placeholder">
-                <UserRound size={34} strokeWidth={1.3} aria-hidden="true" />
+                <UserRound size={42} strokeWidth={1.3} aria-hidden="true" />
               </div>
             )}
 
@@ -480,6 +507,7 @@ function DiscoveryPage() {
           </section>
         )}
 
+        {/* Filmography / discovery results */}
         <section className="discovery-results-heading">
           <div className="discovery-results-title">
             <span className="discovery-section-eyebrow">
