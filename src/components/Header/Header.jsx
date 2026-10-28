@@ -28,10 +28,15 @@ const MATCH_LABELS = {
   STUDIO: "Studio",
 };
 
-function getThumbnailUrl(url) {
-  if (!url) return libhero;
+function getImageUrl(url) {
+  if (!url) return "";
   if (/^https?:\/\//i.test(url)) return url;
+
   return `${API_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
+function getThumbnailUrl(url) {
+  return getImageUrl(url) || libhero;
 }
 
 function getMatchLabel(matchedBy) {
@@ -44,6 +49,32 @@ function getMatchLabel(matchedBy) {
     .join(" · ");
 }
 
+function ActorSuggestionAvatar({ actor }) {
+  const imageUrl = getImageUrl(actor.profileImageUrl);
+
+  return (
+    <div className="search-actor-avatar">
+      <UsersRound
+        className="search-actor-avatar-fallback"
+        size={25}
+        aria-hidden="true"
+      />
+
+      {imageUrl && (
+        <img
+          src={imageUrl}
+          alt=""
+          loading="lazy"
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+            event.currentTarget.parentElement?.classList.add("has-image-error");
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
 function Header() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -53,6 +84,7 @@ function Header() {
   const requestIdRef = useRef(0);
 
   const [query, setQuery] = useState("");
+  const [actors, setActors] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -65,6 +97,12 @@ function Header() {
 
   const isActorsPage =
     location.pathname === "/actors" || location.pathname.startsWith("/actors/");
+
+  // Keep one keyboard-navigation sequence across both result types.
+  const combinedSuggestions = [
+    ...actors.map((actor) => ({ ...actor, resultType: "actor" })),
+    ...suggestions.map((video) => ({ ...video, resultType: "video" })),
+  ];
 
   const closeSuggestions = useCallback(() => {
     setIsOpen(false);
@@ -93,6 +131,19 @@ function Header() {
     [closeSuggestions, navigate, trimmedQuery],
   );
 
+  const openActor = useCallback(
+    (actor) => {
+      if (!actor?.id) return;
+
+      closeSuggestions();
+      setQuery("");
+      inputRef.current?.blur();
+
+      navigate(`/discover/actors/${encodeURIComponent(actor.id)}`);
+    },
+    [closeSuggestions, navigate],
+  );
+
   const viewAllResults = useCallback(
     (searchTerm = trimmedQuery) => {
       if (searchTerm.length < 2) return;
@@ -108,6 +159,7 @@ function Header() {
   useEffect(() => {
     if (!canSearch) {
       requestIdRef.current += 1;
+      setActors([]);
       setSuggestions([]);
       setHasMore(false);
       setIsLoading(false);
@@ -118,6 +170,7 @@ function Header() {
     }
 
     const requestId = ++requestIdRef.current;
+
     setIsOpen(true);
     setIsLoading(true);
     setError("");
@@ -128,6 +181,7 @@ function Header() {
 
         if (requestId !== requestIdRef.current) return;
 
+        setActors(Array.isArray(data.actors) ? data.actors : []);
         setSuggestions(Array.isArray(data.results) ? data.results : []);
         setHasMore(Boolean(data.hasMore));
         setActiveIndex(-1);
@@ -135,6 +189,7 @@ function Header() {
         if (requestId !== requestIdRef.current) return;
 
         console.error("Failed to load search suggestions:", err);
+        setActors([]);
         setSuggestions([]);
         setHasMore(false);
         setError("Search is temporarily unavailable.");
@@ -180,9 +235,9 @@ function Header() {
       event.preventDefault();
       setIsOpen(true);
 
-      if (suggestions.length > 0) {
+      if (combinedSuggestions.length > 0) {
         setActiveIndex((current) =>
-          current >= suggestions.length - 1 ? 0 : current + 1,
+          current >= combinedSuggestions.length - 1 ? 0 : current + 1,
         );
       }
       return;
@@ -191,9 +246,9 @@ function Header() {
     if (event.key === "ArrowUp") {
       event.preventDefault();
 
-      if (suggestions.length > 0) {
+      if (combinedSuggestions.length > 0) {
         setActiveIndex((current) =>
-          current <= 0 ? suggestions.length - 1 : current - 1,
+          current <= 0 ? combinedSuggestions.length - 1 : current - 1,
         );
       }
       return;
@@ -202,8 +257,12 @@ function Header() {
     if (event.key === "Enter") {
       event.preventDefault();
 
-      if (activeIndex >= 0 && suggestions[activeIndex]) {
-        openVideo(suggestions[activeIndex]);
+      const selected = combinedSuggestions[activeIndex];
+
+      if (selected?.resultType === "actor") {
+        openActor(selected);
+      } else if (selected?.resultType === "video") {
+        openVideo(selected);
       } else if (canSearch) {
         viewAllResults();
       }
@@ -213,6 +272,7 @@ function Header() {
   function clearSearch() {
     requestIdRef.current += 1;
     setQuery("");
+    setActors([]);
     setSuggestions([]);
     setHasMore(false);
     setError("");
@@ -221,6 +281,8 @@ function Header() {
     setIsOpen(false);
     inputRef.current?.focus();
   }
+
+  const hasSuggestions = combinedSuggestions.length > 0;
 
   return (
     <header className="app-header">
@@ -265,7 +327,7 @@ function Header() {
             value={query}
             placeholder="Search your library..."
             autoComplete="off"
-            aria-label="Search videos"
+            aria-label="Search videos and actors"
             aria-autocomplete="list"
             aria-expanded={isOpen && canSearch}
             onFocus={() => {
@@ -303,19 +365,20 @@ function Header() {
           <div
             className="search-dropdown"
             role="listbox"
-            aria-label="Search suggestions"
+            aria-label="Actor and video search suggestions"
           >
             <div className="search-dropdown-heading">
               <span>SEARCH RESULTS</span>
-              {!isLoading && suggestions.length > 0 && (
+
+              {!isLoading && hasSuggestions && (
                 <span className="search-result-count">
-                  {suggestions.length}
+                  {combinedSuggestions.length}
                   {hasMore ? "+" : ""}
                 </span>
               )}
             </div>
 
-            {isLoading && suggestions.length === 0 ? (
+            {isLoading && !hasSuggestions ? (
               <div className="search-dropdown-state">
                 <LoaderCircle size={21} className="search-state-spinner" />
                 <span>Searching your library</span>
@@ -324,7 +387,7 @@ function Header() {
               <div className="search-dropdown-state search-dropdown-error">
                 {error}
               </div>
-            ) : suggestions.length === 0 ? (
+            ) : !hasSuggestions ? (
               <div className="search-dropdown-state">
                 <Search size={22} />
                 <span>No matches found for “{trimmedQuery}”</span>
@@ -334,46 +397,38 @@ function Header() {
               </div>
             ) : (
               <div className="search-suggestion-list">
-                {suggestions.map((video, index) => (
+                {actors.length > 0 && (
+                  <div className="search-section-heading">
+                    <UsersRound size={13} aria-hidden="true" />
+                    <span>ACTORS</span>
+                    <span className="search-section-count">
+                      {actors.length}
+                    </span>
+                  </div>
+                )}
+
+                {actors.map((actor, index) => (
                   <button
                     type="button"
                     role="option"
                     aria-selected={activeIndex === index}
-                    className={`search-suggestion ${
+                    className={`search-suggestion search-actor-suggestion ${
                       activeIndex === index ? "is-highlighted" : ""
                     }`}
-                    key={video.mediaItemId}
+                    key={`actor-${actor.id}`}
                     onMouseEnter={() => setActiveIndex(index)}
-                    onClick={() => openVideo(video)}
+                    onClick={() => openActor(actor)}
                   >
-                    <div className="search-suggestion-thumbnail">
-                      <img
-                        src={getThumbnailUrl(video.thumbnailUrl)}
-                        alt=""
-                        loading="lazy"
-                        onError={(event) => {
-                          event.currentTarget.onerror = null;
-                          event.currentTarget.src = libhero;
-                        }}
-                      />
-                    </div>
+                    <ActorSuggestionAvatar actor={actor} />
 
                     <div className="search-suggestion-info">
                       <div className="search-suggestion-title">
-                        {video.title || "Untitled video"}
+                        {actor.name || "Unknown actor"}
                       </div>
 
                       <div className="search-suggestion-meta">
-                        {video.year || "Year unavailable"}
-                        <span className="search-meta-separator">·</span>
-                        <span>{getMatchLabel(video.matchedBy)}</span>
+                        <span>Actor profile</span>
                       </div>
-
-                      {video.description && (
-                        <p className="search-suggestion-description">
-                          {video.description}
-                        </p>
-                      )}
                     </div>
 
                     <ArrowUpRight
@@ -383,10 +438,75 @@ function Header() {
                     />
                   </button>
                 ))}
+
+                {suggestions.length > 0 && (
+                  <div className="search-section-heading">
+                    <Search size={13} aria-hidden="true" />
+                    <span>VIDEOS</span>
+                    <span className="search-section-count">
+                      {suggestions.length}
+                      {hasMore ? "+" : ""}
+                    </span>
+                  </div>
+                )}
+
+                {suggestions.map((video, index) => {
+                  const activeVideoIndex = actors.length + index;
+
+                  return (
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={activeIndex === activeVideoIndex}
+                      className={`search-suggestion ${
+                        activeIndex === activeVideoIndex ? "is-highlighted" : ""
+                      }`}
+                      key={`video-${video.mediaItemId}`}
+                      onMouseEnter={() => setActiveIndex(activeVideoIndex)}
+                      onClick={() => openVideo(video)}
+                    >
+                      <div className="search-suggestion-thumbnail">
+                        <img
+                          src={getThumbnailUrl(video.thumbnailUrl)}
+                          alt=""
+                          loading="lazy"
+                          onError={(event) => {
+                            event.currentTarget.onerror = null;
+                            event.currentTarget.src = libhero;
+                          }}
+                        />
+                      </div>
+
+                      <div className="search-suggestion-info">
+                        <div className="search-suggestion-title">
+                          {video.title || "Untitled video"}
+                        </div>
+
+                        <div className="search-suggestion-meta">
+                          {video.year || "Year unavailable"}
+                          <span className="search-meta-separator">·</span>
+                          <span>{getMatchLabel(video.matchedBy)}</span>
+                        </div>
+
+                        {video.description && (
+                          <p className="search-suggestion-description">
+                            {video.description}
+                          </p>
+                        )}
+                      </div>
+
+                      <ArrowUpRight
+                        className="search-suggestion-arrow"
+                        size={17}
+                        aria-hidden="true"
+                      />
+                    </button>
+                  );
+                })}
               </div>
             )}
 
-            {!isLoading && !error && suggestions.length > 0 && (
+            {!isLoading && !error && hasSuggestions && (
               <button
                 type="button"
                 className="search-view-all"
@@ -399,7 +519,7 @@ function Header() {
               </button>
             )}
 
-            {!isLoading && !error && suggestions.length === 0 && (
+            {!isLoading && !error && !hasSuggestions && (
               <button
                 type="button"
                 className="search-view-all"
