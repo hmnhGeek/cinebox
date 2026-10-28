@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { ChevronRight, LoaderCircle } from "lucide-react";
+import { ChevronRight, LoaderCircle, UserRound } from "lucide-react";
 import VideoCard from "../../components/videoCard/VideoCard";
 import "./DiscoveryPage.css";
 import discoveryhero from "../../assets/discoveryhero.jpg";
@@ -45,6 +45,16 @@ const DISCOVERY_TYPES = {
   },
 };
 
+function resolveApiUrl(url) {
+  if (!url) return null;
+
+  if (/^https?:\/\//i.test(url)) {
+    return url;
+  }
+
+  return `${API_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
 function DiscoveryPage() {
   const { type, id } = useParams();
   const navigate = useNavigate();
@@ -57,12 +67,77 @@ function DiscoveryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
+  const [failedHeroUrl, setFailedHeroUrl] = useState(null);
+  const [profileImageFailed, setProfileImageFailed] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
+  const [actorProfile, setActorProfile] = useState(null);
 
   const discoveryType = DISCOVERY_TYPES[type];
+  const isActorPage = type === "actors";
+
+  const profileImageUrl = useMemo(
+    () => resolveApiUrl(actorProfile?.profileImageUrl),
+    [actorProfile?.profileImageUrl],
+  );
+
+  const profileHeroUrl = useMemo(
+    () => resolveApiUrl(actorProfile?.heroImageUrl),
+    [actorProfile?.heroImageUrl],
+  );
+
+  const heroSrc =
+    isActorPage && profileHeroUrl && failedHeroUrl !== profileHeroUrl
+      ? profileHeroUrl
+      : discoveryhero;
+
+  // Load the additional actor profile only on actor discovery pages.
+  useEffect(() => {
+    if (!isActorPage || !id) {
+      setActorProfile(null);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    setActorProfile(null);
+    setProfileImageFailed(false);
+
+    async function fetchActorProfile() {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/v1/people/${encodeURIComponent(id)}/profile`,
+          { signal: controller.signal },
+        );
+
+        if (!response.ok) {
+          throw new Error(`Unable to load actor profile (${response.status}).`);
+        }
+
+        const data = await response.json();
+
+        if (!controller.signal.aborted) {
+          setActorProfile(data);
+        }
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          // Profile data is supplementary. Keep movie discovery usable.
+          console.warn("Unable to load actor profile.", err);
+        }
+      }
+    }
+
+    fetchActorProfile();
+
+    return () => controller.abort();
+  }, [isActorPage, id, retryKey]);
 
   const discoveryName = useMemo(() => {
     if (!discoveryType || !id) return null;
+
+    // Prefer the canonical name returned by the actor profile API.
+    if (isActorPage && actorProfile?.name) {
+      return actorProfile.name;
+    }
 
     for (const video of videos) {
       const items = video?.[discoveryType.metadataKey];
@@ -81,7 +156,7 @@ function DiscoveryPage() {
     }
 
     return null;
-  }, [videos, discoveryType, id]);
+  }, [videos, discoveryType, id, isActorPage, actorProfile?.name]);
 
   const discoveryDescription = discoveryName
     ? discoveryType.description(discoveryName)
@@ -145,10 +220,14 @@ function DiscoveryPage() {
     return () => controller.abort();
   }, [fetchVideos, retryKey]);
 
-  // Reset the hero when the discovery route changes.
+  // Reset hero loading state whenever the displayed artwork changes.
   useEffect(() => {
     setHeroImageLoaded(false);
-  }, [type, id]);
+  }, [type, id, heroSrc]);
+
+  useEffect(() => {
+    setProfileImageFailed(false);
+  }, [type, id, profileImageUrl]);
 
   const handleHeroImageLoad = (event) => {
     if (event.currentTarget.naturalWidth > 0) {
@@ -157,6 +236,13 @@ function DiscoveryPage() {
   };
 
   const handleHeroImageError = (event) => {
+    if (isActorPage && profileHeroUrl && heroSrc === profileHeroUrl) {
+      // A broken actor hero should fall back to the existing artwork.
+      setFailedHeroUrl(profileHeroUrl);
+      setHeroImageLoaded(false);
+      return;
+    }
+
     event.currentTarget.style.visibility = "hidden";
     setHeroImageLoaded(true);
   };
@@ -199,13 +285,7 @@ function DiscoveryPage() {
   const getThumbnailUrl = (video) => {
     if (!video.thumbnailUrl) return discoveryhero;
 
-    if (/^https?:\/\//i.test(video.thumbnailUrl)) {
-      return video.thumbnailUrl;
-    }
-
-    return `${API_BASE_URL}${
-      video.thumbnailUrl.startsWith("/") ? "" : "/"
-    }${video.thumbnailUrl}`;
+    return resolveApiUrl(video.thumbnailUrl);
   };
 
   const getPreviewUrl = (video) => {
@@ -263,20 +343,27 @@ function DiscoveryPage() {
     );
   }
 
+  const biography =
+    typeof actorProfile?.biography === "string"
+      ? actorProfile.biography.trim()
+      : "";
+
+  const hasActorProfileContent = isActorPage && (profileImageUrl || biography);
+
   return (
     <main className="discovery-page">
       <section
         className={`discovery-hero ${
           heroImageLoaded ? "hero-ready" : "hero-loading"
-        }`}
+        } ${isActorPage ? "discovery-hero-actor" : ""}`}
         aria-label="Discovery collection"
       >
         <img
-          key={`${type}-${id}-${discoveryhero}`}
+          key={`${type}-${id}-${heroSrc}`}
           className={`discovery-hero-image ${
             heroImageLoaded ? "loaded" : "loading"
           }`}
-          src={discoveryhero}
+          src={heroSrc}
           alt=""
           fetchPriority="high"
           onLoad={handleHeroImageLoad}
@@ -317,49 +404,87 @@ function DiscoveryPage() {
         <div className="discovery-hero-overlay" />
 
         {heroImageLoaded && (
-          <>
-            <div className="discovery-hero-content">
-              <button
-                className="discovery-back-button"
-                onClick={() => navigate(-1)}
-                aria-label="Go back"
+          <div className="discovery-hero-content">
+            <button
+              className="discovery-back-button"
+              onClick={() => navigate(-1)}
+              aria-label="Go back"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="19"
+                height="19"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  width="19"
-                  height="19"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M19 12H5" />
-                  <path d="m12 19-7-7 7-7" />
-                </svg>
-                Back
-              </button>
+                <path d="M19 12H5" />
+                <path d="m12 19-7-7 7-7" />
+              </svg>
+              Back
+            </button>
 
-              <span className="discovery-eyebrow">
-                CINEBOX <span className="discovery-eyebrow-separator">/</span>{" "}
-                DISCOVERY
-              </span>
+            <span className="discovery-eyebrow">
+              CINEBOX <span className="discovery-eyebrow-separator">/</span>{" "}
+              DISCOVERY
+            </span>
 
-              <h1>{discoveryName || `${discoveryType.title} Collection`}</h1>
+            <h1>{discoveryName || `${discoveryType.title} Collection`}</h1>
 
-              <p>{discoveryDescription}</p>
+            <p>{discoveryDescription}</p>
 
-              <div className="discovery-hero-divider" />
-            </div>
-          </>
+            <div className="discovery-hero-divider" />
+          </div>
         )}
       </section>
 
       <div className="discovery-content">
+        {hasActorProfileContent && (
+          <section
+            className="actor-profile"
+            aria-label={`About ${discoveryName || "this actor"}`}
+          >
+            {profileImageUrl && !profileImageFailed ? (
+              <div className="actor-profile-portrait">
+                <img
+                  src={profileImageUrl}
+                  alt={discoveryName || "Actor portrait"}
+                  loading="lazy"
+                  onError={() => setProfileImageFailed(true)}
+                />
+              </div>
+            ) : (
+              <div className="actor-profile-portrait actor-profile-portrait-placeholder">
+                <UserRound size={34} strokeWidth={1.3} aria-hidden="true" />
+              </div>
+            )}
+
+            <div className="actor-profile-details">
+              <span className="discovery-section-eyebrow">
+                THE PERSON BEHIND THE PERFORMANCES
+              </span>
+
+              <h2>{discoveryName || "Actor profile"}</h2>
+
+              {biography ? (
+                <p className="actor-profile-biography">{biography}</p>
+              ) : (
+                <p className="actor-profile-empty">
+                  A biography hasn't been added yet.
+                </p>
+              )}
+            </div>
+          </section>
+        )}
+
         <section className="discovery-results-heading">
           <div className="discovery-results-title">
-            <span className="discovery-section-eyebrow">YOUR DISCOVERIES</span>
+            <span className="discovery-section-eyebrow">
+              {isActorPage ? "FILMOGRAPHY" : "YOUR DISCOVERIES"}
+            </span>
           </div>
 
           {!loading && !error && (

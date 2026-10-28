@@ -1174,3 +1174,201 @@
     animation: none !important;
   }
 }
+
+/* =========================================
+   CineBox — Actor Profile
+   ========================================= */
+
+.discovery-hero-actor .discovery-hero-image {
+  object-position: center 30%;
+}
+
+.actor-profile {
+  display: flex;
+  align-items: flex-start;
+  gap: 30px;
+
+  margin: 0 0 42px;
+  padding: 28px;
+
+  border: 1px solid rgba(53, 51, 46, 0.85);
+  border-radius: 10px;
+
+  background:
+    radial-gradient(
+      ellipse at 0% 0%,
+      rgba(196, 166, 106, 0.055),
+      transparent 55%
+    ),
+    var(--cinebox-surface);
+
+  animation: actor-profile-reveal 500ms ease-out both;
+}
+
+.actor-profile-portrait {
+  position: relative;
+  flex: 0 0 150px;
+
+  width: 150px;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+
+  border: 1px solid rgba(196, 166, 106, 0.3);
+  border-radius: 7px;
+
+  background: #191816;
+}
+
+.actor-profile-portrait img {
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  object-position: center 25%;
+}
+
+.actor-profile-portrait-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--cinebox-gold);
+  background:
+    radial-gradient(
+      circle at 50% 35%,
+      rgba(196, 166, 106, 0.1),
+      transparent 65%
+    ),
+    var(--cinebox-surface-hover);
+}
+
+.actor-profile-details {
+  flex: 1;
+  min-width: 0;
+  padding-top: 3px;
+}
+
+.actor-profile-details .discovery-section-eyebrow {
+  margin-bottom: 12px;
+  line-height: 1.8;
+}
+
+.actor-profile-details h2 {
+  margin: 0;
+
+  color: var(--cinebox-text);
+  font-size: clamp(22px, 2.4vw, 30px);
+  font-weight: 600;
+  letter-spacing: -0.7px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.actor-profile-biography {
+  margin: 17px 0 0;
+
+  color: var(--cinebox-secondary);
+  font-size: 14px;
+  line-height: 1.95;
+
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.actor-profile-empty {
+  margin: 14px 0 0;
+
+  color: var(--cinebox-muted);
+  font-size: 13px;
+  line-height: 1.8;
+  font-style: italic;
+}
+
+@keyframes actor-profile-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================
+   Actor Profile — Mobile
+   ========================================= */
+
+@media (max-width: 700px) {
+  .actor-profile {
+    align-items: flex-start;
+    gap: 18px;
+
+    margin-bottom: 32px;
+    padding: 18px;
+
+    border-radius: 9px;
+  }
+
+  .actor-profile-portrait {
+    flex-basis: 100px;
+    width: 100px;
+    border-radius: 6px;
+  }
+
+  .actor-profile-details .discovery-section-eyebrow {
+    margin-bottom: 8px;
+    font-size: 7px;
+    letter-spacing: 1.3px;
+    line-height: 1.7;
+  }
+
+  .actor-profile-details h2 {
+    font-size: 21px;
+    letter-spacing: -0.4px;
+  }
+
+  .actor-profile-biography {
+    margin-top: 11px;
+    font-size: 12px;
+    line-height: 1.8;
+  }
+
+  .actor-profile-empty {
+    margin-top: 9px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .actor-profile {
+    gap: 13px;
+    padding: 14px;
+  }
+
+  .actor-profile-portrait {
+    flex-basis: 82px;
+    width: 82px;
+  }
+
+  .actor-profile-details h2 {
+    font-size: 18px;
+  }
+
+  .actor-profile-details .discovery-section-eyebrow {
+    font-size: 6px;
+    letter-spacing: 0.9px;
+  }
+
+  .actor-profile-biography {
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actor-profile {
+    animation: none;
+  }
+}
