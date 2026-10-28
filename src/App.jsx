@@ -8,6 +8,7 @@ import Header from "./components/Header/Header";
 import { SyncProvider } from "./context/SyncContext";
 import { Toaster } from "react-hot-toast";
 import ScrollToTop from "./components/ScrollToTop/ScrollToTop";
+import ActorsPage from "./pages/ActorsPage/ActorsPage";
 
 function App() {
   return (
@@ -42,6 +43,8 @@ function App() {
           <Route path="/discover/:type/:id" element={<DiscoveryPage />} />
 
           <Route path="/search" element={<SearchResultsPage />} />
+
+          <Route path="/actors" element={<ActorsPage />} />
         </Routes>
       </BrowserRouter>
     </SyncProvider>

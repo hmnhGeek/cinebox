@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowUpRight, LoaderCircle, Search, X } from "lucide-react";
+import {
+  ArrowUpRight,
+  LoaderCircle,
+  Search,
+  UsersRound,
+  X,
+} from "lucide-react";
 import { getSearchSuggestions } from "../../service/searchApis";
 import "./Header.css";
 import logo from "../../assets/logo.png";
@@ -56,6 +62,9 @@ function Header() {
 
   const trimmedQuery = query.trim();
   const canSearch = trimmedQuery.length >= 2;
+
+  const isActorsPage =
+    location.pathname === "/actors" || location.pathname.startsWith("/actors/");
 
   const closeSuggestions = useCallback(() => {
     setIsOpen(false);
@@ -225,6 +234,18 @@ function Header() {
           <img className="app-logo" src={logo} alt="" />
         </button>
       </div>
+
+      <button
+        type="button"
+        className={`header-navigation-link ${isActorsPage ? "is-active" : ""}`}
+        onClick={() => navigate("/actors")}
+        aria-label="Browse actors"
+        aria-current={isActorsPage ? "page" : undefined}
+        title="Browse actors"
+      >
+        <UsersRound size={17} aria-hidden="true" />
+        <span>Actors</span>
+      </button>
 
       <div className="header-search" ref={searchRef}>
         <form
