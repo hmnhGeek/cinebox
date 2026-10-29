@@ -382,7 +382,7 @@ function DiscoveryPage() {
         className={`discovery-hero ${
           heroImageLoaded ? "hero-ready" : "hero-loading"
         } ${useCleanActorHero ? "discovery-hero-actor" : ""} ${
-          isActorPage ? "discovery-hero-actor-page" : ""
+          hasActorProfileContent ? "discovery-hero-actor-page" : ""
         }`}
         aria-label={
           useCleanActorHero ? "Actor profile hero" : "Discovery collection"
@@ -515,28 +515,30 @@ function DiscoveryPage() {
       <div className="discovery-content">
         {isActorPage && (
           <div className="actor-profile-action-row">
-            <button
-              type="button"
-              className="discovery-back-button actor-profile-mobile-back"
-              onClick={() => navigate(-1)}
-              aria-label="Go back"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                width="19"
-                height="19"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
+            {hasActorProfileContent && (
+              <button
+                type="button"
+                className="discovery-back-button actor-profile-mobile-back"
+                onClick={() => navigate(-1)}
+                aria-label="Go back"
               >
-                <path d="M19 12H5" />
-                <path d="m12 19-7-7 7-7" />
-              </svg>
-              Back
-            </button>
+                <svg
+                  viewBox="0 0 24 24"
+                  width="19"
+                  height="19"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M19 12H5" />
+                  <path d="m12 19-7-7 7-7" />
+                </svg>
+                Back
+              </button>
+            )}
 
             <button
               type="button"
