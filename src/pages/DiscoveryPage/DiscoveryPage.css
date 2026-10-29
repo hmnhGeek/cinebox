@@ -1338,7 +1338,23 @@
   }
 
   .discovery-content:has(.actor-profile) {
-    padding-top: 10px;
+    padding-top: 0;
+  }
+
+  .discovery-content:has(.actor-profile) .actor-profile-action-row {
+    right: 12px;
+    left: 12px;
+    gap: 6px;
+  }
+
+  .discovery-content:has(.actor-profile)
+    .actor-profile-action-row
+    .actor-profile-edit-button {
+    max-width: 68%;
+    gap: 5px;
+    padding-right: 8px;
+    padding-left: 8px;
+    font-size: 10px;
   }
 
   .actor-profile {
@@ -1521,6 +1537,10 @@
   box-shadow: none;
 }
 
+.actor-profile-mobile-back {
+  display: none;
+}
+
 /* CineBox charcoal and muted-gold action button. */
 .actor-profile-action-row .actor-profile-edit-button {
   display: inline-flex;
@@ -1569,5 +1589,221 @@
     min-height: 38px;
     padding: 0.55rem 0.8rem;
     font-size: 0.78rem;
+  }
+}
+
+/* =========================================
+   Actor biography expansion
+   ========================================= */
+
+.actor-profile-biography.is-collapsed {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  overflow: hidden;
+}
+
+.actor-profile-biography.is-expanded {
+  display: block;
+  overflow: visible;
+}
+
+.actor-profile-biography-toggle {
+  display: inline-flex;
+  align-items: center;
+  margin: 12px 0 0 19px;
+  padding: 5px 0;
+  border: 0;
+  background: transparent;
+  color: var(--cinebox-gold-light, #dec58e);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.actor-profile-biography-toggle:hover {
+  color: var(--cinebox-text, #f0eee8);
+}
+
+.actor-profile-biography-toggle:focus-visible {
+  outline: 2px solid var(--cinebox-gold, #c4a66a);
+  outline-offset: 3px;
+}
+
+@media (max-width: 700px) {
+  /* Actor-only mobile composition. Other discovery filters are unaffected. */
+  .discovery-hero.discovery-hero-actor-page {
+    display: none;
+  }
+
+  .actor-profile-back-row {
+    display: none;
+  }
+
+  .discovery-content:has(.actor-profile) {
+    position: relative;
+    padding: 0;
+  }
+
+  /* Keep navigation and editing controls together, over the top of the portrait. */
+  .discovery-content:has(.actor-profile) .actor-profile-action-row {
+    position: absolute;
+    z-index: 5;
+    top: 10px;
+    right: 16px;
+    left: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: auto;
+    margin: 0;
+    pointer-events: none;
+  }
+
+  .actor-profile-mobile-back {
+    display: inline-flex;
+    min-height: 38px;
+    padding: 7px 10px 7px 0;
+    color: #f0eee8;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.75);
+    pointer-events: auto;
+  }
+
+  .actor-profile-mobile-back svg {
+    color: var(--cinebox-gold-light);
+  }
+
+  .discovery-content:has(.actor-profile)
+    .actor-profile-action-row
+    .actor-profile-edit-button {
+    min-height: 38px;
+    max-width: 62%;
+    padding: 8px 11px;
+    border-color: rgba(222, 197, 142, 0.72);
+    background: rgba(20, 20, 19, 0.68);
+    color: #f0eee8;
+    font-size: 11px;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.16);
+    pointer-events: auto;
+  }
+
+  .discovery-content:has(.actor-profile) .actor-profile {
+    position: relative;
+    display: block;
+    width: 100vw;
+    max-width: 100vw;
+    margin: 0 0 34px calc(50% - 50vw);
+    padding: 0 0 26px;
+    border-bottom: 1px solid rgba(53, 51, 46, 0.85);
+    overflow: hidden;
+  }
+
+  .discovery-content:has(.actor-profile) .actor-profile-portrait {
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: clamp(450px, 150vw, 720px);
+    aspect-ratio: auto;
+    flex: none;
+    border: 0;
+    border-radius: 0;
+    overflow: hidden;
+    background: var(--cinebox-bg);
+  }
+
+  .discovery-content:has(.actor-profile) .actor-profile-portrait::after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    inset: 85% 0 0;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      rgba(20, 20, 19, 0) 0%,
+      rgba(20, 20, 19, 0.35) 28%,
+      rgba(20, 20, 19, 0.78) 72%,
+      #141413 100%
+    );
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 28%,
+      #000 100%
+    );
+    mask-image: linear-gradient(to bottom, transparent 0%, #000 28%, #000 100%);
+  }
+
+  .discovery-content:has(.actor-profile) .actor-profile-portrait img {
+    object-fit: cover;
+    object-position: center 25%;
+  }
+
+  .discovery-content:has(.actor-profile) .actor-profile-portrait-placeholder {
+    min-height: 260px;
+  }
+
+  .discovery-content:has(.actor-profile) .actor-profile-details {
+    position: relative;
+    z-index: 2;
+    margin-top: -96px;
+    padding: 0 22px 0;
+  }
+
+  .discovery-content:has(.actor-profile)
+    .actor-profile-details
+    .discovery-section-eyebrow {
+    margin-bottom: 10px;
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    line-height: 1.8;
+  }
+
+  .discovery-content:has(.actor-profile) .actor-profile-details h2 {
+    font-size: clamp(23px, 6vw, 30px);
+    letter-spacing: -0.5px;
+  }
+
+  .discovery-content:has(.actor-profile) .actor-profile-biography {
+    max-width: none;
+    margin-top: 15px;
+    padding-left: 13px;
+    font-size: 13.5px;
+    line-height: 1.9;
+    letter-spacing: 0;
+  }
+
+  .discovery-content:has(.actor-profile) .actor-profile-biography.is-collapsed {
+    -webkit-line-clamp: 5;
+  }
+
+  .discovery-content:has(.actor-profile) .actor-profile-biography-toggle {
+    margin: 10px 0 0 15px;
+  }
+
+  .discovery-content:has(.actor-profile) .actor-profile-empty {
+    margin-top: 12px;
+  }
+
+  .discovery-content:has(.actor-profile) .discovery-results-heading,
+  .discovery-content:has(.actor-profile) .discovery-video-grid,
+  .discovery-content:has(.actor-profile) .discovery-pagination,
+  .discovery-content:has(.actor-profile) .discovery-error,
+  .discovery-content:has(.actor-profile) .discovery-state {
+    margin-right: 16px;
+    margin-left: 16px;
+  }
+
+  .discovery-content:has(.actor-profile) .discovery-results-heading {
+    margin-bottom: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actor-profile-biography-toggle {
+    transition: none;
   }
 }

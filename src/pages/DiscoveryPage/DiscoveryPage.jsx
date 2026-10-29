@@ -80,6 +80,7 @@ function DiscoveryPage() {
   const [retryKey, setRetryKey] = useState(0);
   const [actorProfile, setActorProfile] = useState(null);
   const [profileEditorOpen, setProfileEditorOpen] = useState(false);
+  const [biographyExpanded, setBiographyExpanded] = useState(false);
 
   const discoveryType = DISCOVERY_TYPES[type];
   const isActorPage = type === "actors";
@@ -231,6 +232,7 @@ function DiscoveryPage() {
 
   useEffect(() => {
     setProfileImageFailed(false);
+    setBiographyExpanded(false);
   }, [type, id, profileImageUrl]);
 
   const handleHeroImageLoad = (event) => {
@@ -379,7 +381,9 @@ function DiscoveryPage() {
       <section
         className={`discovery-hero ${
           heroImageLoaded ? "hero-ready" : "hero-loading"
-        } ${useCleanActorHero ? "discovery-hero-actor" : ""}`}
+        } ${useCleanActorHero ? "discovery-hero-actor" : ""} ${
+          isActorPage ? "discovery-hero-actor-page" : ""
+        }`}
         aria-label={
           useCleanActorHero ? "Actor profile hero" : "Discovery collection"
         }
@@ -513,6 +517,29 @@ function DiscoveryPage() {
           <div className="actor-profile-action-row">
             <button
               type="button"
+              className="discovery-back-button actor-profile-mobile-back"
+              onClick={() => navigate(-1)}
+              aria-label="Go back"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="19"
+                height="19"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M19 12H5" />
+                <path d="m12 19-7-7 7-7" />
+              </svg>
+              Back
+            </button>
+
+            <button
+              type="button"
               className="actor-profile-edit-button"
               onClick={() => setProfileEditorOpen(true)}
               aria-label={profileEditorLabel}
@@ -555,7 +582,29 @@ function DiscoveryPage() {
               <h2>{discoveryName || "Actor profile"}</h2>
 
               {biography ? (
-                <p className="actor-profile-biography">{biography}</p>
+                <>
+                  <p
+                    className={`actor-profile-biography ${
+                      biographyExpanded || biography.length <= 420
+                        ? "is-expanded"
+                        : "is-collapsed"
+                    }`}
+                  >
+                    {biography}
+                  </p>
+                  {biography.length > 420 && (
+                    <button
+                      type="button"
+                      className="actor-profile-biography-toggle"
+                      onClick={() =>
+                        setBiographyExpanded((expanded) => !expanded)
+                      }
+                      aria-expanded={biographyExpanded}
+                    >
+                      {biographyExpanded ? "Show less" : "Read more"}
+                    </button>
+                  )}
+                </>
               ) : (
                 <p className="actor-profile-empty">
                   A biography hasn't been added yet.
