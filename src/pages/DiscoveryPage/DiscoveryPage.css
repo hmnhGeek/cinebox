@@ -1876,3 +1876,27 @@
     );
   }
 }
+
+/* =========================================
+   Desktop actor profile navigation alignment
+   Keep Back and Edit Actor Profile on one row.
+   ========================================= */
+
+@media (min-width: 701px) {
+  .discovery-page:has(.actor-profile) .actor-profile-back-row {
+    display: none;
+  }
+
+  .discovery-content:has(.actor-profile) .actor-profile-action-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 12px 0 1.5rem;
+  }
+
+  .discovery-content:has(.actor-profile) .actor-profile-mobile-back {
+    display: inline-flex;
+    flex: 0 0 auto;
+  }
+}
