@@ -1,12 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import {
-  ChevronRight,
-  LoaderCircle,
-  Pencil,
-  Plus,
-  UserRound,
-} from "lucide-react";
+import { ChevronRight, LoaderCircle, Pencil, UserRound } from "lucide-react";
 import VideoCard from "../../components/videoCard/VideoCard";
 import ActorProfileEditor from "../../components/actorProfileEditor/ActorProfileEditor";
 import actorProfileApi from "../../service/actorProfileApi";
@@ -61,6 +55,20 @@ function resolveApiUrl(url) {
   }
 
   return `${API_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
+function ActorProfileEditButton({ className = "", onClick }) {
+  return (
+    <button
+      type="button"
+      className={`actor-profile-edit-icon ${className}`.trim()}
+      onClick={onClick}
+      aria-label="Edit actor profile"
+      title="Edit actor profile"
+    >
+      <Pencil size={15} strokeWidth={1.7} aria-hidden="true" />
+    </button>
+  );
 }
 
 function DiscoveryPage() {
@@ -323,15 +331,9 @@ function DiscoveryPage() {
   const hasActorProfileContent =
     isActorPage && Boolean(profileImageUrl || biography);
 
-  const isActorProfileComplete =
-    isActorPage &&
-    Boolean(profileHeroUrl) &&
-    Boolean(profileImageUrl) &&
-    Boolean(biography);
-
-  const profileEditorLabel = isActorProfileComplete
-    ? "Edit Actor Profile"
-    : "Add Actor Profile";
+  const openProfileEditor = () => {
+    setProfileEditorOpen(true);
+  };
 
   const handleActorProfileSaved = async () => {
     const updatedProfile = await actorProfileApi.getProfile(id);
@@ -514,7 +516,13 @@ function DiscoveryPage() {
 
       <div className="discovery-content">
         {isActorPage && (
-          <div className="actor-profile-action-row">
+          <div
+            className={`actor-profile-action-row ${
+              hasActorProfileContent
+                ? "has-profile-content"
+                : "no-profile-content"
+            }`}
+          >
             {hasActorProfileContent && (
               <button
                 type="button"
@@ -540,19 +548,10 @@ function DiscoveryPage() {
               </button>
             )}
 
-            <button
-              type="button"
-              className="actor-profile-edit-button"
-              onClick={() => setProfileEditorOpen(true)}
-              aria-label={profileEditorLabel}
-            >
-              {isActorProfileComplete ? (
-                <Pencil size={15} strokeWidth={1.8} />
-              ) : (
-                <Plus size={17} strokeWidth={1.8} />
-              )}
-              <span>{profileEditorLabel}</span>
-            </button>
+            <ActorProfileEditButton
+              className="actor-profile-edit-icon-fallback"
+              onClick={openProfileEditor}
+            />
           </div>
         )}
 
@@ -581,7 +580,14 @@ function DiscoveryPage() {
                 THE PERSON BEHIND THE PERFORMANCES
               </span>
 
-              <h2>{discoveryName || "Actor profile"}</h2>
+              <div className="actor-profile-name-row">
+                <h2>{discoveryName || "Actor profile"}</h2>
+
+                <ActorProfileEditButton
+                  className="actor-profile-edit-icon-inline"
+                  onClick={openProfileEditor}
+                />
+              </div>
 
               {biography ? (
                 <>
@@ -594,6 +600,7 @@ function DiscoveryPage() {
                   >
                     {biography}
                   </p>
+
                   {biography.length > 420 && (
                     <button
                       type="button"

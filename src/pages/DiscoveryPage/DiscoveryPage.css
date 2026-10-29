@@ -254,8 +254,6 @@
 
 /* =========================================
    Actor Back Link
-   Appears only below the actor hero.
-   Reuses the shared discovery back button.
    ========================================= */
 
 .actor-profile-back-row {
@@ -824,6 +822,18 @@
   overflow-wrap: anywhere;
 }
 
+/* Name and inline pencil are aligned on desktop. */
+.actor-profile-name-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.actor-profile-name-row h2 {
+  min-width: 0;
+}
+
 .actor-profile-biography {
   position: relative;
   max-width: 900px;
@@ -1347,16 +1357,6 @@
     gap: 6px;
   }
 
-  .discovery-content:has(.actor-profile)
-    .actor-profile-action-row
-    .actor-profile-edit-button {
-    max-width: 68%;
-    gap: 5px;
-    padding-right: 8px;
-    padding-left: 8px;
-    font-size: 10px;
-  }
-
   .actor-profile {
     gap: 14px;
   }
@@ -1415,125 +1415,29 @@
 
 /* =========================================
    Actor Profile Management
+   Borderless pencil icon, no toolbar box
    ========================================= */
 
+/* The old descriptive toolbar is no longer needed. */
 .actor-profile-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  margin: 0 0 25px;
-  padding: 18px 20px;
-  border: 1px solid rgba(53, 51, 46, 0.9);
-  border-radius: 8px;
-  background:
-    linear-gradient(110deg, rgba(196, 166, 106, 0.055), transparent 65%),
-    var(--cinebox-surface);
+  display: none;
 }
 
 .actor-profile-toolbar-copy {
-  min-width: 0;
+  display: none;
 }
 
-.actor-profile-toolbar-copy .discovery-section-eyebrow {
-  margin-bottom: 5px;
-}
-
-.actor-profile-toolbar-copy p {
-  margin: 0;
-  color: var(--cinebox-secondary);
-  font-size: 12px;
-  line-height: 1.7;
-}
-
-.actor-profile-edit-button {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  min-height: 39px;
-  padding: 10px 15px;
-  border: 1px solid rgba(196, 166, 106, 0.55);
-  border-radius: 7px;
-  background: rgba(196, 166, 106, 0.08);
-  color: var(--cinebox-gold-light);
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.1px;
-  white-space: nowrap;
-  cursor: pointer;
-  transition:
-    border-color 180ms ease,
-    background 180ms ease,
-    color 180ms ease,
-    transform 180ms ease;
-}
-
-.actor-profile-edit-button svg {
-  flex-shrink: 0;
-}
-
-.actor-profile-edit-button:hover {
-  border-color: var(--cinebox-gold);
-  background: rgba(196, 166, 106, 0.15);
-  color: var(--cinebox-gold-light);
-  transform: translateY(-1px);
-}
-
-.actor-profile-edit-button:focus-visible {
-  outline: 2px solid var(--cinebox-gold);
-  outline-offset: 3px;
-}
-
-@media (max-width: 700px) {
-  .actor-profile-toolbar {
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 22px;
-    padding: 14px;
-  }
-
-  .actor-profile-toolbar-copy p {
-    max-width: 230px;
-    font-size: 11px;
-  }
-
-  .actor-profile-edit-button {
-    min-height: 36px;
-    gap: 6px;
-    padding: 9px 10px;
-    font-size: 10px;
-  }
-}
-
-@media (max-width: 380px) {
-  .actor-profile-toolbar {
-    flex-wrap: wrap;
-  }
-
-  .actor-profile-edit-button {
-    width: 100%;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .actor-profile-edit-button {
-    transition: none;
-  }
-}
-
-/* Standalone actor-profile action; no toolbar box or descriptive copy. */
+/* General action-row layout. */
 .actor-profile-action-row {
   display: flex;
-  justify-content: flex-end;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   width: 100%;
-  margin: 0 0 1.5rem;
+  margin: 12px 0 1.5rem;
   padding: 0;
-  background: transparent;
   border: 0;
+  background: transparent;
   box-shadow: none;
 }
 
@@ -1541,54 +1445,94 @@
   display: none;
 }
 
-/* CineBox charcoal and muted-gold action button. */
-.actor-profile-action-row .actor-profile-edit-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.55rem;
-  min-height: 40px;
-  padding: 0.65rem 1rem;
-  border: 1px solid var(--cinebox-gold, #c4a66a);
-  border-radius: 5px;
+/* Small, understated pencil action. No border or button box. */
+.actor-profile-edit-icon {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  outline: none;
   background: transparent;
-  color: var(--cinebox-gold-light, #dec58e);
-  font: inherit;
-  font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: 0.025em;
+  color: var(--cinebox-muted);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   transition:
-    background-color 160ms ease,
-    border-color 160ms ease,
     color 160ms ease,
+    background-color 160ms ease,
     transform 160ms ease;
 }
 
-.actor-profile-action-row .actor-profile-edit-button:hover {
-  background: rgba(196, 166, 106, 0.12);
-  border-color: var(--cinebox-gold-light, #dec58e);
-  color: #f0eee8;
+.actor-profile-edit-icon svg {
+  display: block;
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  stroke-width: 1.7;
+  pointer-events: none;
 }
 
-.actor-profile-action-row .actor-profile-edit-button:active {
-  transform: translateY(1px);
+.actor-profile-edit-icon:hover {
+  border: 0;
+  background: rgba(196, 166, 106, 0.08);
+  color: var(--cinebox-gold-light);
 }
 
-.actor-profile-action-row .actor-profile-edit-button:focus-visible {
-  outline: 2px solid var(--cinebox-gold-light, #dec58e);
-  outline-offset: 3px;
+.actor-profile-edit-icon:active {
+  transform: scale(0.94);
 }
 
-@media (max-width: 600px) {
-  .actor-profile-action-row {
-    margin-bottom: 1.1rem;
+.actor-profile-edit-icon:focus-visible {
+  outline: 2px solid rgba(196, 166, 106, 0.75);
+  outline-offset: 2px;
+  background: rgba(196, 166, 106, 0.06);
+  color: var(--cinebox-gold-light);
+}
+
+/* Desktop: pencil sits beside the actor's name when profile content exists. */
+.actor-profile-edit-icon-inline {
+  display: inline-grid;
+}
+
+.actor-profile-edit-icon-fallback {
+  display: inline-grid;
+}
+
+/* Hide the fallback when the inline pencil can be displayed. */
+@media (min-width: 701px) {
+  .discovery-content:has(.actor-profile)
+    .actor-profile-action-row
+    .actor-profile-edit-icon-fallback {
+    display: none;
   }
 
-  .actor-profile-action-row .actor-profile-edit-button {
-    min-height: 38px;
-    padding: 0.55rem 0.8rem;
-    font-size: 0.78rem;
+  .actor-profile-name-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .actor-profile-name-row h2 {
+    min-width: 0;
+  }
+
+  .actor-profile-edit-icon-inline {
+    margin-top: 2px;
+  }
+
+  .discovery-content:has(.actor-profile) .actor-profile-action-row {
+    margin-top: 12px;
+    margin-bottom: 1.5rem;
+  }
+
+  .discovery-content:has(.actor-profile) .actor-profile-mobile-back {
+    display: inline-flex;
+    flex: 0 0 auto;
   }
 }
 
@@ -1646,7 +1590,7 @@
     padding: 0;
   }
 
-  /* Keep navigation and editing controls together, over the top of the portrait. */
+  /* Back navigation and fallback pencil sit over the portrait. */
   .discovery-content:has(.actor-profile) .actor-profile-action-row {
     position: absolute;
     z-index: 5;
@@ -1666,6 +1610,8 @@
     display: inline-flex;
     min-height: 38px;
     padding: 7px 10px 7px 0;
+    border: 0;
+    background: transparent;
     color: #f0eee8;
     text-shadow: 0 1px 8px rgba(0, 0, 0, 0.75);
     pointer-events: auto;
@@ -1677,16 +1623,28 @@
 
   .discovery-content:has(.actor-profile)
     .actor-profile-action-row
-    .actor-profile-edit-button {
-    min-height: 38px;
-    max-width: 62%;
-    padding: 8px 11px;
-    border-color: rgba(222, 197, 142, 0.72);
-    background: rgba(20, 20, 19, 0.68);
-    color: #f0eee8;
-    font-size: 11px;
-    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.16);
+    .actor-profile-edit-icon-fallback {
+    display: inline-grid;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(20, 20, 19, 0.38);
+    color: rgba(240, 238, 232, 0.82);
     pointer-events: auto;
+  }
+
+  .discovery-content:has(.actor-profile)
+    .actor-profile-action-row
+    .actor-profile-edit-icon-fallback:hover {
+    border: 0;
+    background: rgba(20, 20, 19, 0.58);
+    color: var(--cinebox-gold-light);
+  }
+
+  /* On mobile, use the portrait-overlay pencil instead of the inline one. */
+  .actor-profile-name-row .actor-profile-edit-icon-inline {
+    display: none;
   }
 
   .discovery-content:has(.actor-profile) .actor-profile {
@@ -1802,9 +1760,25 @@
   }
 }
 
+@media (max-width: 380px) {
+  .discovery-content:has(.actor-profile) .actor-profile-action-row {
+    right: 12px;
+    left: 12px;
+    gap: 6px;
+  }
+
+  .discovery-content:has(.actor-profile)
+    .actor-profile-action-row
+    .actor-profile-edit-icon-fallback {
+    width: 32px;
+    height: 32px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .actor-profile-biography-toggle {
-    transition: none;
+  .actor-profile-biography-toggle,
+  .actor-profile-edit-icon {
+    transition: none !important;
   }
 }
 
@@ -1879,7 +1853,6 @@
 
 /* =========================================
    Desktop actor profile navigation alignment
-   Keep Back and Edit Actor Profile on one row.
    ========================================= */
 
 @media (min-width: 701px) {
