@@ -57,7 +57,11 @@ function resolveApiUrl(url) {
   return `${API_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
 }
 
-function ActorProfileEditButton({ className = "", onClick }) {
+function ActorProfileEditButton({
+  className = "",
+  onClick,
+  showLabel = false,
+}) {
   return (
     <button
       type="button"
@@ -65,8 +69,31 @@ function ActorProfileEditButton({ className = "", onClick }) {
       onClick={onClick}
       aria-label="Edit actor profile"
       title="Edit actor profile"
+      style={
+        showLabel
+          ? {
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              width: "auto",
+              minWidth: "auto",
+              height: "34px",
+              padding: "0 12px",
+              marginLeft: "auto",
+              border: "1px solid rgba(196, 166, 106, 0.35)",
+              borderRadius: "6px",
+              background: "rgba(196, 166, 106, 0.07)",
+              color: "var(--cinebox-gold-light)",
+              fontSize: "13px",
+              fontWeight: 500,
+              whiteSpace: "nowrap",
+            }
+          : undefined
+      }
     >
       <Pencil size={15} strokeWidth={1.7} aria-hidden="true" />
+      {showLabel && <span>Edit Profile</span>}
     </button>
   );
 }
@@ -551,6 +578,7 @@ function DiscoveryPage() {
             <ActorProfileEditButton
               className="actor-profile-edit-icon-fallback"
               onClick={openProfileEditor}
+              showLabel={!hasActorProfileContent}
             />
           </div>
         )}

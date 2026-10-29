@@ -1500,6 +1500,8 @@
 
 .actor-profile-edit-icon-fallback {
   display: inline-grid;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 /* Hide the fallback when the inline pencil can be displayed. */
