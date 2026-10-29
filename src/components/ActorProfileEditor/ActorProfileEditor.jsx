@@ -209,7 +209,13 @@ function ImageField({
   );
 }
 
-function ActorProfileEditor({ personId, profile, onClose, onSaved }) {
+function ActorProfileEditor({
+  personId,
+  actorName,
+  profile,
+  onClose,
+  onSaved,
+}) {
   const [heroFile, setHeroFile] = useState(null);
   const [portraitFile, setPortraitFile] = useState(null);
   const [biography, setBiography] = useState(profile?.biography || "");
@@ -395,7 +401,9 @@ function ActorProfileEditor({ personId, profile, onClose, onSaved }) {
           <div className="actor-editor-heading-copy">
             <span className="actor-editor-eyebrow">CINEBOX / PEOPLE</span>
 
-            <h2 id="actor-editor-title">{modeLabel}</h2>
+            <h2 id="actor-editor-title">
+              {modeLabel}: {actorName || profile?.name || "Actor"}
+            </h2>
 
             <p id="actor-editor-description">
               Curate the artwork and biography behind this filmography.

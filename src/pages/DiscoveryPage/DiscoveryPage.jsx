@@ -693,6 +693,7 @@ function DiscoveryPage() {
       {isActorPage && profileEditorOpen && (
         <ActorProfileEditor
           personId={id}
+          actorName={discoveryName}
           profile={actorProfile}
           onClose={() => setProfileEditorOpen(false)}
           onSaved={handleActorProfileSaved}
