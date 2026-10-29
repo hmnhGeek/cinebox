@@ -1807,3 +1807,72 @@
     transition: none;
   }
 }
+
+/* =========================================
+   Actor portrait readability on mobile
+   Applies only when an actor profile image exists.
+   ========================================= */
+
+@media (max-width: 700px) {
+  .discovery-content:has(.actor-profile-portrait img)
+    .actor-profile-portrait::after {
+    inset: 60% 0 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(20, 20, 19, 0) 0%,
+      rgba(20, 20, 19, 0.42) 20%,
+      rgba(20, 20, 19, 0.78) 48%,
+      rgba(20, 20, 19, 0.96) 76%,
+      #141413 100%
+    );
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 22%,
+      #000 100%
+    );
+    mask-image: linear-gradient(to bottom, transparent 0%, #000 22%, #000 100%);
+  }
+
+  .discovery-content:has(.actor-profile-portrait img) .actor-profile-details {
+    margin-top: -78px;
+  }
+}
+
+/* Seamless portrait fade: keep the overlay full-size so its blur has no hard edge. */
+@media (max-width: 700px) {
+  .discovery-content:has(.actor-profile-portrait img)
+    .actor-profile-portrait::after {
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(20, 20, 19, 0) 35%,
+      rgba(20, 20, 19, 0.08) 43%,
+      rgba(20, 20, 19, 0.28) 51%,
+      rgba(20, 20, 19, 0.58) 61%,
+      rgba(20, 20, 19, 0.84) 72%,
+      rgba(20, 20, 19, 0.97) 86%,
+      #141413 100%
+    );
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 34%,
+      rgba(0, 0, 0, 0.08) 42%,
+      rgba(0, 0, 0, 0.35) 51%,
+      rgba(0, 0, 0, 0.72) 63%,
+      #000 76%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 34%,
+      rgba(0, 0, 0, 0.08) 42%,
+      rgba(0, 0, 0, 0.35) 51%,
+      rgba(0, 0, 0, 0.72) 63%,
+      #000 76%
+    );
+  }
+}
