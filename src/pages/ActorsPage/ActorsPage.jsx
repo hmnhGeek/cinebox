@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { AlertCircle, LoaderCircle, RefreshCw, UsersRound } from "lucide-react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  AlertCircle,
+  Image as ImageIcon,
+  LoaderCircle,
+  RefreshCw,
+  UsersRound,
+} from "lucide-react";
 import "./ActorsPage.css";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(
@@ -26,6 +32,10 @@ function ActorPortrait({ actor }) {
 
   const imageUrl = getImageUrl(actor.profileImageUrl, actor.id);
 
+  useEffect(() => {
+    setImageFailed(false);
+  }, [imageUrl]);
+
   return (
     <div className="actors-card-portrait">
       {!imageFailed && imageUrl ? (
@@ -43,6 +53,7 @@ function ActorPortrait({ actor }) {
       )}
 
       <div className="actors-card-image-shade" />
+
       <div className="actors-card-open-indicator" aria-hidden="true">
         <span>View filmography</span>
       </div>
@@ -52,87 +63,149 @@ function ActorPortrait({ actor }) {
 
 function ActorsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // The URL is the source of truth for the profile-image filter.
+  // /actors?hasProfileImage=true enables it; /actors disables it.
+  const hasProfileImage = searchParams.get("hasProfileImage") === "true";
+
   const sentinelRef = useRef(null);
   const loadingRef = useRef(false);
   const nextPageRef = useRef(0);
   const failedPageRef = useRef(0);
+  const requestSequenceRef = useRef(0);
+  const activeRequestRef = useRef(null);
 
   const [actors, setActors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [hasMore, setHasMore] = useState(true);
 
-  const loadActors = useCallback(async (pageToLoad, replace = false) => {
-    if (loadingRef.current) return;
+  const loadActors = useCallback(
+    async (pageToLoad, replace = false) => {
+      if (loadingRef.current && !replace) return;
 
-    loadingRef.current = true;
-    failedPageRef.current = pageToLoad;
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/v1/discovery/actors?page=${pageToLoad}&size=${PAGE_SIZE}`,
-        {
-          headers: {
-            Accept: "application/json",
-          },
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          response.status === 404
-            ? "The actors directory endpoint was not found."
-            : `Unable to load actors (HTTP ${response.status}).`,
-        );
+      // A replacement request supersedes any previous request.
+      if (replace) {
+        activeRequestRef.current?.abort();
       }
 
-      const data = await response.json();
-      const pageActors = Array.isArray(data.content) ? data.content : [];
+      const controller = new AbortController();
+      const requestId = ++requestSequenceRef.current;
 
-      setActors((current) => {
-        if (replace) return pageActors;
+      activeRequestRef.current = controller;
+      loadingRef.current = true;
+      failedPageRef.current = pageToLoad;
 
-        const existingIds = new Set(current.map((actor) => actor.id));
-        const newActors = pageActors.filter(
-          (actor) => !existingIds.has(actor.id),
+      setLoading(true);
+      setError("");
+
+      try {
+        const params = new URLSearchParams({
+          page: String(pageToLoad),
+          size: String(PAGE_SIZE),
+        });
+
+        if (hasProfileImage) {
+          params.set("hasProfileImage", "true");
+        }
+
+        const response = await fetch(
+          `${API_BASE_URL}/api/v1/discovery/actors?${params.toString()}`,
+          {
+            method: "GET",
+            signal: controller.signal,
+            headers: {
+              Accept: "application/json",
+            },
+          },
         );
 
-        return [...current, ...newActors];
-      });
+        if (!response.ok) {
+          throw new Error(
+            response.status === 404
+              ? "The actors directory endpoint was not found."
+              : `Unable to load actors (HTTP ${response.status}).`,
+          );
+        }
 
-      nextPageRef.current = pageToLoad + 1;
+        const data = await response.json();
 
-      const morePages =
-        typeof data.last === "boolean"
-          ? !data.last
-          : typeof data.totalPages === "number"
-            ? pageToLoad + 1 < data.totalPages
-            : pageActors.length === PAGE_SIZE;
+        // Ignore stale responses after a filter change or replacement.
+        if (requestId !== requestSequenceRef.current) return;
 
-      setHasMore(morePages);
-    } catch (err) {
-      console.error("Failed to load actors:", err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Something went wrong while loading actors.",
-      );
-    } finally {
-      loadingRef.current = false;
-      setLoading(false);
-    }
-  }, []);
+        const pageActors = Array.isArray(data.content) ? data.content : [];
+
+        setActors((current) => {
+          if (replace) return pageActors;
+
+          const existingIds = new Set(current.map((actor) => actor.id));
+          const newActors = pageActors.filter(
+            (actor) => !existingIds.has(actor.id),
+          );
+
+          return [...current, ...newActors];
+        });
+
+        nextPageRef.current = pageToLoad + 1;
+
+        const morePages =
+          typeof data.last === "boolean"
+            ? !data.last
+            : typeof data.totalPages === "number"
+              ? pageToLoad + 1 < data.totalPages
+              : pageActors.length === PAGE_SIZE;
+
+        setHasMore(morePages);
+      } catch (err) {
+        if (err instanceof Error && err.name === "AbortError") {
+          return;
+        }
+
+        if (requestId !== requestSequenceRef.current) return;
+
+        console.error("Failed to load actors:", err);
+
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Something went wrong while loading actors.",
+        );
+      } finally {
+        if (requestId === requestSequenceRef.current) {
+          loadingRef.current = false;
+          activeRequestRef.current = null;
+          setLoading(false);
+        }
+      }
+    },
+    [hasProfileImage],
+  );
 
   useEffect(() => {
+    // Reload page zero whenever the URL's filter value changes.
+    nextPageRef.current = 0;
+    failedPageRef.current = 0;
+
     loadActors(0, true);
+
+    return () => {
+      // Invalidate outstanding responses when the filter changes
+      // or the Actors page unmounts.
+      requestSequenceRef.current += 1;
+      activeRequestRef.current?.abort();
+      activeRequestRef.current = null;
+      loadingRef.current = false;
+    };
   }, [loadActors]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
 
-    if (!sentinel || !hasMore || loading || error) return undefined;
+    if (!sentinel || !hasMore || loading || error) {
+      return undefined;
+    }
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -156,14 +229,58 @@ function ActorsPage() {
     (actor) => {
       if (!actor?.id) return;
 
-      navigate(`/discover/actors/${encodeURIComponent(actor.id)}`);
+      const returnTo = `${location.pathname}${location.search}`;
+
+      navigate(`/discover/actors/${encodeURIComponent(actor.id)}`, {
+        state: {
+          returnTo,
+        },
+      });
     },
-    [navigate],
+    [navigate, location.pathname, location.search],
   );
 
+  const toggleProfileImageFilter = useCallback(() => {
+    // Clear previous results immediately so that actors from the
+    // previous filter are never displayed under the new filter.
+    setActors([]);
+    setHasMore(true);
+    setError("");
+
+    nextPageRef.current = 0;
+    failedPageRef.current = 0;
+
+    // Update the URL instead of storing the filter in local state.
+    // Preserve any unrelated query parameters.
+    setSearchParams(
+      (currentParams) => {
+        const nextParams = new URLSearchParams(currentParams);
+
+        if (nextParams.get("hasProfileImage") === "true") {
+          nextParams.delete("hasProfileImage");
+        } else {
+          nextParams.set("hasProfileImage", "true");
+        }
+
+        return nextParams;
+      },
+      { preventScrollReset: true },
+    );
+  }, [setSearchParams]);
+
   const retryLoading = () => {
-    loadActors(failedPageRef.current, failedPageRef.current === 0);
+    const pageToRetry = failedPageRef.current;
+
+    loadActors(pageToRetry, pageToRetry === 0);
   };
+
+  const showAllActors = useCallback(() => {
+    if (!hasProfileImage) return;
+
+    toggleProfileImageFilter();
+  }, [hasProfileImage, toggleProfileImageFilter]);
+
+  const isEmpty = !loading && !error && actors.length === 0;
 
   return (
     <main className="app actors-page">
@@ -171,32 +288,58 @@ function ActorsPage() {
         <div className="actors-page-heading">
           <div className="actors-heading-copy">
             <span className="actors-eyebrow">CINEBOX DISCOVERY</span>
+
             <h1>Actors</h1>
+
             <p>
               Explore the people behind your collection and discover their
               filmographies.
             </p>
           </div>
 
-          {actors.length > 0 && (
-            <div className="actors-count" aria-live="polite">
-              <UsersRound size={16} aria-hidden="true" />
-              <span>{actors.length.toLocaleString()} loaded</span>
-            </div>
-          )}
+          <div className="actors-heading-actions">
+            <button
+              type="button"
+              className={`actors-filter-toggle ${
+                hasProfileImage ? "is-active" : ""
+              }`}
+              aria-pressed={hasProfileImage}
+              onClick={toggleProfileImageFilter}
+              title={
+                hasProfileImage
+                  ? "Show all actors"
+                  : "Show only actors with profile photos"
+              }
+            >
+              <ImageIcon size={15} strokeWidth={1.8} aria-hidden="true" />
+
+              <span>With photos</span>
+
+              <span className="actors-filter-indicator" aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
         {loading && actors.length === 0 ? (
           <div className="actors-state actors-initial-loading" role="status">
             <LoaderCircle size={28} className="actors-spinner" />
-            <span>Loading actors</span>
+
+            <span>
+              {hasProfileImage
+                ? "Finding actors with photos"
+                : "Loading actors"}
+            </span>
+
             <p>Preparing your directory...</p>
           </div>
         ) : error && actors.length === 0 ? (
           <div className="actors-state actors-error-state" role="alert">
             <AlertCircle size={28} />
+
             <h2>Couldn't load actors</h2>
+
             <p>{error}</p>
+
             <button
               type="button"
               className="actors-retry-button"
@@ -206,13 +349,30 @@ function ActorsPage() {
               Try again
             </button>
           </div>
-        ) : actors.length === 0 ? (
+        ) : isEmpty ? (
           <div className="actors-state actors-empty-state">
-            <UsersRound size={30} strokeWidth={1.3} />
-            <h2>No actors found</h2>
+            <ImageIcon size={30} strokeWidth={1.3} />
+
+            <h2>
+              {hasProfileImage ? "No actors with photos" : "No actors found"}
+            </h2>
+
             <p>
-              Actors will appear here when they are available in your library.
+              {hasProfileImage
+                ? "No actors with stored profile photos were found in your collection. Try the full directory instead."
+                : "Actors will appear here when they are available in your library."}
             </p>
+
+            {hasProfileImage && (
+              <button
+                type="button"
+                className="actors-retry-button"
+                onClick={showAllActors}
+              >
+                <UsersRound size={15} />
+                Show all actors
+              </button>
+            )}
           </div>
         ) : (
           <>
@@ -230,7 +390,6 @@ function ActorsPage() {
 
                   <div className="actors-card-info">
                     <h2>{actor.name || "Unknown actor"}</h2>
-                    <span>View filmography</span>
                   </div>
                 </button>
               ))}
@@ -242,13 +401,14 @@ function ActorsPage() {
                   <AlertCircle size={17} />
                   <span>{error}</span>
                 </div>
+
                 <button type="button" onClick={retryLoading}>
                   Retry
                 </button>
               </div>
             )}
 
-            {loading && (
+            {loading && actors.length > 0 && (
               <div className="actors-load-more" role="status">
                 <LoaderCircle size={20} className="actors-spinner" />
                 <span>Loading more actors...</span>
