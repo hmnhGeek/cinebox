@@ -1,0 +1,795 @@
+/* =========================================
+   CineBox — Actors Directory
+   ========================================= */
+
+.actors-page {
+  --cinebox-bg: #141413;
+  --cinebox-surface: #1c1b19;
+  --cinebox-surface-hover: #23221f;
+  --cinebox-border: #35332e;
+  --cinebox-gold: #c4a66a;
+  --cinebox-gold-light: #dec58e;
+  --cinebox-text: #f0eee8;
+  --cinebox-secondary: #a5a197;
+  --cinebox-muted: #77736a;
+  --cinebox-danger: #d9847c;
+
+  min-height: calc(100vh - 70px);
+  background: var(--cinebox-bg);
+  color: var(--cinebox-text);
+}
+
+.actors-content {
+  width: 100%;
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 43px 42px 70px;
+}
+
+/* =========================================
+   Page Heading
+   ========================================= */
+
+.actors-page-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+
+  margin-bottom: 32px;
+}
+
+.actors-heading-copy {
+  min-width: 0;
+}
+
+.actors-eyebrow {
+  display: inline-block;
+  margin-bottom: 11px;
+
+  color: var(--cinebox-gold);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  line-height: 1.5;
+}
+
+.actors-heading-copy h1 {
+  margin: 0;
+
+  color: var(--cinebox-text);
+  font-size: clamp(29px, 3vw, 39px);
+  font-weight: 600;
+  letter-spacing: -1.25px;
+  line-height: 1.15;
+}
+
+.actors-heading-copy p {
+  max-width: 570px;
+  margin: 11px 0 0;
+
+  color: var(--cinebox-secondary);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* =========================================
+   Heading Actions
+   ========================================= */
+
+.actors-heading-actions {
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.actors-count {
+  flex-shrink: 0;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 9px 12px;
+
+  color: var(--cinebox-secondary);
+  background: var(--cinebox-surface);
+  border: 1px solid var(--cinebox-border);
+  border-radius: 7px;
+
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.actors-count svg {
+  color: var(--cinebox-gold);
+}
+
+/* =========================================
+   Profile Image Filter
+   ========================================= */
+
+.actors-filter-toggle {
+  position: relative;
+  flex-shrink: 0;
+
+  min-height: 36px;
+  padding: 8px 11px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  color: var(--cinebox-secondary);
+  background: var(--cinebox-surface);
+  border: 1px solid var(--cinebox-border);
+  border-radius: 7px;
+
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  transition:
+    color 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.actors-filter-toggle > svg {
+  flex-shrink: 0;
+  color: var(--cinebox-muted);
+
+  transition: color 180ms ease;
+}
+
+.actors-filter-toggle:hover {
+  color: var(--cinebox-text);
+  background: var(--cinebox-surface-hover);
+  border-color: #50493a;
+}
+
+.actors-filter-toggle:hover > svg {
+  color: var(--cinebox-gold);
+}
+
+.actors-filter-toggle.is-active {
+  color: var(--cinebox-gold-light);
+  background: #242119;
+  border-color: rgba(196, 166, 106, 0.65);
+  box-shadow: inset 0 0 0 1px rgba(196, 166, 106, 0.06);
+}
+
+.actors-filter-toggle.is-active > svg {
+  color: var(--cinebox-gold-light);
+}
+
+.actors-filter-indicator {
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+
+  background: #514d43;
+  border-radius: 50%;
+
+  transition:
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.actors-filter-toggle.is-active .actors-filter-indicator {
+  background: var(--cinebox-gold-light);
+  box-shadow: 0 0 7px rgba(196, 166, 106, 0.35);
+}
+
+.actors-filter-toggle:focus-visible {
+  outline: 2px solid var(--cinebox-gold);
+  outline-offset: 4px;
+}
+
+/* =========================================
+   Actor Grid
+   ========================================= */
+
+.actors-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 34px 24px;
+  align-items: start;
+}
+
+.actors-card {
+  display: block;
+  width: 100%;
+  min-width: 0;
+
+  padding: 0;
+  overflow: hidden;
+
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+
+  text-align: left;
+  cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+.actors-card-portrait {
+  position: relative;
+  isolation: isolate;
+
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+
+  background: #201f1c;
+  border: 1px solid #302e28;
+  border-radius: 7px;
+
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.actors-card-portrait > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  object-position: center 25%;
+
+  transition:
+    transform 350ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    opacity 200ms ease;
+}
+
+.actors-card-placeholder {
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #8d8065;
+  background:
+    radial-gradient(
+      ellipse at 50% 35%,
+      rgba(196, 166, 106, 0.1),
+      transparent 65%
+    ),
+    #1d1c19;
+}
+
+.actors-card-image-shade {
+  position: absolute;
+  z-index: 1;
+  inset: 35% 0 0;
+
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.12) 40%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+
+  opacity: 0.35;
+  transition: opacity 220ms ease;
+}
+
+.actors-card-open-indicator {
+  position: absolute;
+  z-index: 2;
+  right: 8px;
+  bottom: 9px;
+  left: 8px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  opacity: 0;
+  transform: translateY(5px);
+
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+
+.actors-card-open-indicator span {
+  max-width: 100%;
+  padding: 7px 10px;
+
+  overflow: hidden;
+
+  color: var(--cinebox-gold-light);
+  background: rgba(15, 14, 12, 0.86);
+  border: 1px solid rgba(196, 166, 106, 0.35);
+  border-radius: 5px;
+
+  font-size: 10px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actors-card-info {
+  padding: 12px 2px 0;
+}
+
+.actors-card-info h2 {
+  margin: 0;
+
+  overflow: hidden;
+
+  color: var(--cinebox-text);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  transition: color 180ms ease;
+}
+
+.actors-card-info > span {
+  display: block;
+  margin-top: 3px;
+
+  color: var(--cinebox-muted);
+  font-size: 10px;
+  line-height: 1.5;
+
+  transition: color 180ms ease;
+}
+
+.actors-card:hover .actors-card-portrait {
+  border-color: rgba(196, 166, 106, 0.65);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.22);
+}
+
+.actors-card:hover .actors-card-portrait > img {
+  transform: scale(1.045);
+}
+
+.actors-card:hover .actors-card-image-shade {
+  opacity: 1;
+}
+
+.actors-card:hover .actors-card-open-indicator {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.actors-card:hover .actors-card-info h2 {
+  color: var(--cinebox-gold-light);
+}
+
+.actors-card:hover .actors-card-info > span {
+  color: var(--cinebox-gold);
+}
+
+.actors-card:focus-visible {
+  outline: 2px solid var(--cinebox-gold);
+  outline-offset: 5px;
+  border-radius: 8px;
+}
+
+.actors-card:focus-visible .actors-card-portrait {
+  border-color: var(--cinebox-gold);
+}
+
+/* =========================================
+   Loading, Error and Empty States
+   ========================================= */
+
+.actors-state {
+  min-height: 330px;
+  padding: 45px 20px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  color: var(--cinebox-secondary);
+  text-align: center;
+}
+
+.actors-state > svg {
+  color: var(--cinebox-gold);
+}
+
+.actors-state h2 {
+  margin: 3px 0 0;
+
+  color: var(--cinebox-text);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.actors-state p {
+  max-width: 400px;
+  margin: 0;
+
+  color: var(--cinebox-secondary);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.actors-initial-loading {
+  min-height: 390px;
+}
+
+.actors-initial-loading > span {
+  color: var(--cinebox-text);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.actors-initial-loading p {
+  color: var(--cinebox-muted);
+}
+
+.actors-spinner {
+  flex-shrink: 0;
+  color: var(--cinebox-gold);
+  animation: actors-spin 850ms linear infinite;
+}
+
+.actors-error-state > svg {
+  color: var(--cinebox-danger);
+}
+
+.actors-retry-button {
+  margin-top: 7px;
+  padding: 10px 14px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  color: var(--cinebox-gold-light);
+  background: #211f1a;
+  border: 1px solid #4a4030;
+  border-radius: 6px;
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.actors-retry-button:hover {
+  background: #2b271f;
+  border-color: var(--cinebox-gold);
+}
+
+.actors-load-more {
+  min-height: 85px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+
+  color: var(--cinebox-secondary);
+  font-size: 12px;
+}
+
+.actors-load-more-error {
+  margin: 25px auto 0;
+  padding: 13px 15px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+
+  color: var(--cinebox-danger);
+  background: rgba(217, 132, 124, 0.06);
+  border: 1px solid rgba(217, 132, 124, 0.2);
+  border-radius: 7px;
+
+  font-size: 12px;
+}
+
+.actors-load-more-error > div {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.actors-load-more-error > div svg {
+  flex-shrink: 0;
+}
+
+.actors-load-more-error button {
+  flex-shrink: 0;
+
+  padding: 6px 10px;
+
+  color: var(--cinebox-gold-light);
+  background: #211f1a;
+  border: 1px solid #4a4030;
+  border-radius: 5px;
+
+  font: inherit;
+  cursor: pointer;
+}
+
+.actors-load-more-error button:hover {
+  border-color: var(--cinebox-gold);
+}
+
+.actors-end-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+
+  padding: 26px 0 12px;
+}
+
+.actors-end-message > span {
+  width: 45px;
+  height: 1px;
+  background: #39362e;
+}
+
+.actors-end-message p {
+  margin: 0;
+
+  color: var(--cinebox-muted);
+  font-size: 10px;
+  letter-spacing: 0.2px;
+  text-align: center;
+}
+
+.actors-scroll-sentinel {
+  width: 100%;
+  height: 1px;
+  pointer-events: none;
+}
+
+/* =========================================
+   Animations
+   ========================================= */
+
+@keyframes actors-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================
+   Responsive Layout
+   ========================================= */
+
+@media (min-width: 1600px) {
+  .actors-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 36px 26px;
+  }
+}
+
+@media (max-width: 1250px) {
+  .actors-content {
+    padding-right: 32px;
+    padding-left: 32px;
+  }
+
+  .actors-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 30px 20px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .actors-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 28px 18px;
+  }
+
+  .actors-content {
+    padding-top: 36px;
+  }
+}
+
+@media (max-width: 700px) {
+  .actors-page {
+    min-height: calc(100vh - 64px);
+  }
+
+  .actors-content {
+    padding: 30px 20px 55px;
+  }
+
+  .actors-page-heading {
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 25px;
+  }
+
+  .actors-heading-copy h1 {
+    font-size: 31px;
+  }
+
+  .actors-heading-copy p {
+    max-width: 430px;
+    margin-top: 9px;
+    font-size: 12px;
+  }
+
+  .actors-heading-actions {
+    gap: 7px;
+  }
+
+  .actors-count {
+    gap: 6px;
+    padding: 8px;
+    font-size: 10px;
+  }
+
+  .actors-count svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .actors-filter-toggle {
+    min-height: 34px;
+    gap: 6px;
+    padding: 7px 8px;
+    font-size: 10px;
+  }
+
+  .actors-filter-toggle > svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .actors-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 25px 15px;
+  }
+
+  .actors-card-info {
+    padding-top: 9px;
+  }
+
+  .actors-card-info h2 {
+    font-size: 12px;
+  }
+
+  .actors-card-info > span {
+    font-size: 9px;
+  }
+
+  .actors-card-open-indicator {
+    display: none;
+  }
+
+  .actors-card-image-shade {
+    opacity: 0.6;
+  }
+}
+
+@media (max-width: 480px) {
+  .actors-content {
+    padding: 26px 14px 45px;
+  }
+
+  .actors-page-heading {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .actors-heading-copy {
+    flex: 1;
+  }
+
+  .actors-eyebrow {
+    margin-bottom: 8px;
+    font-size: 9px;
+    letter-spacing: 1.6px;
+  }
+
+  .actors-heading-copy h1 {
+    font-size: 28px;
+    letter-spacing: -0.8px;
+  }
+
+  .actors-heading-copy p {
+    font-size: 11px;
+    line-height: 1.6;
+  }
+
+  .actors-heading-actions {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+
+  .actors-count {
+    margin-top: 23px;
+    padding: 7px;
+    font-size: 9px;
+  }
+
+  .actors-filter-toggle {
+    min-height: 32px;
+    padding: 7px 8px;
+    font-size: 10px;
+  }
+
+  .actors-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 14px;
+  }
+
+  .actors-card-info h2 {
+    font-size: 11px;
+  }
+
+  .actors-card-info > span {
+    font-size: 9px;
+  }
+
+  .actors-load-more-error {
+    align-items: flex-start;
+  }
+
+  .actors-end-message {
+    gap: 9px;
+  }
+
+  .actors-end-message > span {
+    width: 20px;
+  }
+
+  .actors-end-message p {
+    font-size: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actors-filter-toggle,
+  .actors-filter-toggle > svg,
+  .actors-filter-indicator,
+  .actors-card-portrait,
+  .actors-card-portrait > img,
+  .actors-card-image-shade,
+  .actors-card-open-indicator,
+  .actors-card-info h2,
+  .actors-card-info > span,
+  .actors-retry-button {
+    transition: none;
+  }
+
+  .actors-spinner {
+    animation-duration: 2s;
+  }
+}

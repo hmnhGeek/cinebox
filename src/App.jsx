@@ -6,8 +6,10 @@ import DiscoveryPage from "./pages/DiscoveryPage/DiscoveryPage";
 import SearchResultsPage from "./pages/SearchResultsPage/SearchResultsPage";
 import Header from "./components/Header/Header";
 import { SyncProvider } from "./context/SyncContext";
+import { ActorsFilterProvider } from "./context/ActorsFilterContext";
 import { Toaster } from "react-hot-toast";
 import ScrollToTop from "./components/ScrollToTop/ScrollToTop";
+import ActorsPage from "./pages/ActorsPage/ActorsPage";
 
 function App() {
   return (
@@ -26,23 +28,27 @@ function App() {
       />
 
       <BrowserRouter>
-        <ScrollToTop />
-        <Header />
+        <ActorsFilterProvider>
+          <ScrollToTop />
+          <Header />
 
-        <Routes>
-          <Route path="/" element={<CollectionsPage />} />
+          <Routes>
+            <Route path="/" element={<CollectionsPage />} />
 
-          <Route
-            path="/videos/:collectionId/:mediaItemId"
-            element={<VideoPage />}
-          />
+            <Route
+              path="/videos/:collectionId/:mediaItemId"
+              element={<VideoPage />}
+            />
 
-          <Route path="/collections/:id" element={<CollectionVideosPage />} />
+            <Route path="/collections/:id" element={<CollectionVideosPage />} />
 
-          <Route path="/discover/:type/:id" element={<DiscoveryPage />} />
+            <Route path="/discover/:type/:id" element={<DiscoveryPage />} />
 
-          <Route path="/search" element={<SearchResultsPage />} />
-        </Routes>
+            <Route path="/search" element={<SearchResultsPage />} />
+
+            <Route path="/actors" element={<ActorsPage />} />
+          </Routes>
+        </ActorsFilterProvider>
       </BrowserRouter>
     </SyncProvider>
   );

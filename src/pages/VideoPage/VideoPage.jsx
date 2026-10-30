@@ -7,6 +7,26 @@ import "./VideoPage.css";
 
 const API_BASE = `${(import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "")}/api/v1/collections`;
 
+function getActorProfileImageUrl(actor) {
+  const imageUrl =
+    actor?.profileImageUrl ||
+    actor?.profilePictureUrl ||
+    actor?.imageUrl ||
+    (actor?.id
+      ? `/api/v1/people/${encodeURIComponent(actor.id)}/profile/image`
+      : "");
+
+  if (!imageUrl) return "";
+
+  if (/^https?:\/\//i.test(imageUrl)) {
+    return imageUrl;
+  }
+
+  const baseUrl = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
+
+  return `${baseUrl}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
+}
+
 function VideoPage() {
   const { collectionId, mediaItemId } = useParams();
   const navigate = useNavigate();
@@ -487,6 +507,7 @@ function VideoPage() {
                 {actors.map((actor, index) => {
                   const actorName = getItemName(actor);
                   const hasId = typeof actor === "object" && Boolean(actor?.id);
+                  const actorImageUrl = getActorProfileImageUrl(actor);
 
                   return (
                     <button
@@ -502,7 +523,24 @@ function VideoPage() {
                       }
                     >
                       <div className="cast-avatar">
-                        {(actorName || "?").charAt(0)}
+                        <span
+                          className="cast-avatar-initial"
+                          aria-hidden="true"
+                        >
+                          {(actorName || "?").charAt(0)}
+                        </span>
+
+                        {actorImageUrl && (
+                          <img
+                            className="cast-avatar-image"
+                            src={actorImageUrl}
+                            alt=""
+                            loading="lazy"
+                            onError={(event) => {
+                              event.currentTarget.style.display = "none";
+                            }}
+                          />
+                        )}
                       </div>
 
                       <div className="cast-info">

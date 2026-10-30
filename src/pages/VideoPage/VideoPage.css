@@ -486,10 +486,12 @@
 }
 
 .cast-avatar {
+  position: relative;
   display: flex;
   flex: 0 0 44px;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 
   width: 44px;
   height: 44px;
@@ -502,6 +504,24 @@
 
   font-size: 16px;
   font-weight: 650;
+}
+
+.cast-avatar-initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.cast-avatar-image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
 }
 
 .cast-info {
@@ -1107,10 +1127,6 @@
   content: "•";
   margin-left: 9px;
   color: var(--cb-gold);
-}
-
-.video-page .hero-genres .metadata-link:hover:not(:disabled) {
-  color: var(--cb-gold-light);
 }
 
 /* Tag links retain the existing tag-chip appearance. */

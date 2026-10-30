@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { ChevronRight, LoaderCircle } from "lucide-react";
+import { ChevronRight, LoaderCircle, Pencil, UserRound } from "lucide-react";
 import VideoCard from "../../components/videoCard/VideoCard";
+import ActorProfileEditor from "../../components/actorProfileEditor/ActorProfileEditor";
+import actorProfileApi from "../../service/actorProfileApi";
 import "./DiscoveryPage.css";
 import discoveryhero from "../../assets/discoveryhero.jpg";
 
@@ -45,6 +47,57 @@ const DISCOVERY_TYPES = {
   },
 };
 
+function resolveApiUrl(url) {
+  if (!url) return null;
+
+  if (/^https?:\/\//i.test(url)) {
+    return url;
+  }
+
+  return `${API_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
+function ActorProfileEditButton({
+  className = "",
+  onClick,
+  showLabel = false,
+}) {
+  return (
+    <button
+      type="button"
+      className={`actor-profile-edit-icon ${className}`.trim()}
+      onClick={onClick}
+      aria-label="Edit actor profile"
+      title="Edit actor profile"
+      style={
+        showLabel
+          ? {
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              width: "auto",
+              minWidth: "auto",
+              height: "34px",
+              padding: "0 12px",
+              marginLeft: "auto",
+              border: "1px solid rgba(196, 166, 106, 0.35)",
+              borderRadius: "6px",
+              background: "rgba(196, 166, 106, 0.07)",
+              color: "var(--cinebox-gold-light)",
+              fontSize: "13px",
+              fontWeight: 500,
+              whiteSpace: "nowrap",
+            }
+          : undefined
+      }
+    >
+      <Pencil size={15} strokeWidth={1.7} aria-hidden="true" />
+      {showLabel && <span>Edit Profile</span>}
+    </button>
+  );
+}
+
 function DiscoveryPage() {
   const { type, id } = useParams();
   const navigate = useNavigate();
@@ -57,12 +110,74 @@ function DiscoveryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
+  const [failedHeroUrl, setFailedHeroUrl] = useState(null);
+  const [profileImageFailed, setProfileImageFailed] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
+  const [actorProfile, setActorProfile] = useState(null);
+  const [profileEditorOpen, setProfileEditorOpen] = useState(false);
+  const [biographyExpanded, setBiographyExpanded] = useState(false);
 
   const discoveryType = DISCOVERY_TYPES[type];
+  const isActorPage = type === "actors";
+
+  const profileImageUrl = useMemo(
+    () => resolveApiUrl(actorProfile?.profileImageUrl),
+    [actorProfile?.profileImageUrl],
+  );
+
+  const profileHeroUrl = useMemo(
+    () => resolveApiUrl(actorProfile?.heroImageUrl),
+    [actorProfile?.heroImageUrl],
+  );
+
+  const useCleanActorHero =
+    isActorPage && Boolean(profileHeroUrl) && failedHeroUrl !== profileHeroUrl;
+
+  const heroSrc = useCleanActorHero ? profileHeroUrl : discoveryhero;
+
+  useEffect(() => {
+    setFailedHeroUrl(null);
+    setHeroImageLoaded(false);
+  }, [type, id]);
+
+  useEffect(() => {
+    if (!isActorPage || !id) {
+      setActorProfile(null);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    setActorProfile(null);
+    setProfileImageFailed(false);
+
+    async function fetchActorProfile() {
+      try {
+        const data = await actorProfileApi.getProfile(id, {
+          signal: controller.signal,
+        });
+
+        if (!controller.signal.aborted) {
+          setActorProfile(data);
+        }
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.warn("Unable to load actor profile.", err);
+        }
+      }
+    }
+
+    fetchActorProfile();
+
+    return () => controller.abort();
+  }, [isActorPage, id, retryKey]);
 
   const discoveryName = useMemo(() => {
     if (!discoveryType || !id) return null;
+
+    if (isActorPage && actorProfile?.name) {
+      return actorProfile.name;
+    }
 
     for (const video of videos) {
       const items = video?.[discoveryType.metadataKey];
@@ -76,12 +191,13 @@ function DiscoveryPage() {
 
       if (match) {
         const name = match.name || match.title;
+
         if (name) return name;
       }
     }
 
     return null;
-  }, [videos, discoveryType, id]);
+  }, [videos, discoveryType, id, isActorPage, actorProfile?.name]);
 
   const discoveryDescription = discoveryName
     ? discoveryType.description(discoveryName)
@@ -145,10 +261,14 @@ function DiscoveryPage() {
     return () => controller.abort();
   }, [fetchVideos, retryKey]);
 
-  // Reset the hero when the discovery route changes.
   useEffect(() => {
     setHeroImageLoaded(false);
-  }, [type, id]);
+  }, [heroSrc]);
+
+  useEffect(() => {
+    setProfileImageFailed(false);
+    setBiographyExpanded(false);
+  }, [type, id, profileImageUrl]);
 
   const handleHeroImageLoad = (event) => {
     if (event.currentTarget.naturalWidth > 0) {
@@ -156,8 +276,13 @@ function DiscoveryPage() {
     }
   };
 
-  const handleHeroImageError = (event) => {
-    event.currentTarget.style.visibility = "hidden";
+  const handleHeroImageError = () => {
+    if (useCleanActorHero && profileHeroUrl) {
+      setFailedHeroUrl(profileHeroUrl);
+      setHeroImageLoaded(false);
+      return;
+    }
+
     setHeroImageLoaded(true);
   };
 
@@ -177,6 +302,7 @@ function DiscoveryPage() {
         "This movie is missing its collection information. " +
           "Include collectionId in the discovery API response to enable playback.",
       );
+
       return;
     }
 
@@ -199,13 +325,7 @@ function DiscoveryPage() {
   const getThumbnailUrl = (video) => {
     if (!video.thumbnailUrl) return discoveryhero;
 
-    if (/^https?:\/\//i.test(video.thumbnailUrl)) {
-      return video.thumbnailUrl;
-    }
-
-    return `${API_BASE_URL}${
-      video.thumbnailUrl.startsWith("/") ? "" : "/"
-    }${video.thumbnailUrl}`;
+    return resolveApiUrl(video.thumbnailUrl);
   };
 
   const getPreviewUrl = (video) => {
@@ -228,6 +348,28 @@ function DiscoveryPage() {
 
   const retryLoading = () => {
     setRetryKey((current) => current + 1);
+  };
+
+  const biography =
+    typeof actorProfile?.biography === "string"
+      ? actorProfile.biography.trim()
+      : "";
+
+  const hasActorProfileContent =
+    isActorPage && Boolean(profileImageUrl || biography);
+
+  const openProfileEditor = () => {
+    setProfileEditorOpen(true);
+  };
+
+  const handleActorProfileSaved = async () => {
+    const updatedProfile = await actorProfileApi.getProfile(id);
+
+    setActorProfile(updatedProfile);
+    setFailedHeroUrl(null);
+    setProfileImageFailed(false);
+    setHeroImageLoaded(false);
+    setProfileEditorOpen(false);
   };
 
   if (!discoveryType) {
@@ -268,15 +410,19 @@ function DiscoveryPage() {
       <section
         className={`discovery-hero ${
           heroImageLoaded ? "hero-ready" : "hero-loading"
+        } ${useCleanActorHero ? "discovery-hero-actor" : ""} ${
+          hasActorProfileContent ? "discovery-hero-actor-page" : ""
         }`}
-        aria-label="Discovery collection"
+        aria-label={
+          useCleanActorHero ? "Actor profile hero" : "Discovery collection"
+        }
       >
         <img
-          key={`${type}-${id}-${discoveryhero}`}
+          key={`${type}-${id}-${heroSrc}`}
           className={`discovery-hero-image ${
             heroImageLoaded ? "loaded" : "loading"
           }`}
-          src={discoveryhero}
+          src={heroSrc}
           alt=""
           fetchPriority="high"
           onLoad={handleHeroImageLoad}
@@ -287,12 +433,12 @@ function DiscoveryPage() {
             if (image.naturalWidth > 0) {
               setHeroImageLoaded(true);
             } else {
-              handleHeroImageError({ currentTarget: image });
+              handleHeroImageError();
             }
           }}
         />
 
-        {!heroImageLoaded && (
+        {!heroImageLoaded && !useCleanActorHero && (
           <div className="discovery-hero-skeleton" aria-hidden="true">
             <div className="discovery-skeleton-content">
               <div className="discovery-skeleton-back" />
@@ -317,10 +463,97 @@ function DiscoveryPage() {
         <div className="discovery-hero-overlay" />
 
         {heroImageLoaded && (
-          <>
-            <div className="discovery-hero-content">
+          <div className="discovery-hero-content">
+            <button
+              className="discovery-back-button"
+              onClick={() => navigate(-1)}
+              aria-label="Go back"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="19"
+                height="19"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M19 12H5" />
+                <path d="m12 19-7-7 7-7" />
+              </svg>
+              Back
+            </button>
+
+            <span className="discovery-eyebrow">
+              CINEBOX
+              <span className="discovery-eyebrow-separator">/</span>
+              {isActorPage ? "ACTOR PROFILE" : "DISCOVERY"}
+            </span>
+
+            <h1>{discoveryName || `${discoveryType.title} Collection`}</h1>
+
+            <p>{discoveryDescription}</p>
+
+            <div className="discovery-hero-divider" />
+          </div>
+        )}
+
+        {heroImageLoaded && useCleanActorHero && (
+          <div className="discovery-hero-bottom actor-hero-bottom">
+            <span className="actor-hero-caption">
+              <span className="actor-hero-caption-dot" />
+              ACTOR PROFILE
+            </span>
+
+            <span className="discovery-hero-stat actor-hero-stat">
+              <strong>{totalElements.toLocaleString()}</strong> FILMOGRAPHY
+              TITLES
+            </span>
+          </div>
+        )}
+      </section>
+
+      {useCleanActorHero && (
+        <div className="actor-profile-back-row">
+          <button
+            className="discovery-back-button"
+            onClick={() => navigate(-1)}
+            aria-label="Go back"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="19"
+              height="19"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M19 12H5" />
+              <path d="m12 19-7-7 7-7" />
+            </svg>
+            Back
+          </button>
+        </div>
+      )}
+
+      <div className="discovery-content">
+        {isActorPage && (
+          <div
+            className={`actor-profile-action-row ${
+              hasActorProfileContent
+                ? "has-profile-content"
+                : "no-profile-content"
+            }`}
+          >
+            {hasActorProfileContent && (
               <button
-                className="discovery-back-button"
+                type="button"
+                className="discovery-back-button actor-profile-mobile-back"
                 onClick={() => navigate(-1)}
                 aria-label="Go back"
               >
@@ -340,26 +573,89 @@ function DiscoveryPage() {
                 </svg>
                 Back
               </button>
+            )}
 
-              <span className="discovery-eyebrow">
-                CINEBOX <span className="discovery-eyebrow-separator">/</span>{" "}
-                DISCOVERY
+            <ActorProfileEditButton
+              className="actor-profile-edit-icon-fallback"
+              onClick={openProfileEditor}
+              showLabel={!hasActorProfileContent}
+            />
+          </div>
+        )}
+
+        {hasActorProfileContent && (
+          <section
+            className="actor-profile"
+            aria-label={`About ${discoveryName || "this actor"}`}
+          >
+            {profileImageUrl && !profileImageFailed ? (
+              <div className="actor-profile-portrait">
+                <img
+                  src={profileImageUrl}
+                  alt={discoveryName || "Actor portrait"}
+                  loading="lazy"
+                  onError={() => setProfileImageFailed(true)}
+                />
+              </div>
+            ) : (
+              <div className="actor-profile-portrait actor-profile-portrait-placeholder">
+                <UserRound size={42} strokeWidth={1.3} aria-hidden="true" />
+              </div>
+            )}
+
+            <div className="actor-profile-details">
+              <span className="discovery-section-eyebrow">
+                THE PERSON BEHIND THE PERFORMANCES
               </span>
 
-              <h1>{discoveryName || `${discoveryType.title} Collection`}</h1>
+              <div className="actor-profile-name-row">
+                <h2>{discoveryName || "Actor profile"}</h2>
 
-              <p>{discoveryDescription}</p>
+                <ActorProfileEditButton
+                  className="actor-profile-edit-icon-inline"
+                  onClick={openProfileEditor}
+                />
+              </div>
 
-              <div className="discovery-hero-divider" />
+              {biography ? (
+                <>
+                  <p
+                    className={`actor-profile-biography ${
+                      biographyExpanded || biography.length <= 420
+                        ? "is-expanded"
+                        : "is-collapsed"
+                    }`}
+                  >
+                    {biography}
+                  </p>
+
+                  {biography.length > 420 && (
+                    <button
+                      type="button"
+                      className="actor-profile-biography-toggle"
+                      onClick={() =>
+                        setBiographyExpanded((expanded) => !expanded)
+                      }
+                      aria-expanded={biographyExpanded}
+                    >
+                      {biographyExpanded ? "Show less" : "Read more"}
+                    </button>
+                  )}
+                </>
+              ) : (
+                <p className="actor-profile-empty">
+                  A biography hasn't been added yet.
+                </p>
+              )}
             </div>
-          </>
+          </section>
         )}
-      </section>
 
-      <div className="discovery-content">
         <section className="discovery-results-heading">
           <div className="discovery-results-title">
-            <span className="discovery-section-eyebrow">YOUR DISCOVERIES</span>
+            <span className="discovery-section-eyebrow">
+              {isActorPage ? "FILMOGRAPHY" : "YOUR DISCOVERIES"}
+            </span>
           </div>
 
           {!loading && !error && (
@@ -479,6 +775,16 @@ function DiscoveryPage() {
           </>
         ) : null}
       </div>
+
+      {isActorPage && profileEditorOpen && (
+        <ActorProfileEditor
+          personId={id}
+          actorName={discoveryName}
+          profile={actorProfile}
+          onClose={() => setProfileEditorOpen(false)}
+          onSaved={handleActorProfileSaved}
+        />
+      )}
     </main>
   );
 }
