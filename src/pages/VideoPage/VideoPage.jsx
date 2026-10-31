@@ -319,6 +319,7 @@ function VideoPage() {
     async function loadTechnicalInfo() {
       setTechnicalInfo(null);
       setTechnicalInfoError("");
+      setTechnicalInfoExpanded(false);
       setTechnicalInfoLoading(true);
 
       if (!mediaItemId) {
@@ -392,7 +393,6 @@ function VideoPage() {
     if (!mediaItemId || technicalInfoRequesting) return;
 
     const currentStatus = String(technicalInfo?.status || "").toUpperCase();
-
     const force = currentStatus === "FAILED";
 
     setTechnicalInfoRequesting(true);
@@ -513,6 +513,9 @@ function VideoPage() {
 
   // Technical information display helpers.
   const technicalStatus = String(technicalInfo?.status || "").toUpperCase();
+
+  const hasTechnicalInfoSection =
+    technicalStatus !== "" && technicalStatus !== "NOT_REQUESTED";
 
   const isTechnicalInfoActive =
     ACTIVE_TECHNICAL_STATUSES.has(technicalStatus) || technicalInfoRequesting;
@@ -929,163 +932,146 @@ function VideoPage() {
             </div>
           </div>
 
-          {/* Technical information: intentionally secondary and collapsible. */}
-          <div className="technical-info-section">
-            <button
-              type="button"
-              className="technical-info-toggle"
-              onClick={() => setTechnicalInfoExpanded((expanded) => !expanded)}
-              aria-expanded={technicalInfoExpanded}
-              aria-controls="technical-info-panel"
-            >
-              <span className="technical-info-heading">
-                <span className="technical-info-icon" aria-hidden="true">
+          {/* Technical information is shown only after extraction has been requested. */}
+          {hasTechnicalInfoSection && (
+            <div className="technical-info-section">
+              <button
+                type="button"
+                className="technical-info-toggle"
+                onClick={() =>
+                  setTechnicalInfoExpanded((expanded) => !expanded)
+                }
+                aria-expanded={technicalInfoExpanded}
+                aria-controls="technical-info-panel"
+              >
+                <span className="technical-info-heading">
+                  <span className="technical-info-icon" aria-hidden="true">
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="18"
+                      height="18"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <rect x="3" y="4" width="18" height="13" rx="2" />
+                      <path d="M8 21h8m-4-4v4M7 9h4m-4 4h7" />
+                    </svg>
+                  </span>
+                  <span>
+                    <strong>Technical information</strong>
+                    <small>File and playback specifications</small>
+                  </span>
+                </span>
+
+                <span
+                  className={`technical-info-chevron${technicalInfoExpanded ? " is-expanded" : ""}`}
+                  aria-hidden="true"
+                >
                   <svg
                     viewBox="0 0 24 24"
                     width="18"
                     height="18"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="1.6"
+                    strokeWidth="1.7"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
-                    <rect x="3" y="4" width="18" height="13" rx="2" />
-                    <path d="M8 21h8m-4-4v4M7 9h4m-4 4h7" />
+                    <path d="m6 9 6 6 6-6" />
                   </svg>
                 </span>
-                <span>
-                  <strong>Technical information</strong>
-                  <small>File and playback specifications</small>
-                </span>
-              </span>
+              </button>
 
-              <span
-                className={`technical-info-chevron${technicalInfoExpanded ? " is-expanded" : ""}`}
-                aria-hidden="true"
+              <div
+                id="technical-info-panel"
+                className={`technical-info-collapse${technicalInfoExpanded ? " is-expanded" : ""}`}
+                aria-hidden={!technicalInfoExpanded}
+                inert={!technicalInfoExpanded}
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  width="18"
-                  height="18"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-              </span>
-            </button>
-
-            <div
-              id="technical-info-panel"
-              className={`technical-info-collapse${technicalInfoExpanded ? " is-expanded" : ""}`}
-              aria-hidden={!technicalInfoExpanded}
-              inert={!technicalInfoExpanded}
-            >
-              <div className="technical-info-collapse-inner">
-                <div className="technical-info-content">
-                  {technicalInfoLoading && !technicalInfo && (
-                    <div className="technical-info-message">
-                      <span className="technical-info-spinner" />
-                      Loading saved information...
-                    </div>
-                  )}
-
-                  {technicalInfoError && (
-                    <p className="technical-info-error" role="alert">
-                      {technicalInfoError}
-                    </p>
-                  )}
-
-                  {isTechnicalInfoActive && (
-                    <div className="technical-info-message">
-                      <span className="technical-info-spinner" />
-                      Analysing your media file...
-                    </div>
-                  )}
-
-                  {isTechnicalInfoCompleted && (
-                    <>
-                      {technicalVideoItems.length > 0 && (
-                        <div className="technical-info-group">
-                          <h3>VIDEO</h3>
-                          <div className="technical-info-grid">
-                            {technicalVideoItems.map(([label, value]) => (
-                              <div className="technical-info-item" key={label}>
-                                <span>{label}</span>
-                                <strong>{value}</strong>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {technicalAudioItems.length > 0 && (
-                        <div className="technical-info-group">
-                          <h3>AUDIO</h3>
-                          <div className="technical-info-grid">
-                            {technicalAudioItems.map(([label, value]) => (
-                              <div className="technical-info-item" key={label}>
-                                <span>{label}</span>
-                                <strong>{value}</strong>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {technicalVideoItems.length === 0 &&
-                        technicalAudioItems.length === 0 && (
-                          <p className="technical-info-empty">
-                            No technical details are available for this file.
-                          </p>
-                        )}
-                    </>
-                  )}
-
-                  {isTechnicalInfoFailed && (
-                    <div className="technical-info-failed">
-                      <p>
-                        {technicalInfo?.error ||
-                          "Technical analysis couldn't be completed."}
+                <div className="technical-info-collapse-inner">
+                  <div className="technical-info-content">
+                    {technicalInfoError && (
+                      <p className="technical-info-error" role="alert">
+                        {technicalInfoError}
                       </p>
-                      <button
-                        type="button"
-                        className="technical-info-action technical-info-retry"
-                        onClick={handleAnalyzeTechnicalInfo}
-                        disabled={technicalInfoRequesting}
-                      >
-                        Try again
-                      </button>
-                    </div>
-                  )}
+                    )}
 
-                  {!technicalInfoLoading &&
-                    !technicalInfoError &&
-                    (!technicalInfo || technicalStatus === "NOT_REQUESTED") && (
-                      <div className="technical-info-empty-state">
+                    {isTechnicalInfoActive && (
+                      <div className="technical-info-message">
+                        <span className="technical-info-spinner" />
+                        Analysing your media file...
+                      </div>
+                    )}
+
+                    {isTechnicalInfoCompleted && (
+                      <>
+                        {technicalVideoItems.length > 0 && (
+                          <div className="technical-info-group">
+                            <h3>VIDEO</h3>
+                            <div className="technical-info-grid">
+                              {technicalVideoItems.map(([label, value]) => (
+                                <div
+                                  className="technical-info-item"
+                                  key={label}
+                                >
+                                  <span>{label}</span>
+                                  <strong>{value}</strong>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {technicalAudioItems.length > 0 && (
+                          <div className="technical-info-group">
+                            <h3>AUDIO</h3>
+                            <div className="technical-info-grid">
+                              {technicalAudioItems.map(([label, value]) => (
+                                <div
+                                  className="technical-info-item"
+                                  key={label}
+                                >
+                                  <span>{label}</span>
+                                  <strong>{value}</strong>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {technicalVideoItems.length === 0 &&
+                          technicalAudioItems.length === 0 && (
+                            <p className="technical-info-empty">
+                              No technical details are available for this file.
+                            </p>
+                          )}
+                      </>
+                    )}
+
+                    {isTechnicalInfoFailed && (
+                      <div className="technical-info-failed">
                         <p>
-                          Technical specifications haven't been analysed yet.
+                          {technicalInfo?.error ||
+                            "Technical analysis couldn't be completed."}
                         </p>
                         <button
                           type="button"
-                          className="technical-info-action"
+                          className="technical-info-action technical-info-retry"
                           onClick={handleAnalyzeTechnicalInfo}
                           disabled={technicalInfoRequesting}
                         >
-                          {technicalInfoRequesting
-                            ? "Starting analysis..."
-                            : "Analyse technical details"}
+                          Try again
                         </button>
                       </div>
                     )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {tags.length > 0 && (
             <div className="detail-section">
