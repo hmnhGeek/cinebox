@@ -1,11 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getVideoMetadata } from "../../service/collectionApi";
+import {
+  getMediaTechnicalInfo,
+  requestMediaTechnicalInfo,
+} from "../../service/mediaTechnicalInfoApi";
 import VideoPlayer from "../../components/VideoPlayer/VideoPlayer";
 import MovieGallery from "../../components/MovieGallery/MovieGallery";
 import "./VideoPage.css";
 
 const API_BASE = `${(import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "")}/api/v1/collections`;
+
+const TECHNICAL_INFO_POLL_INTERVAL = 2000;
+
+const ACTIVE_TECHNICAL_STATUSES = new Set([
+  "PENDING",
+  "PROCESSING",
+  "QUEUED",
+  "IN_PROGRESS",
+]);
 
 function getActorProfileImageUrl(actor) {
   const imageUrl =
@@ -27,6 +40,135 @@ function getActorProfileImageUrl(actor) {
   return `${baseUrl}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
 }
 
+function formatTechnicalDuration(seconds) {
+  if (seconds == null || !Number.isFinite(Number(seconds))) return null;
+
+  const totalSeconds = Math.round(Number(seconds));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const remainingSeconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+
+  if (minutes > 0) {
+    return `${minutes}m ${remainingSeconds}s`;
+  }
+
+  return `${remainingSeconds}s`;
+}
+
+/**
+ * Determines the vertical resolution represented by the technical metadata.
+ *
+ * Supports values such as:
+ * - 1080p
+ * - 1920x1080
+ * - 1920 × 1080
+ * - Full HD (1080p)
+ * - 4K / UHD
+ *
+ * The explicit height field takes precedence when available.
+ */
+function getResolutionHeight(resolution, width, height) {
+  const numericHeight = Number(height);
+
+  if (height != null && Number.isFinite(numericHeight) && numericHeight > 0) {
+    return numericHeight;
+  }
+
+  const value = String(resolution || "")
+    .trim()
+    .toLowerCase();
+
+  if (!value) return null;
+
+  if (/\b8k\b/.test(value)) return 4320;
+  if (/\b4k\b|\buhd\b/.test(value)) return 2160;
+
+  const dimensionsMatch = value.match(/(\d{3,4})\s*[x×]\s*(\d{3,4})/);
+
+  if (dimensionsMatch) {
+    return Number(dimensionsMatch[2]);
+  }
+
+  const pixelMatch = value.match(/\b(\d{3,4})\s*[pi]\b/);
+
+  if (pixelMatch) {
+    return Number(pixelMatch[1]);
+  }
+
+  const standaloneMatch = value.match(/\b(4320|2160|1440|1080|720|480)\b/);
+
+  if (standaloneMatch) {
+    return Number(standaloneMatch[1]);
+  }
+
+  const numericWidth = Number(width);
+
+  if (
+    width != null &&
+    Number.isFinite(numericWidth) &&
+    numericWidth > 0 &&
+    numericWidth <= 4320
+  ) {
+    return numericWidth;
+  }
+
+  return null;
+}
+
+/**
+ * Maps the detected vertical resolution to a restrained CineBox badge class.
+ */
+function getResolutionBadgeClass(resolution, width, height) {
+  const resolutionHeight = getResolutionHeight(resolution, width, height);
+
+  if (resolutionHeight == null) return "resolution-unknown";
+  if (resolutionHeight >= 4320) return "resolution-4320";
+  if (resolutionHeight >= 2160) return "resolution-2160";
+  if (resolutionHeight >= 1440) return "resolution-1440";
+  if (resolutionHeight >= 1080) return "resolution-1080";
+  if (resolutionHeight >= 720) return "resolution-720";
+  if (resolutionHeight >= 480) return "resolution-480";
+
+  return "resolution-sd";
+}
+
+function formatFileSize(bytes) {
+  if (bytes == null || !Number.isFinite(Number(bytes))) return null;
+
+  const size = Number(bytes);
+
+  if (size < 1024 ** 2) {
+    return `${(size / 1024).toFixed(1)} KB`;
+  }
+
+  if (size < 1024 ** 3) {
+    return `${(size / 1024 ** 2).toFixed(2)} GB`.replace(
+      /(\.\d*?)0+ GB$/,
+      "$1 GB",
+    );
+  }
+
+  return `${(size / 1024 ** 3).toFixed(2)} GB`;
+}
+
+function formatFrameRate(frameRate) {
+  if (frameRate == null || !Number.isFinite(Number(frameRate))) return null;
+
+  return `${Number(frameRate)
+    .toFixed(3)
+    .replace(/\.?0+$/, "")} FPS`;
+}
+
+function formatCodec(codec) {
+  if (!codec) return null;
+
+  return String(codec).replace(/[_-]/g, " ").toUpperCase();
+}
+
 function VideoPage() {
   const { collectionId, mediaItemId } = useParams();
   const navigate = useNavigate();
@@ -40,6 +182,13 @@ function VideoPage() {
   const [error, setError] = useState("");
   const [playError, setPlayError] = useState("");
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+
+  // Technical information state.
+  const [technicalInfo, setTechnicalInfo] = useState(null);
+  const [technicalInfoLoading, setTechnicalInfoLoading] = useState(false);
+  const [technicalInfoError, setTechnicalInfoError] = useState("");
+  const [technicalInfoExpanded, setTechnicalInfoExpanded] = useState(false);
+  const [technicalInfoRequesting, setTechnicalInfoRequesting] = useState(false);
 
   // Preserve the originating Discovery route when available.
   const discoveryReturnPath =
@@ -83,19 +232,16 @@ function VideoPage() {
     : null;
 
   const handleBackToCollection = useCallback(() => {
-    // Return to the originating search results page.
     if (searchReturnPath) {
       navigate(searchReturnPath);
       return;
     }
 
-    // Return to the previous Discovery history entry.
     if (discoveryReturnPath) {
       navigate(-1);
       return;
     }
 
-    // Preserve the original collection fallback.
     navigate(`/collections/${encodeURIComponent(collectionId)}`);
   }, [navigate, collectionId, searchReturnPath, discoveryReturnPath]);
 
@@ -116,7 +262,6 @@ function VideoPage() {
     }
   }, []);
 
-  // Open Discovery results using the metadata entity's stable ID.
   const handleDiscover = useCallback(
     (type, item) => {
       if (!item || typeof item !== "object" || !item.id) return;
@@ -126,6 +271,7 @@ function VideoPage() {
     [navigate],
   );
 
+  // Load movie metadata.
   useEffect(() => {
     let cancelled = false;
 
@@ -165,6 +311,105 @@ function VideoPage() {
       cancelled = true;
     };
   }, [mediaItemId]);
+
+  // Load already stored technical information without triggering extraction.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadTechnicalInfo() {
+      setTechnicalInfo(null);
+      setTechnicalInfoError("");
+      setTechnicalInfoExpanded(false);
+      setTechnicalInfoLoading(true);
+
+      if (!mediaItemId) {
+        setTechnicalInfoLoading(false);
+        return;
+      }
+
+      try {
+        const data = await getMediaTechnicalInfo(mediaItemId);
+
+        if (!cancelled) {
+          setTechnicalInfo(data);
+        }
+      } catch (err) {
+        console.error("Failed to load technical information:", err);
+
+        if (!cancelled) {
+          setTechnicalInfoError("Technical information couldn't be loaded.");
+        }
+      } finally {
+        if (!cancelled) {
+          setTechnicalInfoLoading(false);
+        }
+      }
+    }
+
+    loadTechnicalInfo();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mediaItemId]);
+
+  // Poll while the backend is extracting technical information.
+  useEffect(() => {
+    const status = String(technicalInfo?.status || "").toUpperCase();
+
+    if (!mediaItemId || !ACTIVE_TECHNICAL_STATUSES.has(status)) {
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    const timer = window.setTimeout(async () => {
+      try {
+        const data = await getMediaTechnicalInfo(mediaItemId);
+
+        if (!cancelled) {
+          setTechnicalInfo(data);
+          setTechnicalInfoError("");
+        }
+      } catch (err) {
+        console.error("Failed to refresh technical information:", err);
+
+        if (!cancelled) {
+          setTechnicalInfoError(
+            "Couldn't refresh the extraction status. Please try again.",
+          );
+        }
+      }
+    }, TECHNICAL_INFO_POLL_INTERVAL);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [mediaItemId, technicalInfo]);
+
+  // Explicitly request extraction. Force refresh is used for retrying a failure.
+  const handleAnalyzeTechnicalInfo = useCallback(async () => {
+    if (!mediaItemId || technicalInfoRequesting) return;
+
+    const currentStatus = String(technicalInfo?.status || "").toUpperCase();
+    const force = currentStatus === "FAILED";
+
+    setTechnicalInfoRequesting(true);
+    setTechnicalInfoError("");
+
+    try {
+      const data = await requestMediaTechnicalInfo(mediaItemId, force);
+      setTechnicalInfo(data);
+    } catch (err) {
+      console.error("Failed to request technical information:", err);
+      setTechnicalInfoError(
+        err.message || "Couldn't start technical analysis.",
+      );
+    } finally {
+      setTechnicalInfoRequesting(false);
+    }
+  }, [mediaItemId, technicalInfo, technicalInfoRequesting]);
 
   // Close the player overlay when fullscreen ends.
   useEffect(() => {
@@ -233,7 +478,6 @@ function VideoPage() {
   const displayList = (items) =>
     Array.isArray(items) ? items.filter(Boolean) : [];
 
-  // Support both the previous string format and the ID/name DTO format.
   const getItemName = (item) =>
     typeof item === "string" ? item : item?.name || "";
 
@@ -266,6 +510,59 @@ function VideoPage() {
         </button>
       );
     });
+
+  // Technical information display helpers.
+  const technicalStatus = String(technicalInfo?.status || "").toUpperCase();
+
+  const hasTechnicalInfoSection =
+    technicalStatus !== "" && technicalStatus !== "NOT_REQUESTED";
+
+  const isTechnicalInfoActive =
+    ACTIVE_TECHNICAL_STATUSES.has(technicalStatus) || technicalInfoRequesting;
+
+  const isTechnicalInfoCompleted = technicalStatus === "COMPLETED";
+  const isTechnicalInfoFailed = technicalStatus === "FAILED";
+
+  const technicalDuration = formatTechnicalDuration(
+    technicalInfo?.durationSeconds,
+  );
+
+  const technicalResolution =
+    technicalInfo?.resolution ||
+    (technicalInfo?.width != null && technicalInfo?.height != null
+      ? `${technicalInfo.width} × ${technicalInfo.height}`
+      : null);
+
+  const resolutionBadgeClass = getResolutionBadgeClass(
+    technicalInfo?.resolution,
+    technicalInfo?.width,
+    technicalInfo?.height,
+  );
+
+  const technicalVideoItems = [
+    ["Resolution", technicalInfo?.resolution],
+    [
+      "Dimensions",
+      technicalInfo?.width != null && technicalInfo?.height != null
+        ? `${technicalInfo.width} × ${technicalInfo.height}`
+        : null,
+    ],
+    ["Duration", technicalDuration],
+    ["Video codec", formatCodec(technicalInfo?.videoCodec)],
+    ["Frame rate", formatFrameRate(technicalInfo?.frameRate)],
+    ["File size", formatFileSize(technicalInfo?.fileSizeBytes)],
+  ].filter(([, value]) => value != null && value !== "");
+
+  const technicalAudioItems = [
+    ["Audio codec", formatCodec(technicalInfo?.audioCodec)],
+    [
+      "Channels",
+      technicalInfo?.audioChannels != null
+        ? `${technicalInfo.audioChannels} channel${technicalInfo.audioChannels === 1 ? "" : "s"}`
+        : null,
+    ],
+    ["Channel layout", technicalInfo?.audioChannelLayout],
+  ].filter(([, value]) => value != null && value !== "");
 
   if (loading) {
     return (
@@ -423,9 +720,25 @@ function VideoPage() {
             <h1 className="hero-title">{metadata.title || "Untitled video"}</h1>
 
             <div className="hero-badges">
+              {/* Always show technical badges first, when available. */}
+              {technicalResolution && (
+                <span
+                  className={`resolution-badge ${resolutionBadgeClass}`}
+                  title="Video resolution"
+                >
+                  {technicalResolution}
+                </span>
+              )}
+
+              {technicalDuration && (
+                <span className="duration-badge" title="Video duration">
+                  {technicalDuration}
+                </span>
+              )}
+
+              {/* Movie metadata follows the technical badges. */}
               {metadata.year != null && <span>{metadata.year}</span>}
               {metadata.mpaa && <span>{metadata.mpaa}</span>}
-              {metadata.runtime != null && <span>{metadata.runtime} min</span>}
               {metadata.language && <span>{metadata.language}</span>}
             </div>
 
@@ -618,6 +931,147 @@ function VideoPage() {
               )}
             </div>
           </div>
+
+          {/* Technical information is shown only after extraction has been requested. */}
+          {hasTechnicalInfoSection && (
+            <div className="technical-info-section">
+              <button
+                type="button"
+                className="technical-info-toggle"
+                onClick={() =>
+                  setTechnicalInfoExpanded((expanded) => !expanded)
+                }
+                aria-expanded={technicalInfoExpanded}
+                aria-controls="technical-info-panel"
+              >
+                <span className="technical-info-heading">
+                  <span className="technical-info-icon" aria-hidden="true">
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="18"
+                      height="18"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <rect x="3" y="4" width="18" height="13" rx="2" />
+                      <path d="M8 21h8m-4-4v4M7 9h4m-4 4h7" />
+                    </svg>
+                  </span>
+                  <span>
+                    <strong>Technical information</strong>
+                    <small>File and playback specifications</small>
+                  </span>
+                </span>
+
+                <span
+                  className={`technical-info-chevron${technicalInfoExpanded ? " is-expanded" : ""}`}
+                  aria-hidden="true"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="18"
+                    height="18"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </span>
+              </button>
+
+              <div
+                id="technical-info-panel"
+                className={`technical-info-collapse${technicalInfoExpanded ? " is-expanded" : ""}`}
+                aria-hidden={!technicalInfoExpanded}
+                inert={!technicalInfoExpanded}
+              >
+                <div className="technical-info-collapse-inner">
+                  <div className="technical-info-content">
+                    {technicalInfoError && (
+                      <p className="technical-info-error" role="alert">
+                        {technicalInfoError}
+                      </p>
+                    )}
+
+                    {isTechnicalInfoActive && (
+                      <div className="technical-info-message">
+                        <span className="technical-info-spinner" />
+                        Analysing your media file...
+                      </div>
+                    )}
+
+                    {isTechnicalInfoCompleted && (
+                      <>
+                        {technicalVideoItems.length > 0 && (
+                          <div className="technical-info-group">
+                            <h3>VIDEO</h3>
+                            <div className="technical-info-grid">
+                              {technicalVideoItems.map(([label, value]) => (
+                                <div
+                                  className="technical-info-item"
+                                  key={label}
+                                >
+                                  <span>{label}</span>
+                                  <strong>{value}</strong>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {technicalAudioItems.length > 0 && (
+                          <div className="technical-info-group">
+                            <h3>AUDIO</h3>
+                            <div className="technical-info-grid">
+                              {technicalAudioItems.map(([label, value]) => (
+                                <div
+                                  className="technical-info-item"
+                                  key={label}
+                                >
+                                  <span>{label}</span>
+                                  <strong>{value}</strong>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {technicalVideoItems.length === 0 &&
+                          technicalAudioItems.length === 0 && (
+                            <p className="technical-info-empty">
+                              No technical details are available for this file.
+                            </p>
+                          )}
+                      </>
+                    )}
+
+                    {isTechnicalInfoFailed && (
+                      <div className="technical-info-failed">
+                        <p>
+                          {technicalInfo?.error ||
+                            "Technical analysis couldn't be completed."}
+                        </p>
+                        <button
+                          type="button"
+                          className="technical-info-action technical-info-retry"
+                          onClick={handleAnalyzeTechnicalInfo}
+                          disabled={technicalInfoRequesting}
+                        >
+                          Try again
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {tags.length > 0 && (
             <div className="detail-section">

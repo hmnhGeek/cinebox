@@ -47,7 +47,6 @@
   pointer-events: none;
 }
 
-/* Smoothly fade the backdrop into the page background */
 .backdrop-image::after {
   content: "";
   position: absolute;
@@ -68,7 +67,6 @@
   pointer-events: none;
 }
 
-/* Layered cinematic lighting */
 .backdrop-shade {
   position: absolute;
   z-index: -1;
@@ -76,39 +74,35 @@
   pointer-events: none;
 
   background:
-    /* Subtle warm CineBox glow */
     radial-gradient(
       ellipse at 78% 28%,
       rgba(196, 166, 106, 0.11) 0%,
       rgba(196, 166, 106, 0.035) 27%,
       transparent 55%
     ),
-    /* Keep the title area dark */
     linear-gradient(
-        90deg,
-        rgba(20, 20, 19, 0.94) 0%,
-        rgba(20, 20, 19, 0.78) 24%,
-        rgba(20, 20, 19, 0.4) 52%,
-        rgba(20, 20, 19, 0.12) 78%,
-        rgba(20, 20, 19, 0.28) 100%
-      ),
-    /* Dark cinematic vignette around the edges */
+      90deg,
+      rgba(20, 20, 19, 0.94) 0%,
+      rgba(20, 20, 19, 0.78) 24%,
+      rgba(20, 20, 19, 0.4) 52%,
+      rgba(20, 20, 19, 0.12) 78%,
+      rgba(20, 20, 19, 0.28) 100%
+    ),
     radial-gradient(
-        ellipse at 60% 35%,
-        transparent 15%,
-        rgba(10, 10, 9, 0.22) 68%,
-        rgba(10, 10, 9, 0.58) 100%
-      ),
-    /* Fade into the details section */
+      ellipse at 60% 35%,
+      transparent 15%,
+      rgba(10, 10, 9, 0.22) 68%,
+      rgba(10, 10, 9, 0.58) 100%
+    ),
     linear-gradient(
-        180deg,
-        rgba(20, 20, 19, 0.08) 0%,
-        rgba(20, 20, 19, 0.04) 25%,
-        rgba(20, 20, 19, 0.38) 48%,
-        rgba(20, 20, 19, 0.82) 68%,
-        #141413 88%,
-        #141413 100%
-      );
+      180deg,
+      rgba(20, 20, 19, 0.08) 0%,
+      rgba(20, 20, 19, 0.04) 25%,
+      rgba(20, 20, 19, 0.38) 48%,
+      rgba(20, 20, 19, 0.82) 68%,
+      #141413 88%,
+      #141413 100%
+    );
 }
 
 @media (max-width: 650px) {
@@ -223,6 +217,96 @@
 
   background: rgba(20, 20, 19, 0.48);
   backdrop-filter: blur(8px);
+}
+
+/* =========================================
+   Resolution Badge — CineBox Quality Tiers
+   Unified charcoal, bronze and muted-gold palette
+   ========================================= */
+
+.video-page .hero-badges .resolution-badge {
+  font-weight: 650;
+  letter-spacing: 0.15px;
+  backdrop-filter: blur(10px);
+
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+/* SD / below 480p — muted charcoal */
+
+.video-page .hero-badges .resolution-sd {
+  color: #b5afa3;
+  border-color: rgba(165, 161, 151, 0.25);
+  background: rgba(75, 72, 65, 0.24);
+}
+
+/* 480p — subtle aged bronze */
+
+.video-page .hero-badges .resolution-480 {
+  color: #c6a77f;
+  border-color: rgba(158, 124, 78, 0.36);
+  background: rgba(105, 78, 43, 0.22);
+}
+
+/* 720p — muted antique gold */
+
+.video-page .hero-badges .resolution-720 {
+  color: #d0b78a;
+  border-color: rgba(174, 143, 91, 0.4);
+  background: rgba(116, 91, 52, 0.23);
+}
+
+/* 1080p — signature CineBox gold */
+
+.video-page .hero-badges .resolution-1080 {
+  color: #dec58e;
+  border-color: rgba(196, 166, 106, 0.48);
+  background: rgba(130, 102, 55, 0.25);
+}
+
+/* 1440p — brighter muted gold */
+
+.video-page .hero-badges .resolution-1440 {
+  color: #e5cc99;
+  border-color: rgba(205, 175, 116, 0.52);
+  background: rgba(143, 113, 62, 0.27);
+}
+
+/* 2160p / 4K — premium champagne gold */
+
+.video-page .hero-badges .resolution-2160 {
+  color: #eddaaf;
+  border-color: rgba(218, 190, 137, 0.58);
+  background: rgba(151, 124, 75, 0.3);
+  box-shadow: inset 0 0 12px rgba(196, 166, 106, 0.055);
+}
+
+/* 4320p / 8K — light champagne */
+
+.video-page .hero-badges .resolution-4320 {
+  color: #f1e5ca;
+  border-color: rgba(225, 207, 169, 0.62);
+  background: rgba(166, 145, 105, 0.3);
+  box-shadow: inset 0 0 14px rgba(222, 197, 142, 0.07);
+}
+
+/* Unknown resolution — standard neutral badge */
+
+.video-page .hero-badges .resolution-unknown {
+  color: #d5d0c6;
+  border-color: rgba(240, 238, 232, 0.17);
+  background: rgba(20, 20, 19, 0.48);
+}
+
+/* Duration badge */
+
+.video-page .hero-badges .duration-badge {
+  color: #d5d0c6;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Genres */
@@ -1116,8 +1200,6 @@
   cursor: default;
 }
 
-/* Genre links retain the existing separators and spacing. */
-
 .video-page .hero-genres .metadata-link {
   color: #d0cbc1;
   font-size: 13px;
@@ -1128,8 +1210,6 @@
   margin-left: 9px;
   color: var(--cb-gold);
 }
-
-/* Tag links retain the existing tag-chip appearance. */
 
 .video-page .tag-list .metadata-link {
   padding: 7px 12px;
@@ -1153,8 +1233,6 @@
   background: var(--cb-gold-soft);
   color: var(--cb-gold-light);
 }
-
-/* Actor cards remain visually identical, with a subtle interactive state. */
 
 .video-page .cast-card-discoverable {
   width: 100%;
@@ -1187,8 +1265,6 @@
   outline-offset: 5px;
   border-radius: 4px;
 }
-
-/* Studio links stay inline in the existing details grid. */
 
 .video-page .metadata-link-list {
   display: flex;
@@ -1226,14 +1302,6 @@
    Always-visible underline, limited to each word
    ========================================= */
 
-/*
- * The underline is a separate absolutely positioned element.
- * Separators are positioned separately too, so neither bullet
- * points nor commas are included in the underline.
- */
-
-/* Genres */
-
 .video-page .hero-genres .metadata-link {
   position: relative;
   display: inline;
@@ -1257,7 +1325,6 @@
     text-shadow 180ms ease;
 }
 
-/* Underline spans the link text only, never the separator. */
 .video-page .hero-genres .metadata-link::before {
   content: "";
   position: absolute;
@@ -1270,7 +1337,6 @@
   pointer-events: none;
 }
 
-/* Keep the bullet outside the text and its underline. */
 .video-page .hero-genres .metadata-link:not(:last-child)::after {
   content: "•";
   position: absolute;
@@ -1307,8 +1373,6 @@
   background: rgba(165, 161, 151, 0.45);
 }
 
-/* Studios */
-
 .video-page .metadata-link-list {
   display: flex;
   flex-wrap: wrap;
@@ -1339,7 +1403,6 @@
     text-shadow 180ms ease;
 }
 
-/* Underline spans the studio name only, not the comma. */
 .video-page .metadata-link-list .metadata-link::before {
   content: "";
   position: absolute;
@@ -1352,7 +1415,6 @@
   pointer-events: none;
 }
 
-/* Place the comma in the gap between studio names. */
 .video-page .metadata-link-list .metadata-link:not(:last-child)::after {
   content: ",";
   position: absolute;
@@ -1392,5 +1454,335 @@
   .video-page .hero-genres .metadata-link,
   .video-page .metadata-link-list .metadata-link {
     transition: none;
+  }
+}
+
+/* =========================================
+   CineBox — Technical Information
+   Restrained, secondary media specifications
+   ========================================= */
+
+.video-page .technical-info-section {
+  margin-top: 36px;
+  border: 1px solid var(--cb-border);
+  border-radius: 7px;
+  background: rgba(20, 20, 19, 0.28);
+  overflow: hidden;
+}
+
+.video-page .technical-info-toggle {
+  display: flex;
+  width: 100%;
+  min-height: 76px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 15px 19px;
+
+  border: 0;
+  background: transparent;
+  color: var(--cb-text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  transition: background 180ms ease;
+}
+
+.video-page .technical-info-toggle:hover {
+  background: rgba(196, 166, 106, 0.045);
+}
+
+.video-page .technical-info-toggle:focus-visible {
+  outline: 1px solid var(--cb-gold);
+  outline-offset: -3px;
+}
+
+.video-page .technical-info-heading {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+}
+
+.video-page .technical-info-icon {
+  display: grid;
+  width: 37px;
+  height: 37px;
+  flex: 0 0 37px;
+  place-items: center;
+
+  border: 1px solid rgba(196, 166, 106, 0.2);
+  border-radius: 6px;
+  background: rgba(196, 166, 106, 0.07);
+  color: var(--cb-gold);
+}
+
+.video-page .technical-info-heading > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.video-page .technical-info-heading strong {
+  color: var(--cb-text);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+}
+
+.video-page .technical-info-heading small {
+  color: var(--cb-text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.video-page .technical-info-chevron {
+  display: grid;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  color: var(--cb-text-muted);
+  transition:
+    transform 280ms cubic-bezier(0.2, 0.75, 0.25, 1),
+    color 180ms ease;
+}
+
+.video-page .technical-info-chevron.is-expanded {
+  transform: rotate(180deg);
+  color: var(--cb-gold);
+}
+
+/*
+ * Animated collapsible panel.
+ *
+ * The panel remains mounted in the DOM. Grid row animation allows
+ * the content to expand to its natural height without a fixed max-height.
+ * Opacity and a slight vertical offset add a restrained entrance effect.
+ */
+
+.video-page .technical-info-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transform: translateY(-5px);
+
+  transition:
+    grid-template-rows 360ms cubic-bezier(0.22, 0.75, 0.25, 1),
+    opacity 230ms ease,
+    transform 300ms cubic-bezier(0.22, 0.75, 0.25, 1);
+}
+
+.video-page .technical-info-collapse.is-expanded {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.video-page .technical-info-collapse-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.video-page .technical-info-content {
+  padding: 0 20px 21px;
+  border-top: 1px solid rgba(53, 51, 46, 0.75);
+}
+
+.video-page .technical-info-group {
+  margin-top: 21px;
+}
+
+.video-page .technical-info-group h3 {
+  margin: 0 0 14px;
+  color: var(--cb-gold);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.video-page .technical-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px 25px;
+}
+
+.video-page .technical-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.video-page .technical-info-item > span {
+  color: var(--cb-text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.video-page .technical-info-item > strong {
+  color: #ded9cf;
+  font-size: 13px;
+  font-weight: 550;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.video-page .technical-info-message {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 20px 0 2px;
+  color: var(--cb-text-secondary);
+  font-size: 13px;
+}
+
+.video-page .technical-info-spinner {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+  border: 1.5px solid rgba(196, 166, 106, 0.2);
+  border-top-color: var(--cb-gold);
+  border-radius: 50%;
+  animation: cinebox-technical-spin 750ms linear infinite;
+}
+
+.video-page .technical-info-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 15px;
+  padding-top: 18px;
+}
+
+.video-page .technical-info-empty-state p,
+.video-page .technical-info-empty {
+  margin: 0;
+  color: var(--cb-text-secondary);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.video-page .technical-info-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 35px;
+  padding: 0 13px;
+
+  border: 1px solid rgba(196, 166, 106, 0.45);
+  border-radius: 5px;
+  background: rgba(196, 166, 106, 0.08);
+  color: var(--cb-gold-light);
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.video-page .technical-info-action:hover:not(:disabled) {
+  border-color: var(--cb-gold);
+  background: rgba(196, 166, 106, 0.15);
+  color: #f0d9a7;
+}
+
+.video-page .technical-info-action:focus-visible {
+  outline: 1px solid var(--cb-gold-light);
+  outline-offset: 3px;
+}
+
+.video-page .technical-info-action:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.video-page .technical-info-failed {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 15px;
+  padding-top: 18px;
+}
+
+.video-page .technical-info-failed p,
+.video-page .technical-info-error {
+  margin: 0;
+  color: var(--cb-danger);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.video-page .technical-info-error {
+  padding-top: 15px;
+}
+
+.video-page .technical-info-empty {
+  padding-top: 18px;
+}
+
+@keyframes cinebox-technical-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 1000px) {
+  .video-page .technical-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .video-page .technical-info-section {
+    margin-top: 30px;
+  }
+
+  .video-page .technical-info-toggle {
+    min-height: 69px;
+    padding: 13px 14px;
+  }
+
+  .video-page .technical-info-content {
+    padding: 0 15px 18px;
+  }
+
+  .video-page .technical-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 17px 13px;
+  }
+
+  .video-page .technical-info-empty-state,
+  .video-page .technical-info-failed {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 360px) {
+  .video-page .technical-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .video-page .technical-info-chevron,
+  .video-page .technical-info-toggle,
+  .video-page .technical-info-action,
+  .video-page .technical-info-collapse {
+    transition: none;
+  }
+
+  .video-page .technical-info-spinner {
+    animation: none;
   }
 }
