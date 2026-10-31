@@ -220,8 +220,8 @@
 }
 
 /* =========================================
-   Resolution Badge — Quality Indicators
-   Subtle, readable CineBox color palette
+   Resolution Badge — CineBox Quality Tiers
+   Unified charcoal, bronze and muted-gold palette
    ========================================= */
 
 .video-page .hero-badges .resolution-badge {
@@ -232,66 +232,69 @@
   transition:
     background 180ms ease,
     border-color 180ms ease,
-    color 180ms ease;
+    color 180ms ease,
+    box-shadow 180ms ease;
 }
 
-/* SD / below 480p — restrained warm grey */
+/* SD / below 480p — muted charcoal */
 
 .video-page .hero-badges .resolution-sd {
-  color: #c2b7a6;
-  border-color: rgba(153, 137, 113, 0.38);
-  background: rgba(104, 88, 67, 0.22);
+  color: #b5afa3;
+  border-color: rgba(165, 161, 151, 0.25);
+  background: rgba(75, 72, 65, 0.24);
 }
 
-/* 480p — muted bronze */
+/* 480p — subtle aged bronze */
 
 .video-page .hero-badges .resolution-480 {
-  color: #d2b99a;
-  border-color: rgba(169, 132, 91, 0.42);
-  background: rgba(116, 83, 49, 0.24);
+  color: #c6a77f;
+  border-color: rgba(158, 124, 78, 0.36);
+  background: rgba(105, 78, 43, 0.22);
 }
 
-/* 720p — understated sage */
+/* 720p — muted antique gold */
 
 .video-page .hero-badges .resolution-720 {
-  color: #c0cfb5;
-  border-color: rgba(125, 153, 113, 0.4);
-  background: rgba(72, 99, 64, 0.23);
+  color: #d0b78a;
+  border-color: rgba(174, 143, 91, 0.4);
+  background: rgba(116, 91, 52, 0.23);
 }
 
-/* 1080p — muted steel blue */
+/* 1080p — signature CineBox gold */
 
 .video-page .hero-badges .resolution-1080 {
-  color: #bdcddd;
-  border-color: rgba(119, 151, 180, 0.42);
-  background: rgba(64, 91, 117, 0.24);
+  color: #dec58e;
+  border-color: rgba(196, 166, 106, 0.48);
+  background: rgba(130, 102, 55, 0.25);
 }
 
-/* 1440p — subtle lavender */
+/* 1440p — brighter muted gold */
 
 .video-page .hero-badges .resolution-1440 {
-  color: #d0c3df;
-  border-color: rgba(151, 126, 178, 0.42);
-  background: rgba(91, 69, 115, 0.25);
+  color: #e5cc99;
+  border-color: rgba(205, 175, 116, 0.52);
+  background: rgba(143, 113, 62, 0.27);
 }
 
-/* 2160p / 4K — premium CineBox gold */
+/* 2160p / 4K — premium champagne gold */
 
 .video-page .hero-badges .resolution-2160 {
-  color: #e5d09f;
-  border-color: rgba(196, 166, 106, 0.55);
-  background: rgba(116, 91, 48, 0.27);
+  color: #eddaaf;
+  border-color: rgba(218, 190, 137, 0.58);
+  background: rgba(151, 124, 75, 0.3);
+  box-shadow: inset 0 0 12px rgba(196, 166, 106, 0.055);
 }
 
-/* 4320p / 8K — soft champagne */
+/* 4320p / 8K — light champagne */
 
 .video-page .hero-badges .resolution-4320 {
-  color: #eadbbd;
-  border-color: rgba(211, 190, 151, 0.55);
-  background: rgba(139, 119, 82, 0.28);
+  color: #f1e5ca;
+  border-color: rgba(225, 207, 169, 0.62);
+  background: rgba(166, 145, 105, 0.3);
+  box-shadow: inset 0 0 14px rgba(222, 197, 142, 0.07);
 }
 
-/* Unknown resolution — retain the neutral badge appearance */
+/* Unknown resolution — standard neutral badge */
 
 .video-page .hero-badges .resolution-unknown {
   color: #d5d0c6;
@@ -299,7 +302,7 @@
   background: rgba(20, 20, 19, 0.48);
 }
 
-/* Duration badge — visually consistent with standard metadata */
+/* Duration badge */
 
 .video-page .hero-badges .duration-badge {
   color: #d5d0c6;

@@ -717,9 +717,7 @@ function VideoPage() {
             <h1 className="hero-title">{metadata.title || "Untitled video"}</h1>
 
             <div className="hero-badges">
-              {metadata.year != null && <span>{metadata.year}</span>}
-              {metadata.mpaa && <span>{metadata.mpaa}</span>}
-
+              {/* Always show technical badges first, when available. */}
               {technicalResolution && (
                 <span
                   className={`resolution-badge ${resolutionBadgeClass}`}
@@ -735,6 +733,9 @@ function VideoPage() {
                 </span>
               )}
 
+              {/* Movie metadata follows the technical badges. */}
+              {metadata.year != null && <span>{metadata.year}</span>}
+              {metadata.mpaa && <span>{metadata.mpaa}</span>}
               {metadata.language && <span>{metadata.language}</span>}
             </div>
 
