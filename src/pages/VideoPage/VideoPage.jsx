@@ -186,7 +186,8 @@ function VideoPage() {
   const [playError, setPlayError] = useState("");
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
 
-  // Technical information state.
+  const navigationTechnicalInfo = location.state?.videoTechnicalInfo || null;
+
   const [technicalInfo, setTechnicalInfo] = useState(null);
   const [technicalInfoLoading, setTechnicalInfoLoading] = useState(false);
   const [technicalInfoError, setTechnicalInfoError] = useState("");
@@ -315,7 +316,6 @@ function VideoPage() {
     };
   }, [mediaItemId]);
 
-  // Load already stored technical information without triggering extraction.
   useEffect(() => {
     let cancelled = false;
 
@@ -514,6 +514,27 @@ function VideoPage() {
       );
     });
 
+  // Merge lightweight metadata with extended technical information.
+  // The detailed endpoint takes precedence when it contains a value.
+  const technicalMetadata = {
+    resolution:
+      videoMetadata?.resolution ?? navigationTechnicalInfo?.resolution ?? null,
+
+    width: videoMetadata?.width ?? navigationTechnicalInfo?.width ?? null,
+
+    height: videoMetadata?.height ?? navigationTechnicalInfo?.height ?? null,
+
+    durationSeconds:
+      videoMetadata?.durationSeconds ??
+      navigationTechnicalInfo?.durationSeconds ??
+      null,
+
+    fileSizeBytes:
+      videoMetadata?.fileSizeBytes ??
+      navigationTechnicalInfo?.fileSizeBytes ??
+      null,
+  };
+
   // Technical information display helpers.
   const technicalStatus = String(technicalInfo?.status || "").toUpperCase();
 
@@ -527,33 +548,49 @@ function VideoPage() {
   const isTechnicalInfoFailed = technicalStatus === "FAILED";
 
   const technicalDuration = formatTechnicalDuration(
-    technicalInfo?.durationSeconds,
+    technicalInfo?.durationSeconds ?? technicalMetadata.durationSeconds,
   );
 
   const technicalResolution =
     technicalInfo?.resolution ||
+    technicalMetadata.resolution ||
     (technicalInfo?.width != null && technicalInfo?.height != null
       ? `${technicalInfo.width} × ${technicalInfo.height}`
-      : null);
+      : technicalMetadata.width != null && technicalMetadata.height != null
+        ? `${technicalMetadata.width} × ${technicalMetadata.height}`
+        : null);
 
   const resolutionBadgeClass = getResolutionBadgeClass(
-    technicalInfo?.resolution,
-    technicalInfo?.width,
-    technicalInfo?.height,
+    technicalInfo?.resolution ?? technicalMetadata.resolution,
+    technicalInfo?.width ?? technicalMetadata.width,
+    technicalInfo?.height ?? technicalMetadata.height,
   );
 
   const technicalVideoItems = [
-    ["Resolution", technicalInfo?.resolution],
+    ["Resolution", technicalInfo?.resolution ?? technicalMetadata.resolution],
     [
       "Dimensions",
-      technicalInfo?.width != null && technicalInfo?.height != null
-        ? `${technicalInfo.width} × ${technicalInfo.height}`
+      (technicalInfo?.width ?? technicalMetadata.width) != null &&
+      (technicalInfo?.height ?? technicalMetadata.height) != null
+        ? `${technicalInfo?.width ?? technicalMetadata.width} × ${
+            technicalInfo?.height ?? technicalMetadata.height
+          }`
         : null,
     ],
-    ["Duration", technicalDuration],
+    [
+      "Duration",
+      formatTechnicalDuration(
+        technicalInfo?.durationSeconds ?? technicalMetadata.durationSeconds,
+      ),
+    ],
     ["Video codec", formatCodec(technicalInfo?.videoCodec)],
     ["Frame rate", formatFrameRate(technicalInfo?.frameRate)],
-    ["File size", formatFileSize(technicalInfo?.fileSizeBytes)],
+    [
+      "File size",
+      formatFileSize(
+        technicalInfo?.fileSizeBytes ?? technicalMetadata.fileSizeBytes,
+      ),
+    ],
   ].filter(([, value]) => value != null && value !== "");
 
   const technicalAudioItems = [
@@ -723,7 +760,6 @@ function VideoPage() {
             <h1 className="hero-title">{metadata.title || "Untitled video"}</h1>
 
             <div className="hero-badges">
-              {/* Always show technical badges first, when available. */}
               {technicalResolution && (
                 <span
                   className={`resolution-badge ${resolutionBadgeClass}`}
@@ -929,7 +965,6 @@ function VideoPage() {
             </div>
           </div>
 
-          {/* Technical information is shown only after extraction has been requested. */}
           {hasTechnicalInfoSection && (
             <div className="technical-info-section">
               <button
