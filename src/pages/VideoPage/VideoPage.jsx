@@ -7,6 +7,7 @@ import {
 } from "../../service/mediaTechnicalInfoApi";
 import VideoPlayer from "../../components/VideoPlayer/VideoPlayer";
 import MovieGallery from "../../components/MovieGallery/MovieGallery";
+import { useSettings } from "../../context/SettingsContext";
 import "./VideoPage.css";
 
 const API_BASE = `${(import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "")}/api/v1/collections`;
@@ -177,8 +178,11 @@ function VideoPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const { settings, loading: settingsLoading } = useSettings();
+
   const pageRef = useRef(null);
   const lastPlaybackTimeRef = useRef(0);
+  const technicalInfoPreferenceAppliedRef = useRef(false);
 
   const [videoMetadata, setVideoMetadata] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -193,6 +197,10 @@ function VideoPage() {
   const [technicalInfoError, setTechnicalInfoError] = useState("");
   const [technicalInfoExpanded, setTechnicalInfoExpanded] = useState(false);
   const [technicalInfoRequesting, setTechnicalInfoRequesting] = useState(false);
+
+  const defaultMuted = settings?.playback?.defaultMuted ?? true;
+  const expandTechnicalInfoByDefault =
+    settings?.library?.expandTechnicalInfo ?? false;
 
   // Preserve the originating Discovery route when available.
   const discoveryReturnPath =
@@ -316,6 +324,7 @@ function VideoPage() {
     };
   }, [mediaItemId]);
 
+  // Load technical information for the current media item.
   useEffect(() => {
     let cancelled = false;
 
@@ -324,6 +333,7 @@ function VideoPage() {
       setTechnicalInfoError("");
       setTechnicalInfoExpanded(false);
       setTechnicalInfoLoading(true);
+      technicalInfoPreferenceAppliedRef.current = false;
 
       if (!mediaItemId) {
         setTechnicalInfoLoading(false);
@@ -355,6 +365,18 @@ function VideoPage() {
       cancelled = true;
     };
   }, [mediaItemId]);
+
+  // Apply the saved expansion preference once settings have finished loading.
+  // The ref prevents subsequent settings/context updates from overriding
+  // the user's manual expand/collapse choice on this video.
+  useEffect(() => {
+    if (settingsLoading || technicalInfoPreferenceAppliedRef.current) {
+      return;
+    }
+
+    setTechnicalInfoExpanded(expandTechnicalInfoByDefault);
+    technicalInfoPreferenceAppliedRef.current = true;
+  }, [settingsLoading, expandTechnicalInfoByDefault, mediaItemId]);
 
   // Poll while the backend is extracting technical information.
   useEffect(() => {
@@ -715,7 +737,7 @@ function VideoPage() {
             poster={thumbnailUrl}
             title={metadata.title || "Untitled video"}
             autoPlay
-            initialMuted
+            initialMuted={defaultMuted}
             onError={() => {
               setPlayError(
                 "The video couldn't be loaded. Please check the file.",
@@ -775,7 +797,6 @@ function VideoPage() {
                 </span>
               )}
 
-              {/* Movie metadata follows the technical badges. */}
               {metadata.year != null && <span>{metadata.year}</span>}
               {metadata.mpaa && <span>{metadata.mpaa}</span>}
               {metadata.language && <span>{metadata.language}</span>}
