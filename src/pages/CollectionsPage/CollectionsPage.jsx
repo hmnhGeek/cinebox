@@ -5,7 +5,7 @@ import {
   getAllCollections,
   createCollection,
   deleteCollection,
-  getCollectionVideos,
+  getAllCollectionVideos,
   getSyncStatus,
 } from "../../service/collectionApi";
 import {
@@ -342,7 +342,13 @@ const CollectionsPage = () => {
      */
     const synchronizeTechnicalInformation = async (collectionId) => {
       try {
-        const videos = await getCollectionVideos(collectionId);
+        /*
+         * IMPORTANT:
+         * Fetch every page instead of only the first 24 videos.
+         * Technical information synchronization must cover the entire
+         * collection, independently of the collection page's infinite scroll.
+         */
+        const videos = await getAllCollectionVideos(collectionId);
 
         if (cancelled) {
           return;

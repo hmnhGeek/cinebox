@@ -106,6 +106,110 @@
 }
 
 /* =========================================
+   Infinite Scroll
+   ========================================= */
+
+/*
+ * The observer target has no visual footprint.
+ * Its height and margin make it reliable without
+ * affecting the video grid layout.
+ */
+
+.collection-load-more-trigger {
+  width: 100%;
+  height: 1px;
+  margin-top: 1px;
+  pointer-events: none;
+}
+
+/* Loading indicator */
+
+.collection-load-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  min-height: 76px;
+  color: #a5a197;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.35px;
+}
+
+.collection-load-more-spinner {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+  border: 2px solid rgba(196, 166, 106, 0.2);
+  border-top-color: #c4a66a;
+  border-radius: 50%;
+  animation: collection-loading-spin 750ms linear infinite;
+}
+
+@keyframes collection-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Load-more error */
+
+.collection-load-more-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-height: 76px;
+  padding: 12px 16px;
+  color: #d9847c;
+  font-size: 12px;
+  text-align: center;
+}
+
+.collection-load-more-retry {
+  padding: 7px 15px;
+  border: 1px solid rgba(196, 166, 106, 0.35);
+  border-radius: 4px;
+  background: rgba(196, 166, 106, 0.07);
+  color: #dec58e;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.collection-load-more-retry:hover:not(:disabled) {
+  border-color: #c4a66a;
+  background: rgba(196, 166, 106, 0.14);
+  color: #f0eee8;
+}
+
+.collection-load-more-retry:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* End of collection */
+
+.collection-end-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 76px;
+  color: #77736a;
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  text-align: center;
+}
+
+/* =========================================
    Responsive Layout
    ========================================= */
 
@@ -167,6 +271,11 @@
   .collection-result-number {
     font-size: 17px;
   }
+
+  .collection-load-more {
+    min-height: 68px;
+    font-size: 11px;
+  }
 }
 
 @media (max-width: 360px) {
@@ -186,5 +295,19 @@
 
   .collection-result-number {
     font-size: 15px;
+  }
+}
+
+/* =========================================
+   Reduced Motion Accessibility
+   ========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .collection-load-more-spinner {
+    animation: none;
+  }
+
+  .collection-load-more-retry {
+    transition: none;
   }
 }
