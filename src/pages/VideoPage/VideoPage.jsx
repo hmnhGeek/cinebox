@@ -146,13 +146,16 @@ function formatFileSize(bytes) {
   }
 
   if (size < 1024 ** 3) {
-    return `${(size / 1024 ** 2).toFixed(2)} GB`.replace(
-      /(\.\d*?)0+ GB$/,
-      "$1 GB",
+    return `${(size / 1024 ** 2).toFixed(2)} MB`.replace(
+      /(\.\d*?)0+ MB$/,
+      "$1 MB",
     );
   }
 
-  return `${(size / 1024 ** 3).toFixed(2)} GB`;
+  return `${(size / 1024 ** 3).toFixed(2)} GB`.replace(
+    /(\.\d*?)0+ GB$/,
+    "$1 GB",
+  );
 }
 
 function formatFrameRate(frameRate) {
@@ -906,12 +909,6 @@ function VideoPage() {
                 ["Original country", metadata.originalCountry?.toUpperCase()],
                 ["Language", metadata.language],
                 ["Content rating", metadata.mpaa],
-                [
-                  "Runtime",
-                  metadata.runtime != null
-                    ? `${metadata.runtime} minutes`
-                    : null,
-                ],
               ]
                 .filter(([, value]) => value != null && value !== "")
                 .map(([label, value]) => (
