@@ -25,15 +25,30 @@ function VideoGrid({ videos, collectionId, returnTo }) {
       return;
     }
 
+    // Pass the lightweight technical metadata already available
+    // in the collection response to the video details page.
+    const videoTechnicalInfo = {
+      resolution: video.resolution ?? null,
+      width: video.width ?? null,
+      height: video.height ?? null,
+      durationSeconds: video.durationSeconds ?? null,
+      fileSizeBytes: video.fileSizeBytes ?? null,
+    };
+
     navigate(
-      `/videos/${encodeURIComponent(targetCollectionId)}/${encodeURIComponent(video.id)}`,
+      `/videos/${encodeURIComponent(targetCollectionId)}/${encodeURIComponent(
+        video.id,
+      )}`,
       {
-        state: returnTo
-          ? {
-              fromSearch: true,
-              returnTo,
-            }
-          : undefined,
+        state: {
+          videoTechnicalInfo,
+          ...(returnTo
+            ? {
+                fromSearch: true,
+                returnTo,
+              }
+            : {}),
+        },
       },
     );
   };
