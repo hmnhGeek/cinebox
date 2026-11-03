@@ -67,8 +67,15 @@
 }
 
 /* =========================================
-   Header Navigation — Actors
+   Header Navigation
    ========================================= */
+
+.header-navigation {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 8px;
+}
 
 .header-navigation-link {
   flex-shrink: 0;
@@ -668,6 +675,10 @@
     gap: 24px;
   }
 
+  .header-navigation {
+    gap: 6px;
+  }
+
   .header-navigation-link {
     gap: 6px;
     padding: 8px;
@@ -687,6 +698,10 @@
 
   .app-logo {
     height: 39px;
+  }
+
+  .header-navigation {
+    gap: 4px;
   }
 
   .header-navigation-link {
@@ -746,6 +761,10 @@
 
   .app-logo {
     height: 34px;
+  }
+
+  .header-navigation {
+    gap: 3px;
   }
 
   .header-navigation-link {

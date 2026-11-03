@@ -1,10 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  useLocation,
-  useNavigate,
-  useNavigationType,
-  useSearchParams,
-} from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   AlertCircle,
   Image as ImageIcon,
@@ -13,6 +8,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { useActorsFilter } from "../../context/ActorsFilterContext";
+import { useSettings } from "../../context/SettingsContext";
 import "./ActorsPage.css";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(
@@ -70,10 +66,15 @@ function ActorPortrait({ actor }) {
 function ActorsPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const navigationType = useNavigationType();
   const [, setSearchParams] = useSearchParams();
 
-  const { hasProfileImage, setHasProfileImage } = useActorsFilter();
+  const {
+    hasProfileImage,
+    setHasProfileImage,
+    initialized: filterInitialized,
+  } = useActorsFilter();
+
+  const { loading: settingsLoading } = useSettings();
 
   const sentinelRef = useRef(null);
   const loadingRef = useRef(false);
@@ -86,60 +87,6 @@ function ActorsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [hasMore, setHasMore] = useState(true);
-
-  const urlFilter = new URLSearchParams(location.search).get("hasProfileImage");
-
-  // Synchronize the URL and session preference.
-  //
-  // POP means browser Back/Forward navigation: restore the filter
-  // represented by that historical URL.
-  //
-  // PUSH/REPLACE means normal navigation or a filter update:
-  // retain the session preference and reflect it in the URL.
-  useEffect(() => {
-    if (navigationType === "POP") {
-      const restoredValue = urlFilter === "true";
-
-      setHasProfileImage((current) =>
-        current === restoredValue ? current : restoredValue,
-      );
-
-      return;
-    }
-
-    const urlHasFilter = urlFilter === "true";
-
-    if (urlHasFilter === hasProfileImage) {
-      return;
-    }
-
-    setSearchParams(
-      (currentParams) => {
-        const nextParams = new URLSearchParams(currentParams);
-
-        if (hasProfileImage) {
-          nextParams.set("hasProfileImage", "true");
-        } else {
-          nextParams.delete("hasProfileImage");
-        }
-
-        return nextParams;
-      },
-      {
-        replace: true,
-        preventScrollReset: true,
-      },
-    );
-  }, [
-    location.key,
-    location.pathname,
-    location.search,
-    navigationType,
-    urlFilter,
-    hasProfileImage,
-    setHasProfileImage,
-    setSearchParams,
-  ]);
 
   const loadActors = useCallback(
     async (pageToLoad, replace = false) => {
@@ -240,7 +187,13 @@ function ActorsPage() {
     [hasProfileImage],
   );
 
+  // Fetch only after the provider has applied the saved preference
+  // or restored the filter from the URL.
   useEffect(() => {
+    if (settingsLoading || !filterInitialized) {
+      return undefined;
+    }
+
     nextPageRef.current = 0;
     failedPageRef.current = 0;
 
@@ -252,12 +205,20 @@ function ActorsPage() {
       activeRequestRef.current = null;
       loadingRef.current = false;
     };
-  }, [loadActors]);
+  }, [loadActors, settingsLoading, filterInitialized]);
 
+  // Infinite scrolling.
   useEffect(() => {
     const sentinel = sentinelRef.current;
 
-    if (!sentinel || !hasMore || loading || error) {
+    if (
+      !sentinel ||
+      !hasMore ||
+      loading ||
+      error ||
+      settingsLoading ||
+      !filterInitialized
+    ) {
       return undefined;
     }
 
@@ -277,7 +238,15 @@ function ActorsPage() {
     observer.observe(sentinel);
 
     return () => observer.disconnect();
-  }, [hasMore, loading, error, actors.length, loadActors]);
+  }, [
+    hasMore,
+    loading,
+    error,
+    actors.length,
+    loadActors,
+    settingsLoading,
+    filterInitialized,
+  ]);
 
   const openActor = useCallback(
     (actor) => {
@@ -304,19 +273,15 @@ function ActorsPage() {
     nextPageRef.current = 0;
     failedPageRef.current = 0;
 
-    // Update the shared session preference.
     setHasProfileImage(nextValue);
 
-    // Keep the URL synchronized with the selected filter.
+    // Store both true and false explicitly.
+    // This allows browser Back/Forward to restore the exact selection.
     setSearchParams(
       (currentParams) => {
         const nextParams = new URLSearchParams(currentParams);
 
-        if (nextValue) {
-          nextParams.set("hasProfileImage", "true");
-        } else {
-          nextParams.delete("hasProfileImage");
-        }
+        nextParams.set("hasProfileImage", String(nextValue));
 
         return nextParams;
       },
@@ -376,7 +341,9 @@ function ActorsPage() {
           </div>
         </div>
 
-        {loading && actors.length === 0 ? (
+        {settingsLoading ||
+        !filterInitialized ||
+        (loading && actors.length === 0) ? (
           <div className="actors-state actors-initial-loading" role="status">
             <LoaderCircle size={28} className="actors-spinner" />
 

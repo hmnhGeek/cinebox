@@ -4,6 +4,7 @@ import {
   ArrowUpRight,
   LoaderCircle,
   Search,
+  Settings2,
   UsersRound,
   X,
 } from "lucide-react";
@@ -98,7 +99,10 @@ function Header() {
   const isActorsPage =
     location.pathname === "/actors" || location.pathname.startsWith("/actors/");
 
-  // Keep one keyboard-navigation sequence across both result types.
+  const isSettingsPage =
+    location.pathname === "/settings" ||
+    location.pathname.startsWith("/settings/");
+
   const combinedSuggestions = [
     ...actors.map((actor) => ({ ...actor, resultType: "actor" })),
     ...suggestions.map((video) => ({ ...video, resultType: "video" })),
@@ -297,17 +301,31 @@ function Header() {
         </button>
       </div>
 
-      <button
-        type="button"
-        className={`header-navigation-link ${isActorsPage ? "is-active" : ""}`}
-        onClick={() => navigate("/actors")}
-        aria-label="Browse actors"
-        aria-current={isActorsPage ? "page" : undefined}
-        title="Browse actors"
-      >
-        <UsersRound size={17} aria-hidden="true" />
-        <span>Actors</span>
-      </button>
+      <nav className="header-navigation" aria-label="Primary navigation">
+        <button
+          type="button"
+          className={`header-navigation-link ${isActorsPage ? "is-active" : ""}`}
+          onClick={() => navigate("/actors")}
+          aria-label="Browse actors"
+          aria-current={isActorsPage ? "page" : undefined}
+          title="Browse actors"
+        >
+          <UsersRound size={17} aria-hidden="true" />
+          <span>Actors</span>
+        </button>
+
+        <button
+          type="button"
+          className={`header-navigation-link ${isSettingsPage ? "is-active" : ""}`}
+          onClick={() => navigate("/settings")}
+          aria-label="Settings"
+          aria-current={isSettingsPage ? "page" : undefined}
+          title="Settings"
+        >
+          <Settings2 size={17} aria-hidden="true" />
+          <span>Settings</span>
+        </button>
+      </nav>
 
       <div className="header-search" ref={searchRef}>
         <form
