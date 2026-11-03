@@ -1,5 +1,6 @@
 .continue-watching-section {
   width: 100%;
+  min-width: 0;
   margin-bottom: 42px;
 }
 
@@ -38,24 +39,63 @@
   font-weight: 500;
 }
 
+/* =========================================
+   Horizontal Continue Watching Row
+========================================= */
+
 .continue-watching-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(245px, 1fr));
+  display: flex;
+  align-items: stretch;
   gap: 20px;
+
+  width: 100%;
+  min-width: 0;
+  padding: 2px 2px 12px;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  scroll-behavior: smooth;
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+
+  /* Hide scrollbar while preserving horizontal scrolling */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+
+.continue-watching-list::-webkit-scrollbar {
+  display: none;
+}
+
+.continue-watching-list:focus-visible {
+  outline: 1px solid #c4a66a;
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* =========================================
+   Video Card
+========================================= */
 
 .continue-watching-card {
   display: block;
-  width: 100%;
+  flex: 0 0 280px;
+  width: 280px;
   min-width: 0;
   padding: 0;
   overflow: hidden;
+
   border: 1px solid #35332e;
   border-radius: 9px;
   background: #1c1b19;
   color: inherit;
   text-align: left;
   cursor: pointer;
+
+  scroll-snap-align: start;
+
   transition:
     border-color 180ms ease,
     background-color 180ms ease,
@@ -109,16 +149,21 @@
   position: absolute;
   top: 50%;
   left: 50%;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   width: 43px;
   height: 43px;
+
   border: 1px solid rgb(240 238 232 / 35%);
   border-radius: 50%;
   background: rgb(20 20 19 / 76%);
+
   opacity: 0;
   transform: translate(-50%, -44%);
+
   transition:
     opacity 180ms ease,
     transform 180ms ease;
@@ -152,6 +197,8 @@
   transition: width 200ms ease;
 }
 
+/* Card details */
+
 .continue-watching-card__details {
   padding: 12px 13px 13px;
 }
@@ -180,14 +227,83 @@
   color: #77736a;
 }
 
+/* =========================================
+   Pagination Loading Indicator
+========================================= */
+
+.continue-watching-loader {
+  display: flex;
+  flex: 0 0 55px;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+}
+
+.continue-watching-loader__spinner {
+  width: 21px;
+  height: 21px;
+
+  border: 2px solid rgb(196 166 106 / 20%);
+  border-top-color: #c4a66a;
+  border-radius: 50%;
+
+  animation: continue-watching-spin 800ms linear infinite;
+}
+
+@keyframes continue-watching-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Retry feedback */
+
+.continue-watching-retry {
+  flex: 0 0 auto;
+  align-self: center;
+
+  padding: 9px 14px;
+
+  border: 1px solid #514a3c;
+  border-radius: 7px;
+  background: #1c1b19;
+  color: #dec58e;
+
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+
+  transition:
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.continue-watching-retry:hover {
+  border-color: #c4a66a;
+  background: #23221f;
+}
+
+.continue-watching-retry:focus-visible {
+  outline: 2px solid #c4a66a;
+  outline-offset: 3px;
+}
+
+/* =========================================
+   Responsive
+========================================= */
+
 @media (max-width: 768px) {
   .continue-watching-section {
     margin-bottom: 32px;
   }
 
   .continue-watching-list {
-    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
     gap: 14px;
+  }
+
+  .continue-watching-card {
+    flex-basis: 250px;
+    width: 250px;
   }
 }
 
@@ -197,8 +313,12 @@
   }
 
   .continue-watching-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 11px;
+  }
+
+  .continue-watching-card {
+    flex-basis: 235px;
+    width: 235px;
   }
 
   .continue-watching-card__details {
@@ -213,5 +333,18 @@
     flex-wrap: wrap;
     gap: 4px;
     font-size: 10px;
+  }
+}
+
+/* Reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .continue-watching-section *,
+  .continue-watching-section *::before,
+  .continue-watching-section *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
