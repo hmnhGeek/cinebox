@@ -13,6 +13,7 @@ import {
   requestMediaTechnicalInfo,
 } from "../../service/mediaTechnicalInfoApi";
 import CreateCollectionModal from "../../components/CreateCollectionModal/CreateCollectionModal";
+import ContinueWatching from "../ContinueWatching/ContinueWatching";
 import { useSync } from "../../context/SyncContext";
 import cineToast from "../../components/CineToast/CineToast";
 import "./CollectionsPage.css";
@@ -92,14 +93,12 @@ const CollectionsPage = () => {
   const [activeSyncIds, setActiveSyncIds] = useState(() => new Set());
   const [syncProgress, setSyncProgress] = useState({});
 
-  // Keep the latest state accessible to the long-running polling effect.
   const activeSyncIdsRef = useRef(activeSyncIds);
   const collectionsRef = useRef(collections);
 
   activeSyncIdsRef.current = activeSyncIds;
   collectionsRef.current = collections;
 
-  // Tracks the current synchronization stage for each collection.
   const syncStagesRef = useRef(new Map());
 
   useEffect(() => {
@@ -132,13 +131,6 @@ const CollectionsPage = () => {
     };
   }, []);
 
-  /*
-   * This effect intentionally runs only once.
-   *
-   * The refs above provide the latest active collection IDs and collection
-   * details without restarting existing synchronization workflows whenever
-   * React state changes.
-   */
   useEffect(() => {
     let cancelled = false;
     let polling = false;
@@ -193,13 +185,6 @@ const CollectionsPage = () => {
       }
     };
 
-    /*
-     * Processes one media item.
-     *
-     * A failed extraction is retried by submitting a new request.
-     * Subsequent requests use force=true so that a FAILED record is not
-     * incorrectly treated as a completed cached extraction.
-     */
     const synchronizeMediaItem = async (mediaItemId) => {
       for (let attempt = 1; attempt <= MAX_TECHNICAL_INFO_ATTEMPTS; attempt++) {
         if (cancelled) {
@@ -231,10 +216,6 @@ const CollectionsPage = () => {
           const attemptStartedAt = Date.now();
           let consecutiveStatusErrors = 0;
 
-          /*
-           * Poll only this media item while it is active.
-           * A terminal FAILED status exits this loop immediately.
-           */
           while (!cancelled) {
             if (
               Date.now() - attemptStartedAt >=
@@ -270,19 +251,10 @@ const CollectionsPage = () => {
                   "Technical information extraction was not started.",
                 );
               }
-
-              // QUEUED and PROCESSING are the only normal active states.
-              // Unknown/null states are allowed a bounded time to resolve.
             } catch (error) {
               if (normalizeStatus(error?.message) === "FAILED") {
                 throw error;
               }
-
-              /*
-               * A failed status request is not itself an extraction failure.
-               * Allow a few consecutive temporary API errors before retrying
-               * the extraction request.
-               */
               if (
                 error?.message === "Technical information extraction failed." ||
                 error?.message ===
@@ -334,20 +306,8 @@ const CollectionsPage = () => {
       return "CANCELLED";
     };
 
-    /*
-     * Stage 2: process technical information jobs sequentially.
-     *
-     * The backend currently has one technical-info worker. Sequential
-     * submission prevents the frontend from flooding its executor queue.
-     */
     const synchronizeTechnicalInformation = async (collectionId) => {
       try {
-        /*
-         * IMPORTANT:
-         * Fetch every page instead of only the first 24 videos.
-         * Technical information synchronization must cover the entire
-         * collection, independently of the collection page's infinite scroll.
-         */
         const videos = await getAllCollectionVideos(collectionId);
 
         if (cancelled) {
@@ -457,9 +417,6 @@ const CollectionsPage = () => {
 
             const stage = syncStagesRef.current.get(collectionId) || "CATALOG";
 
-            /*
-             * Stage 1: catalog synchronization.
-             */
             if (stage === "CATALOG") {
               try {
                 const result = await getSyncStatus(collectionId);
@@ -492,10 +449,6 @@ const CollectionsPage = () => {
                 }
 
                 if (result.status === "COMPLETED") {
-                  /*
-                   * Change stage before making further requests.
-                   * This prevents duplicate technical-info workflows.
-                   */
                   syncStagesRef.current.set(
                     collectionId,
                     "TECHNICAL_INFO_STARTING",
@@ -513,7 +466,6 @@ const CollectionsPage = () => {
                   await synchronizeTechnicalInformation(collectionId);
                 }
               } catch (error) {
-                // Retry catalog status polling on the next interval.
                 console.error(
                   `Failed to fetch sync status for collection ${collectionId}:`,
                   error,
@@ -542,8 +494,6 @@ const CollectionsPage = () => {
       const collection = await createCollection(request);
 
       setCollections((previous) => [...previous, collection]);
-
-      // Collection creation already starts catalog sync on the backend.
       setCollectionModalOpen(false);
     } catch (error) {
       console.error("Failed to create collection:", error);
@@ -577,7 +527,6 @@ const CollectionsPage = () => {
     });
 
     try {
-      // false avoids opening the existing synchronization modal.
       startSynchronization(collection.id, () => {}, false);
     } catch (error) {
       console.error("Failed to start collection synchronization:", error);
@@ -672,6 +621,8 @@ const CollectionsPage = () => {
             <span>Add Collection</span>
           </button>
         </header>
+
+        <ContinueWatching />
 
         {loading && (
           <div className="collections-message" role="status">
