@@ -1,0 +1,217 @@
+.continue-watching-section {
+  width: 100%;
+  margin-bottom: 42px;
+}
+
+.continue-watching-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.continue-watching-eyebrow {
+  display: block;
+  margin-bottom: 7px;
+  color: #a5a197;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.7px;
+  line-height: 1.4;
+}
+
+.continue-watching-heading h2 {
+  margin: 0;
+  color: #f0eee8;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.45px;
+  line-height: 1.25;
+}
+
+.continue-watching-count {
+  flex-shrink: 0;
+  padding-bottom: 3px;
+  color: #77736a;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.continue-watching-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(245px, 1fr));
+  gap: 20px;
+}
+
+.continue-watching-card {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #35332e;
+  border-radius: 9px;
+  background: #1c1b19;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    transform 180ms ease;
+}
+
+.continue-watching-card:hover {
+  border-color: #766747;
+  background: #23221f;
+  transform: translateY(-2px);
+}
+
+.continue-watching-card:focus-visible {
+  outline: 2px solid #c4a66a;
+  outline-offset: 3px;
+}
+
+.continue-watching-card__image-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #141413;
+}
+
+.continue-watching-card__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 250ms ease;
+}
+
+.continue-watching-card:hover .continue-watching-card__image {
+  transform: scale(1.035);
+}
+
+.continue-watching-card__image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #23221f, #171614);
+  color: #c4a66a;
+  font-size: 34px;
+  font-weight: 500;
+}
+
+.continue-watching-card__play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 43px;
+  height: 43px;
+  border: 1px solid rgb(240 238 232 / 35%);
+  border-radius: 50%;
+  background: rgb(20 20 19 / 76%);
+  opacity: 0;
+  transform: translate(-50%, -44%);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.continue-watching-card:hover .continue-watching-card__play,
+.continue-watching-card:focus-visible .continue-watching-card__play {
+  opacity: 1;
+  transform: translate(-50%, -50%);
+}
+
+.continue-watching-card__play svg {
+  width: 19px;
+  height: 19px;
+  margin-left: 2px;
+  fill: #dec58e;
+}
+
+.continue-watching-card__progress-track {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: rgb(240 238 232 / 20%);
+}
+
+.continue-watching-card__progress-value {
+  height: 100%;
+  background: #c4a66a;
+  transition: width 200ms ease;
+}
+
+.continue-watching-card__details {
+  padding: 12px 13px 13px;
+}
+
+.continue-watching-card__title {
+  overflow: hidden;
+  color: #f0eee8;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.continue-watching-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 5px;
+  color: #a5a197;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.continue-watching-card__separator {
+  color: #77736a;
+}
+
+@media (max-width: 768px) {
+  .continue-watching-section {
+    margin-bottom: 32px;
+  }
+
+  .continue-watching-list {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .continue-watching-heading h2 {
+    font-size: 20px;
+  }
+
+  .continue-watching-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 11px;
+  }
+
+  .continue-watching-card__details {
+    padding: 10px;
+  }
+
+  .continue-watching-card__title {
+    font-size: 12px;
+  }
+
+  .continue-watching-card__meta {
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 10px;
+  }
+}

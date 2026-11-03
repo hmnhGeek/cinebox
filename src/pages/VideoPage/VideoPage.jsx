@@ -5,6 +5,11 @@ import {
   getMediaTechnicalInfo,
   requestMediaTechnicalInfo,
 } from "../../service/mediaTechnicalInfoApi";
+import {
+  getPlaybackProgress,
+  updatePlaybackProgress,
+  markPlaybackCompleted,
+} from "../../service/playbackApi";
 import VideoPlayer from "../../components/VideoPlayer/VideoPlayer";
 import MovieGallery from "../../components/MovieGallery/MovieGallery";
 import { useSettings } from "../../context/SettingsContext";
@@ -60,18 +65,6 @@ function formatTechnicalDuration(seconds) {
   return `${remainingSeconds}s`;
 }
 
-/**
- * Determines the vertical resolution represented by the technical metadata.
- *
- * Supports values such as:
- * - 1080p
- * - 1920x1080
- * - 1920 × 1080
- * - Full HD (1080p)
- * - 4K / UHD
- *
- * The explicit height field takes precedence when available.
- */
 function getResolutionHeight(resolution, width, height) {
   const numericHeight = Number(height);
 
@@ -120,9 +113,6 @@ function getResolutionHeight(resolution, width, height) {
   return null;
 }
 
-/**
- * Maps the detected vertical resolution to a restrained CineBox badge class.
- */
 function getResolutionBadgeClass(resolution, width, height) {
   const resolutionHeight = getResolutionHeight(resolution, width, height);
 
@@ -182,6 +172,7 @@ function VideoPage() {
 
   const pageRef = useRef(null);
   const lastPlaybackTimeRef = useRef(0);
+  const playbackDurationRef = useRef(0);
   const technicalInfoPreferenceAppliedRef = useRef(false);
 
   const [videoMetadata, setVideoMetadata] = useState(null);
@@ -189,6 +180,10 @@ function VideoPage() {
   const [error, setError] = useState("");
   const [playError, setPlayError] = useState("");
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+
+  const [playbackProgressLoading, setPlaybackProgressLoading] = useState(true);
+  const [initialPlaybackTime, setInitialPlaybackTime] = useState(0);
+  const [playbackCompleted, setPlaybackCompleted] = useState(false);
 
   const navigationTechnicalInfo = location.state?.videoTechnicalInfo || null;
 
@@ -199,10 +194,10 @@ function VideoPage() {
   const [technicalInfoRequesting, setTechnicalInfoRequesting] = useState(false);
 
   const defaultMuted = settings?.playback?.defaultMuted ?? true;
+
   const expandTechnicalInfoByDefault =
     settings?.library?.expandTechnicalInfo ?? false;
 
-  // Preserve the originating Discovery route when available.
   const discoveryReturnPath =
     location.state?.from?.type === "discovery" &&
     typeof location.state.from.pathname === "string" &&
@@ -215,7 +210,6 @@ function VideoPage() {
         }`
       : null;
 
-  // Preserve the search results URL, including the query and page.
   const searchReturnPath =
     location.state?.fromSearch === true &&
     typeof location.state.returnTo === "string" &&
@@ -257,12 +251,77 @@ function VideoPage() {
     navigate(`/collections/${encodeURIComponent(collectionId)}`);
   }, [navigate, collectionId, searchReturnPath, discoveryReturnPath]);
 
+  /*
+   * Save the latest playback position to the backend.
+   *
+   * This callback is shared by the player timer, pause event and close
+   * handler. The backend is responsible for clamping the position and
+   * marking a video completed when it crosses its completion threshold.
+   */
+  const savePlaybackProgress = useCallback(
+    async (progress = null) => {
+      if (!mediaItemId) return;
+
+      const positionSeconds = Number(
+        progress?.positionSeconds ?? lastPlaybackTimeRef.current,
+      );
+
+      const durationSeconds = Number(
+        progress?.durationSeconds ?? playbackDurationRef.current,
+      );
+
+      if (!Number.isFinite(positionSeconds) || positionSeconds < 0) {
+        return;
+      }
+
+      if (positionSeconds < 1) {
+        return;
+      }
+
+      try {
+        await updatePlaybackProgress(mediaItemId, {
+          positionSeconds,
+          durationSeconds:
+            Number.isFinite(durationSeconds) && durationSeconds > 0
+              ? durationSeconds
+              : null,
+        });
+      } catch (err) {
+        console.error("Failed to save playback progress:", err);
+      }
+    },
+    [mediaItemId],
+  );
+
+  const handlePlaybackEnded = useCallback(async () => {
+    if (!mediaItemId) return;
+
+    try {
+      await markPlaybackCompleted(mediaItemId);
+
+      setPlaybackCompleted(true);
+      setInitialPlaybackTime(0);
+      lastPlaybackTimeRef.current = 0;
+    } catch (err) {
+      console.error("Failed to mark video as completed:", err);
+    }
+  }, [mediaItemId]);
+
   const handlePlay = useCallback(() => {
+    if (playbackProgressLoading) {
+      return;
+    }
+
     setPlayError("");
     setIsPlayerOpen(true);
-  }, []);
+  }, [playbackProgressLoading]);
 
   const handleClosePlayer = useCallback(async () => {
+    await savePlaybackProgress({
+      positionSeconds: lastPlaybackTimeRef.current,
+      durationSeconds: playbackDurationRef.current,
+    });
+
     setIsPlayerOpen(false);
 
     if (document.fullscreenElement) {
@@ -272,7 +331,7 @@ function VideoPage() {
         console.warn("Could not exit fullscreen:", err);
       }
     }
-  }, []);
+  }, [savePlaybackProgress]);
 
   const handleDiscover = useCallback(
     (type, item) => {
@@ -324,6 +383,62 @@ function VideoPage() {
     };
   }, [mediaItemId]);
 
+  // Load saved playback progress for the current media item.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadPlaybackProgress() {
+      setPlaybackProgressLoading(true);
+      setInitialPlaybackTime(0);
+      setPlaybackCompleted(false);
+      lastPlaybackTimeRef.current = 0;
+      playbackDurationRef.current = 0;
+
+      if (!mediaItemId) {
+        setPlaybackProgressLoading(false);
+        return;
+      }
+
+      try {
+        const progress = await getPlaybackProgress(mediaItemId);
+
+        if (cancelled) return;
+
+        if (progress?.completed) {
+          setPlaybackCompleted(true);
+          setInitialPlaybackTime(0);
+          lastPlaybackTimeRef.current = 0;
+        } else {
+          const position = Math.max(0, Number(progress?.positionSeconds) || 0);
+
+          const duration = Math.max(0, Number(progress?.durationSeconds) || 0);
+
+          setInitialPlaybackTime(position);
+          lastPlaybackTimeRef.current = position;
+          playbackDurationRef.current = duration;
+        }
+      } catch (err) {
+        console.error("Failed to load playback progress:", err);
+
+        if (!cancelled) {
+          // A progress lookup failure should not prevent normal playback.
+          setInitialPlaybackTime(0);
+          lastPlaybackTimeRef.current = 0;
+        }
+      } finally {
+        if (!cancelled) {
+          setPlaybackProgressLoading(false);
+        }
+      }
+    }
+
+    loadPlaybackProgress();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mediaItemId]);
+
   // Load technical information for the current media item.
   useEffect(() => {
     let cancelled = false;
@@ -366,9 +481,6 @@ function VideoPage() {
     };
   }, [mediaItemId]);
 
-  // Apply the saved expansion preference once settings have finished loading.
-  // The ref prevents subsequent settings/context updates from overriding
-  // the user's manual expand/collapse choice on this video.
   useEffect(() => {
     if (settingsLoading || technicalInfoPreferenceAppliedRef.current) {
       return;
@@ -413,7 +525,6 @@ function VideoPage() {
     };
   }, [mediaItemId, technicalInfo]);
 
-  // Explicitly request extraction. Force refresh is used for retrying a failure.
   const handleAnalyzeTechnicalInfo = useCallback(async () => {
     if (!mediaItemId || technicalInfoRequesting) return;
 
@@ -536,8 +647,6 @@ function VideoPage() {
       );
     });
 
-  // Merge lightweight metadata with extended technical information.
-  // The detailed endpoint takes precedence when it contains a value.
   const technicalMetadata = {
     resolution:
       videoMetadata?.resolution ?? navigationTechnicalInfo?.resolution ?? null,
@@ -557,7 +666,6 @@ function VideoPage() {
       null,
   };
 
-  // Technical information display helpers.
   const technicalStatus = String(technicalInfo?.status || "").toUpperCase();
 
   const hasTechnicalInfoSection =
@@ -738,12 +846,17 @@ function VideoPage() {
             title={metadata.title || "Untitled video"}
             autoPlay
             initialMuted={defaultMuted}
+            initialPlaybackTime={initialPlaybackTime}
+            onProgress={savePlaybackProgress}
+            onPause={savePlaybackProgress}
+            onEnded={handlePlaybackEnded}
             onError={() => {
               setPlayError(
                 "The video couldn't be loaded. Please check the file.",
               );
             }}
             lastPlaybackTimeRef={lastPlaybackTimeRef}
+            playbackDurationRef={playbackDurationRef}
           />
         </div>
       )}
@@ -817,6 +930,7 @@ function VideoPage() {
                 type="button"
                 className="play-button"
                 onClick={handlePlay}
+                disabled={playbackProgressLoading}
                 aria-label={`Play ${metadata.title || "video"}`}
               >
                 <svg
@@ -827,7 +941,13 @@ function VideoPage() {
                 >
                   <path d="M8 5.5v13l10-6.5z" fill="currentColor" />
                 </svg>
-                <span>Play</span>
+                <span>
+                  {playbackProgressLoading
+                    ? "Loading..."
+                    : initialPlaybackTime > 0 && !playbackCompleted
+                      ? "Resume"
+                      : "Play"}
+                </span>
               </button>
 
               <span className="play-hint">
