@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { toast } from "react-hot-toast";
+import cineToast from "../../components/CineToast/CineToast";
 import { useSettings } from "../../context/SettingsContext";
 import "./SettingsPage.css";
 
@@ -63,7 +63,7 @@ function SettingsPage() {
     } catch (err) {
       console.error(`Failed to update setting "${key}":`, err);
 
-      toast.error(
+      cineToast.error(
         err?.message || "Couldn't save this setting. Please try again.",
       );
     } finally {
