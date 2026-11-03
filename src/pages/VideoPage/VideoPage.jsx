@@ -539,14 +539,42 @@ function VideoPage() {
     }
   }, [mediaItemId, technicalInfo, technicalInfoRequesting]);
 
-  // Close the player overlay when fullscreen ends.
+  // Save the exact playback position before closing the player on fullscreen exit.
   useEffect(() => {
     if (!isPlayerOpen) return;
 
     function handleFullscreenChange() {
-      if (!document.fullscreenElement) {
-        setIsPlayerOpen(false);
+      // Ignore fullscreen changes that are not exits.
+      if (document.fullscreenElement) return;
+
+      const video = pageRef.current?.querySelector(".cine-player video");
+
+      if (video && !video.ended) {
+        const positionSeconds = Number(video.currentTime);
+        const durationSeconds = Number(video.duration);
+
+        if (Number.isFinite(positionSeconds) && positionSeconds >= 1) {
+          lastPlaybackTimeRef.current = positionSeconds;
+
+          if (Number.isFinite(durationSeconds) && durationSeconds > 0) {
+            playbackDurationRef.current = durationSeconds;
+          }
+
+          // Update the details-page button immediately to "Resume".
+          setInitialPlaybackTime(positionSeconds);
+          setPlaybackCompleted(false);
+
+          void savePlaybackProgress({
+            positionSeconds,
+            durationSeconds:
+              Number.isFinite(durationSeconds) && durationSeconds > 0
+                ? durationSeconds
+                : null,
+          });
+        }
       }
+
+      setIsPlayerOpen(false);
     }
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
@@ -554,7 +582,7 @@ function VideoPage() {
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
-  }, [isPlayerOpen]);
+  }, [isPlayerOpen, savePlaybackProgress]);
 
   // Prevent the background page from scrolling behind the player.
   useEffect(() => {
