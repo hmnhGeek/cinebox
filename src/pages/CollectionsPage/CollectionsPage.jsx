@@ -13,6 +13,7 @@ import {
   requestMediaTechnicalInfo,
 } from "../../service/mediaTechnicalInfoApi";
 import CreateCollectionModal from "../../components/CreateCollectionModal/CreateCollectionModal";
+import MediaBar from "../../components/MediaBar/MediaBar";
 import ContinueWatching from "../ContinueWatching/ContinueWatching";
 import { useSync } from "../../context/SyncContext";
 import cineToast from "../../components/CineToast/CineToast";
@@ -621,6 +622,8 @@ const CollectionsPage = () => {
             <span>Add Collection</span>
           </button>
         </header>
+
+        <MediaBar />
 
         <ContinueWatching />
 
