@@ -101,8 +101,7 @@
   margin: 0;
 
   color: #f0eee8;
-  font-size: clamp(32px, 4.2vw, 52px);
-  font-weight: 500;
+  font-size: clamp(44px, 6vw, 82px);
   letter-spacing: -1.6px;
   line-height: 1.12;
 
