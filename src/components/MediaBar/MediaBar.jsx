@@ -192,7 +192,7 @@ function MediaBar({ onVisibilityChange }) {
         </div>
 
         <div className="media-bar-movie-info" key={`info-${activeItem.id}`}>
-          <h2 className="media-bar-title">{activeItem.title || "Untitled"}</h2>
+          <h1 className="media-bar-title">{activeItem.title || "Untitled"}</h1>
 
           {(activeItem.year || runtime) && (
             <div className="media-bar-metadata">

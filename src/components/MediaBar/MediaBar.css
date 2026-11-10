@@ -4,8 +4,7 @@
 
   /* Full bleed, matching the Collection Videos hero */
   width: calc(100% + 88px);
-  height: auto;
-  min-height: clamp(420px, 45vw, 540px);
+  height: clamp(420px, 45vw, 540px);
   margin: -32px -44px 30px;
 
   overflow: hidden;
@@ -84,9 +83,10 @@
   flex-direction: column;
   justify-content: center;
 
+  box-sizing: border-box;
   width: min(700px, 65%);
-  min-height: inherit;
-  padding: 60px 55px 85px;
+  height: 100%;
+  padding: 45px 55px 75px;
 }
 
 .media-bar-eyebrow {
@@ -112,14 +112,17 @@
 }
 
 .media-bar-title {
+  display: -webkit-box;
   max-width: 620px;
   margin: 0;
+  overflow: hidden;
 
   color: #f0eee8;
-  font-size: clamp(44px, 6vw, 82px);
   letter-spacing: -1.6px;
   line-height: 1.12;
 
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   text-wrap: balance;
 }
 
@@ -310,13 +313,13 @@
 @media (max-width: 900px) {
   .media-bar {
     width: calc(100% + 48px);
-    min-height: 440px;
+    height: 440px;
     margin: -28px -24px 30px;
   }
 
   .media-bar-content {
     width: 75%;
-    padding: 48px 35px 85px;
+    padding: 40px 35px 75px;
   }
 
   .media-bar-indicators {
@@ -327,7 +330,7 @@
 @media (max-width: 600px) {
   .media-bar {
     width: calc(100% + 32px);
-    min-height: 440px;
+    height: 440px;
     margin: -24px -16px 25px;
 
     -webkit-mask-image: linear-gradient(
@@ -368,8 +371,8 @@
   .media-bar-content {
     justify-content: flex-end;
     width: 100%;
-    min-height: inherit;
-    padding: 35px 23px 90px;
+    height: 100%;
+    padding: 35px 23px 75px;
   }
 
   .media-bar-eyebrow {
