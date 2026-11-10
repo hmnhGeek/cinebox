@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import "./VideoPlayer.css";
 import { Settings } from "lucide-react";
 
+const PROGRESS_SAVE_INTERVAL = 10000;
+
 const formatTime = (seconds) => {
   if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
 
@@ -79,12 +81,20 @@ export default function VideoPlayer({
   title = "Now playing",
   autoPlay = false,
   initialMuted = false,
+  initialPlaybackTime = 0,
   onError,
+  onProgress,
+  onPause,
+  onEnded,
   lastPlaybackTimeRef,
+  playbackDurationRef,
 }) {
   const wrapperRef = useRef(null);
   const videoRef = useRef(null);
   const hideTimerRef = useRef(null);
+
+  const initialSeekAppliedRef = useRef(false);
+  const lastProgressSaveAtRef = useRef(0);
 
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -137,18 +147,25 @@ export default function VideoPlayer({
     showControls();
   }, [showControls]);
 
-  const seekBy = useCallback((amount) => {
-    const video = videoRef.current;
-    if (!video || !Number.isFinite(video.duration)) return;
+  const seekBy = useCallback(
+    (amount) => {
+      const video = videoRef.current;
+      if (!video || !Number.isFinite(video.duration)) return;
 
-    video.currentTime = Math.max(
-      0,
-      Math.min(video.duration, video.currentTime + amount),
-    );
-  }, []);
+      video.currentTime = Math.max(
+        0,
+        Math.min(video.duration, video.currentTime + amount),
+      );
 
-  // Lock landscape only after entering fullscreen.
-  // Some mobile browsers do not support this API.
+      if (lastPlaybackTimeRef) {
+        lastPlaybackTimeRef.current = video.currentTime;
+      }
+
+      setCurrentTime(video.currentTime);
+    },
+    [lastPlaybackTimeRef],
+  );
+
   const lockLandscape = useCallback(async () => {
     try {
       if (screen.orientation && typeof screen.orientation.lock === "function") {
@@ -173,7 +190,6 @@ export default function VideoPlayer({
         await player.requestFullscreen();
         await lockLandscape();
       } else if (player.webkitRequestFullscreen) {
-        // Safari/WebKit fallback where available.
         player.webkitRequestFullscreen();
         await lockLandscape();
       }
@@ -281,6 +297,9 @@ export default function VideoPlayer({
     const video = videoRef.current;
     if (!video) return;
 
+    initialSeekAppliedRef.current = false;
+    lastProgressSaveAtRef.current = Date.now();
+
     video.muted = initialMuted;
     video.volume = 1;
 
@@ -295,6 +314,29 @@ export default function VideoPlayer({
     setSettingsOpen(false);
     setSpeed(1);
 
+    const publishProgress = (position = video.currentTime) => {
+      if (!Number.isFinite(position) || position < 0) return;
+
+      if (lastPlaybackTimeRef) {
+        lastPlaybackTimeRef.current = position;
+      }
+
+      if (
+        playbackDurationRef &&
+        Number.isFinite(video.duration) &&
+        video.duration > 0
+      ) {
+        playbackDurationRef.current = video.duration;
+      }
+
+      onProgress?.({
+        positionSeconds: position,
+        durationSeconds: Number.isFinite(video.duration)
+          ? video.duration
+          : null,
+      });
+    };
+
     const onTimeUpdate = () => {
       const time = video.currentTime;
       setCurrentTime(time);
@@ -302,13 +344,66 @@ export default function VideoPlayer({
       if (lastPlaybackTimeRef) {
         lastPlaybackTimeRef.current = time;
       }
+
+      if (
+        playbackDurationRef &&
+        Number.isFinite(video.duration) &&
+        video.duration > 0
+      ) {
+        playbackDurationRef.current = video.duration;
+      }
+
+      const now = Date.now();
+
+      if (now - lastProgressSaveAtRef.current >= PROGRESS_SAVE_INTERVAL) {
+        lastProgressSaveAtRef.current = now;
+        publishProgress(time);
+      }
     };
 
     const onLoadedMetadata = () => {
-      setDuration(Number.isFinite(video.duration) ? video.duration : 0);
+      const videoDuration = Number.isFinite(video.duration)
+        ? video.duration
+        : 0;
+
+      setDuration(videoDuration);
+
+      if (playbackDurationRef) {
+        playbackDurationRef.current = videoDuration;
+      }
+
+      /*
+       * Apply the saved position only once, after the browser knows the
+       * video's duration. Avoid seeking to the very end of a video.
+       */
+      if (!initialSeekAppliedRef.current) {
+        initialSeekAppliedRef.current = true;
+
+        const requestedPosition = Math.max(0, Number(initialPlaybackTime) || 0);
+
+        if (
+          requestedPosition > 0 &&
+          videoDuration > 0 &&
+          requestedPosition < videoDuration - 1
+        ) {
+          video.currentTime = requestedPosition;
+          setCurrentTime(requestedPosition);
+
+          if (lastPlaybackTimeRef) {
+            lastPlaybackTimeRef.current = requestedPosition;
+          }
+        } else {
+          video.currentTime = 0;
+          setCurrentTime(0);
+
+          if (lastPlaybackTimeRef) {
+            lastPlaybackTimeRef.current = 0;
+          }
+        }
+      }
     };
 
-    const onProgress = () => {
+    const onProgressEvent = () => {
       if (!video.duration || !video.buffered.length) return;
 
       for (let i = 0; i < video.buffered.length; i++) {
@@ -329,16 +424,38 @@ export default function VideoPlayer({
       setPlaybackError("");
     };
 
-    const onPause = () => {
+    const onPauseEvent = () => {
       setPlaying(false);
       setControlsVisible(true);
       clearTimeout(hideTimerRef.current);
+
+      if (!video.ended) {
+        const progressPayload = {
+          positionSeconds: video.currentTime,
+          durationSeconds: Number.isFinite(video.duration)
+            ? video.duration
+            : null,
+        };
+
+        if (onPause) {
+          onPause(progressPayload);
+        } else {
+          publishProgress();
+        }
+      }
     };
 
-    const onEnded = () => {
+    const onEndedEvent = () => {
       setPlaying(false);
       setControlsVisible(true);
       setSettingsOpen(false);
+
+      onEnded?.({
+        positionSeconds: video.currentTime,
+        durationSeconds: Number.isFinite(video.duration)
+          ? video.duration
+          : null,
+      });
     };
 
     const onFullscreenChange = () => {
@@ -348,10 +465,8 @@ export default function VideoPlayer({
       setControlsVisible(true);
 
       if (isFullscreen) {
-        // Re-attempt orientation locking after fullscreen is established.
         lockLandscape();
       } else {
-        // Restore the device's normal orientation behavior on exit.
         try {
           screen.orientation?.unlock?.();
         } catch {
@@ -359,7 +474,6 @@ export default function VideoPlayer({
         }
       }
 
-      // Preserve playback position across fullscreen transitions.
       if (lastPlaybackTimeRef && lastPlaybackTimeRef.current > 0) {
         const savedTime = lastPlaybackTimeRef.current;
 
@@ -375,10 +489,11 @@ export default function VideoPlayer({
     video.addEventListener("timeupdate", onTimeUpdate);
     video.addEventListener("loadedmetadata", onLoadedMetadata);
     video.addEventListener("durationchange", onLoadedMetadata);
-    video.addEventListener("progress", onProgress);
+    video.addEventListener("progress", onProgressEvent);
     video.addEventListener("play", onPlay);
-    video.addEventListener("pause", onPause);
-    video.addEventListener("ended", onEnded);
+    video.addEventListener("pause", onPauseEvent);
+    video.addEventListener("ended", onEndedEvent);
+
     document.addEventListener("fullscreenchange", onFullscreenChange);
 
     if (autoPlay) {
@@ -388,17 +503,38 @@ export default function VideoPlayer({
     }
 
     return () => {
+      /*
+       * Persist the last position if the player is closed or unmounted.
+       * Do not overwrite a completed playback record with a final position.
+       */
+      if (!video.ended && Number.isFinite(video.currentTime)) {
+        publishProgress();
+      }
+
       clearTimeout(hideTimerRef.current);
+
       video.removeEventListener("timeupdate", onTimeUpdate);
       video.removeEventListener("loadedmetadata", onLoadedMetadata);
       video.removeEventListener("durationchange", onLoadedMetadata);
-      video.removeEventListener("progress", onProgress);
+      video.removeEventListener("progress", onProgressEvent);
       video.removeEventListener("play", onPlay);
-      video.removeEventListener("pause", onPause);
-      video.removeEventListener("ended", onEnded);
+      video.removeEventListener("pause", onPauseEvent);
+      video.removeEventListener("ended", onEndedEvent);
+
       document.removeEventListener("fullscreenchange", onFullscreenChange);
     };
-  }, [src, initialMuted, autoPlay, lastPlaybackTimeRef, lockLandscape]);
+  }, [
+    src,
+    initialMuted,
+    initialPlaybackTime,
+    autoPlay,
+    lastPlaybackTimeRef,
+    playbackDurationRef,
+    onProgress,
+    onPause,
+    onEnded,
+    lockLandscape,
+  ]);
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
