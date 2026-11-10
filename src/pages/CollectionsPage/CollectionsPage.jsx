@@ -605,6 +605,8 @@ const CollectionsPage = () => {
       />
 
       <main className="content collections-content">
+        <MediaBar />
+
         <header className="collections-heading">
           <div className="collections-heading-copy">
             <span className="collections-eyebrow">YOUR LIBRARY</span>
@@ -622,8 +624,6 @@ const CollectionsPage = () => {
             <span>Add Collection</span>
           </button>
         </header>
-
-        <MediaBar />
 
         <ContinueWatching />
 

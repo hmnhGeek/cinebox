@@ -2,13 +2,15 @@
   position: relative;
   isolation: isolate;
   width: 100%;
-  min-height: clamp(340px, 39vw, 470px);
+  min-height: clamp(380px, 42vw, 510px);
+  margin-top: 0;
   margin-bottom: 30px;
   overflow: hidden;
 
-  background: #1c1b19;
-  border: 1px solid #35332e;
-  border-radius: 11px;
+  background: #141413;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 
   color: #f0eee8;
 }
@@ -18,9 +20,10 @@
   z-index: -2;
   inset: 0;
 
-  background-color: #1c1b19;
+  background-color: #141413;
   background-position: center 35%;
   background-size: cover;
+  background-repeat: no-repeat;
 
   animation: media-bar-image-enter 750ms ease both;
 }
@@ -29,20 +32,32 @@
   position: absolute;
   z-index: -1;
   inset: 0;
+  pointer-events: none;
 
   background:
     linear-gradient(
       90deg,
-      rgba(20, 20, 19, 0.97) 0%,
-      rgba(20, 20, 19, 0.87) 28%,
-      rgba(20, 20, 19, 0.56) 53%,
-      rgba(20, 20, 19, 0.12) 100%
+      #141413 0%,
+      rgba(20, 20, 19, 0.94) 12%,
+      rgba(20, 20, 19, 0.82) 28%,
+      rgba(20, 20, 19, 0.48) 52%,
+      rgba(20, 20, 19, 0.16) 78%,
+      #141413 100%
     ),
     linear-gradient(
       0deg,
-      rgba(20, 20, 19, 0.84) 0%,
-      rgba(20, 20, 19, 0.08) 48%,
-      rgba(20, 20, 19, 0.18) 100%
+      #141413 0%,
+      rgba(20, 20, 19, 0.88) 12%,
+      rgba(20, 20, 19, 0.35) 40%,
+      rgba(20, 20, 19, 0.08) 75%,
+      #141413 100%
+    ),
+    linear-gradient(
+      180deg,
+      #141413 0%,
+      rgba(20, 20, 19, 0.72) 8%,
+      rgba(20, 20, 19, 0.12) 24%,
+      transparent 40%
     );
 }
 
@@ -54,9 +69,9 @@
   flex-direction: column;
   justify-content: center;
 
-  width: min(660px, 65%);
+  width: min(700px, 65%);
   min-height: inherit;
-  padding: 52px 55px 75px;
+  padding: 60px 55px 85px;
 }
 
 .media-bar-eyebrow {
@@ -86,7 +101,7 @@
   margin: 0;
 
   color: #f0eee8;
-  font-size: clamp(30px, 4.1vw, 49px);
+  font-size: clamp(32px, 4.2vw, 52px);
   font-weight: 500;
   letter-spacing: -1.6px;
   line-height: 1.12;
@@ -312,12 +327,12 @@
 
 @media (max-width: 900px) {
   .media-bar {
-    min-height: 390px;
+    min-height: 420px;
   }
 
   .media-bar-content {
     width: 75%;
-    padding: 43px 35px 75px;
+    padding: 48px 35px 85px;
   }
 
   .media-bar-controls {
@@ -329,23 +344,27 @@
     background:
       linear-gradient(
         90deg,
-        rgba(20, 20, 19, 0.96) 0%,
-        rgba(20, 20, 19, 0.8) 45%,
-        rgba(20, 20, 19, 0.24) 100%
+        #141413 0%,
+        rgba(20, 20, 19, 0.9) 18%,
+        rgba(20, 20, 19, 0.7) 45%,
+        rgba(20, 20, 19, 0.2) 82%,
+        #141413 100%
       ),
       linear-gradient(
         0deg,
-        rgba(20, 20, 19, 0.88) 0%,
-        rgba(20, 20, 19, 0.08) 65%
+        #141413 0%,
+        rgba(20, 20, 19, 0.88) 15%,
+        rgba(20, 20, 19, 0.2) 65%,
+        #141413 100%
       );
   }
 }
 
 @media (max-width: 600px) {
   .media-bar {
-    min-height: 390px;
+    min-height: 420px;
     margin-bottom: 25px;
-    border-radius: 8px;
+    border-radius: 0;
   }
 
   .media-bar-backdrop {
@@ -356,13 +375,15 @@
     background:
       linear-gradient(
         90deg,
-        rgba(20, 20, 19, 0.9) 0%,
+        rgba(20, 20, 19, 0.88) 0%,
         rgba(20, 20, 19, 0.58) 100%
       ),
       linear-gradient(
         0deg,
-        rgba(20, 20, 19, 0.97) 0%,
-        rgba(20, 20, 19, 0.35) 75%
+        #141413 0%,
+        rgba(20, 20, 19, 0.94) 18%,
+        rgba(20, 20, 19, 0.35) 75%,
+        #141413 100%
       );
   }
 
@@ -370,7 +391,7 @@
     justify-content: flex-end;
     width: 100%;
     min-height: inherit;
-    padding: 35px 23px 85px;
+    padding: 35px 23px 90px;
   }
 
   .media-bar-eyebrow {
