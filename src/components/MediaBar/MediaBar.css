@@ -1,19 +1,41 @@
 .media-bar {
   position: relative;
   isolation: isolate;
-  width: 100%;
+
+  /* Full bleed, matching the Collection Videos hero */
+  width: calc(100% + 88px);
+  height: auto;
   min-height: clamp(420px, 45vw, 540px);
-  margin-top: 0;
-  margin-bottom: 30px;
+  margin: -32px -44px 30px;
+
   overflow: hidden;
 
   background: #141413;
+  color: #f0eee8;
   border: none;
   border-radius: 0;
   box-shadow: none;
 
-  color: #f0eee8;
-  font-family: inherit;
+  /* Same top and bottom fade as library-hero */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 7%,
+    #000 68%,
+    rgba(0, 0, 0, 0.88) 79%,
+    rgba(0, 0, 0, 0.45) 91%,
+    transparent 100%
+  );
+
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 7%,
+    #000 68%,
+    rgba(0, 0, 0, 0.88) 79%,
+    rgba(0, 0, 0, 0.45) 91%,
+    transparent 100%
+  );
 }
 
 .media-bar-backdrop {
@@ -23,6 +45,7 @@
 
   background-color: #141413;
   background-size: cover;
+  /* background-position: center; */
   background-repeat: no-repeat;
 
   animation: media-bar-image-enter 750ms ease both;
@@ -34,30 +57,22 @@
   inset: 0;
   pointer-events: none;
 
+  /* Exact same overlay as library-hero */
   background:
     linear-gradient(
-      90deg,
-      #141413 0%,
-      rgba(20, 20, 19, 0.94) 12%,
-      rgba(20, 20, 19, 0.82) 28%,
-      rgba(20, 20, 19, 0.48) 52%,
-      rgba(20, 20, 19, 0.16) 78%,
+      to bottom,
+      rgba(20, 20, 19, 0.2) 0%,
+      transparent 22%,
+      rgba(20, 20, 19, 0.08) 48%,
+      rgba(20, 20, 19, 0.62) 72%,
       #141413 100%
     ),
     linear-gradient(
-      0deg,
-      #141413 0%,
-      rgba(20, 20, 19, 0.88) 12%,
-      rgba(20, 20, 19, 0.35) 40%,
-      rgba(20, 20, 19, 0.08) 75%,
-      #141413 100%
-    ),
-    linear-gradient(
-      180deg,
-      #141413 0%,
-      rgba(20, 20, 19, 0.72) 8%,
-      rgba(20, 20, 19, 0.12) 24%,
-      transparent 40%
+      to right,
+      rgba(20, 20, 19, 0.82) 0%,
+      rgba(20, 20, 19, 0.58) 28%,
+      rgba(20, 20, 19, 0.16) 62%,
+      transparent 100%
     );
 }
 
@@ -261,31 +276,14 @@
 
 @media (max-width: 900px) {
   .media-bar {
+    width: calc(100% + 48px);
     min-height: 440px;
+    margin: -28px -24px 30px;
   }
 
   .media-bar-content {
     width: 75%;
     padding: 48px 35px 85px;
-  }
-
-  .media-bar-overlay {
-    background:
-      linear-gradient(
-        90deg,
-        #141413 0%,
-        rgba(20, 20, 19, 0.9) 18%,
-        rgba(20, 20, 19, 0.7) 45%,
-        rgba(20, 20, 19, 0.2) 82%,
-        #141413 100%
-      ),
-      linear-gradient(
-        0deg,
-        #141413 0%,
-        rgba(20, 20, 19, 0.88) 15%,
-        rgba(20, 20, 19, 0.2) 65%,
-        #141413 100%
-      );
   }
 
   .media-bar-indicators {
@@ -295,29 +293,47 @@
 
 @media (max-width: 600px) {
   .media-bar {
+    width: calc(100% + 32px);
     min-height: 440px;
-    margin-bottom: 25px;
-    border-radius: 0;
+    margin: -24px -16px 25px;
   }
 
   .media-bar-backdrop {
     background-position: center center;
   }
 
+  /* Exact mobile hero mask */
+  .media-bar {
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 5%,
+      #000 65%,
+      rgba(0, 0, 0, 0.7) 83%,
+      transparent 100%
+    );
+
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 5%,
+      #000 65%,
+      rgba(0, 0, 0, 0.7) 83%,
+      transparent 100%
+    );
+  }
+
+  /* Exact mobile hero overlay */
   .media-bar-overlay {
     background:
       linear-gradient(
-        90deg,
-        rgba(20, 20, 19, 0.88) 0%,
-        rgba(20, 20, 19, 0.58) 100%
-      ),
-      linear-gradient(
-        0deg,
-        #141413 0%,
-        rgba(20, 20, 19, 0.94) 18%,
-        rgba(20, 20, 19, 0.35) 75%,
+        to bottom,
+        rgba(20, 20, 19, 0.16),
+        transparent 25%,
+        rgba(20, 20, 19, 0.5) 60%,
         #141413 100%
-      );
+      ),
+      linear-gradient(to right, rgba(20, 20, 19, 0.68), rgba(20, 20, 19, 0.08));
   }
 
   .media-bar-content {
