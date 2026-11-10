@@ -9,26 +9,18 @@ import "./MediaBar.css";
 
 const SLIDE_INTERVAL = 7000;
 
-function getRuntime(item) {
-  const durationSeconds = Number(item?.durationSeconds);
+function formatTechnicalDuration(seconds) {
+  if (seconds == null || !Number.isFinite(Number(seconds))) return null;
 
-  if (!Number.isFinite(durationSeconds) || durationSeconds <= 0) {
-    return null;
-  }
+  const totalSeconds = Math.round(Number(seconds));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const remainingSeconds = totalSeconds % 60;
 
-  const totalMinutes = Math.round(durationSeconds / 60);
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  if (minutes > 0) return `${minutes}m ${remainingSeconds}s`;
 
-  if (hours === 0) {
-    return `${totalMinutes} min`;
-  }
-
-  if (minutes === 0) {
-    return `${hours} ${hours === 1 ? "hr" : "hrs"}`;
-  }
-
-  return `${hours} ${hours === 1 ? "hr" : "hrs"} ${minutes} min`;
+  return `${remainingSeconds}s`;
 }
 
 function MediaBar({ onVisibilityChange }) {
@@ -132,7 +124,7 @@ function MediaBar({ onVisibilityChange }) {
   }
 
   const activeItem = items[activeIndex];
-  const runtime = getRuntime(activeItem);
+  const runtime = formatTechnicalDuration(activeItem?.durationSeconds);
 
   return (
     <section
@@ -167,12 +159,7 @@ function MediaBar({ onVisibilityChange }) {
           {(activeItem.year || runtime) && (
             <div className="media-bar-metadata">
               {activeItem.year && <span>{activeItem.year}</span>}
-
-              {activeItem.year && runtime && (
-                <span className="media-bar-metadata-separator" />
-              )}
-
-              {runtime && <span>{runtime}</span>}
+              {runtime && <span className="duration-badge">{runtime}</span>}
             </div>
           )}
 
