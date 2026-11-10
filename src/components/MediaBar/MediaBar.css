@@ -2,7 +2,7 @@
   position: relative;
   isolation: isolate;
   width: 100%;
-  min-height: clamp(380px, 42vw, 510px);
+  min-height: clamp(420px, 45vw, 540px);
   margin-top: 0;
   margin-bottom: 30px;
   overflow: hidden;
@@ -21,7 +21,7 @@
   inset: 0;
 
   background-color: #141413;
-  background-position: center 35%;
+  /* background-position: center 35%; */
   background-size: cover;
   background-repeat: no-repeat;
 
@@ -327,7 +327,7 @@
 
 @media (max-width: 900px) {
   .media-bar {
-    min-height: 420px;
+    min-height: 440px;
   }
 
   .media-bar-content {
@@ -362,7 +362,7 @@
 
 @media (max-width: 600px) {
   .media-bar {
-    min-height: 420px;
+    min-height: 440px;
     margin-bottom: 25px;
     border-radius: 0;
   }

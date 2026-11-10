@@ -25,6 +25,11 @@
   padding-top: 0;
 }
 
+.app.collections-page > main.content.collections-content {
+  padding-top: 0;
+  margin-top: 0;
+}
+
 /* Page heading */
 
 .collections-heading {
