@@ -9,6 +9,13 @@ import "./MediaBar.css";
 
 const SLIDE_INTERVAL = 7000;
 
+// In-memory cache shared across MediaBar mounts.
+let mediaBarCache = null;
+
+function getUtcDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 function formatTechnicalDuration(seconds) {
   if (seconds == null || !Number.isFinite(Number(seconds))) return null;
 
@@ -29,7 +36,16 @@ function MediaBar({ onVisibilityChange }) {
 
   const showMediaBar = settings?.home?.showMediaBar ?? true;
 
-  const [items, setItems] = useState([]);
+  const [utcDate, setUtcDate] = useState(getUtcDate);
+
+  const [items, setItems] = useState(() => {
+    if (mediaBarCache?.date === getUtcDate()) {
+      return mediaBarCache.items;
+    }
+
+    return [];
+  });
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
 
@@ -48,12 +64,32 @@ function MediaBar({ onVisibilityChange }) {
     };
   }, [onVisibilityChange]);
 
+  // Detect the next UTC date change, including while the page remains open.
   useEffect(() => {
-    if (settingsLoading) return;
+    const now = new Date();
 
-    if (!showMediaBar) {
-      setItems([]);
-      setActiveIndex(0);
+    const nextUtcMidnight = Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() + 1,
+    );
+
+    const timeout = window.setTimeout(
+      () => {
+        setUtcDate(getUtcDate());
+      },
+      nextUtcMidnight - now.getTime() + 50,
+    );
+
+    return () => window.clearTimeout(timeout);
+  }, [utcDate]);
+
+  // Load featured movies only when the current UTC day's cache is missing.
+  useEffect(() => {
+    if (settingsLoading || !showMediaBar) return;
+
+    if (mediaBarCache?.date === utcDate) {
+      setItems(mediaBarCache.items);
       return;
     }
 
@@ -65,30 +101,32 @@ function MediaBar({ onVisibilityChange }) {
           signal: controller.signal,
         });
 
-        if (!controller.signal.aborted) {
-          const featuredItems = Array.isArray(response)
-            ? response.slice(0, 5)
-            : [];
+        if (controller.signal.aborted) return;
 
-          setItems(featuredItems);
-          setActiveIndex(0);
-        }
+        const featuredItems = Array.isArray(response)
+          ? response.slice(0, 5)
+          : [];
+
+        mediaBarCache = {
+          date: utcDate,
+          items: featuredItems,
+        };
+
+        setItems(featuredItems);
+        setActiveIndex(0);
       } catch (error) {
         if (error?.name === "AbortError") return;
 
         console.error("Failed to load Media Bar:", error);
 
-        if (!controller.signal.aborted) {
-          setItems([]);
-          setActiveIndex(0);
-        }
+        // Keep existing items visible if a refresh fails.
       }
     }
 
     loadMediaBar();
 
     return () => controller.abort();
-  }, [settingsLoading, showMediaBar]);
+  }, [settingsLoading, showMediaBar, utcDate]);
 
   const goToNext = useCallback(() => {
     setActiveIndex((current) => (current + 1) % items.length);
