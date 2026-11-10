@@ -10,18 +10,28 @@ import "./MediaBar.css";
 const SLIDE_INTERVAL = 7000;
 
 function getRuntime(item) {
-  if (item.runtime > 0) {
-    return `${item.runtime} min`;
+  const durationSeconds = Number(item?.durationSeconds);
+
+  if (!Number.isFinite(durationSeconds) || durationSeconds <= 0) {
+    return null;
   }
 
-  if (item.durationSeconds > 0) {
-    return `${Math.round(item.durationSeconds / 60)} min`;
+  const totalMinutes = Math.round(durationSeconds / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours === 0) {
+    return `${totalMinutes} min`;
   }
 
-  return null;
+  if (minutes === 0) {
+    return `${hours} ${hours === 1 ? "hr" : "hrs"}`;
+  }
+
+  return `${hours} ${hours === 1 ? "hr" : "hrs"} ${minutes} min`;
 }
 
-function MediaBar() {
+function MediaBar({ onVisibilityChange }) {
   const navigate = useNavigate();
   const { settings, loading: settingsLoading } = useSettings();
 
@@ -30,6 +40,21 @@ function MediaBar() {
   const [items, setItems] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+
+  const isMediaBarVisible =
+    !settingsLoading && showMediaBar && items.length > 0;
+
+  // Notify CollectionsPage whenever Media Bar visibility changes.
+  useEffect(() => {
+    onVisibilityChange?.(isMediaBarVisible);
+  }, [isMediaBarVisible, onVisibilityChange]);
+
+  // Reset the parent layout state when MediaBar unmounts.
+  useEffect(() => {
+    return () => {
+      onVisibilityChange?.(false);
+    };
+  }, [onVisibilityChange]);
 
   useEffect(() => {
     if (settingsLoading) return;
@@ -75,10 +100,6 @@ function MediaBar() {
 
   const goToNext = useCallback(() => {
     setActiveIndex((current) => (current + 1) % items.length);
-  }, [items.length]);
-
-  const goToPrevious = useCallback(() => {
-    setActiveIndex((current) => (current - 1 + items.length) % items.length);
   }, [items.length]);
 
   useEffect(() => {
@@ -172,60 +193,28 @@ function MediaBar() {
               <path d="M8 5.5v13l10-6.5-10-6.5Z" />
             </svg>
 
-            <span>View movie</span>
+            <span>Watch now</span>
           </button>
         </div>
       </div>
 
       {items.length > 1 && (
-        <div className="media-bar-controls">
-          <span className="media-bar-counter">
-            <span>{String(activeIndex + 1).padStart(2, "0")}</span>
-            <span className="media-bar-counter-divider">/</span>
-            <span>{String(items.length).padStart(2, "0")}</span>
-          </span>
-
-          <div className="media-bar-navigation">
+        <div
+          className="media-bar-indicators"
+          aria-label="Choose featured movie"
+        >
+          {items.map((item, index) => (
             <button
+              key={item.id}
               type="button"
-              className="media-bar-nav-button"
-              aria-label="Previous featured movie"
-              onClick={goToPrevious}
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m15 18-6-6 6-6" />
-              </svg>
-            </button>
-
-            <button
-              type="button"
-              className="media-bar-nav-button"
-              aria-label="Next featured movie"
-              onClick={goToNext}
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m9 18 6-6-6-6" />
-              </svg>
-            </button>
-          </div>
-
-          <div
-            className="media-bar-indicators"
-            aria-label="Choose featured movie"
-          >
-            {items.map((item, index) => (
-              <button
-                key={item.id}
-                type="button"
-                className={`media-bar-indicator${
-                  index === activeIndex ? " is-active" : ""
-                }`}
-                aria-label={`Show featured movie ${index + 1}`}
-                aria-current={index === activeIndex ? "true" : undefined}
-                onClick={() => setActiveIndex(index)}
-              />
-            ))}
-          </div>
+              className={`media-bar-indicator${
+                index === activeIndex ? " is-active" : ""
+              }`}
+              aria-label={`Show featured movie ${index + 1}`}
+              aria-current={index === activeIndex ? "true" : undefined}
+              onClick={() => setActiveIndex(index)}
+            />
+          ))}
         </div>
       )}
     </section>

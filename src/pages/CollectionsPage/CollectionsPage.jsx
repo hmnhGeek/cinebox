@@ -90,6 +90,7 @@ const CollectionsPage = () => {
   const [loading, setLoading] = useState(true);
   const [isCollectionModalOpen, setCollectionModalOpen] = useState(false);
   const [error, setError] = useState(null);
+  const [isMediaBarVisible, setIsMediaBarVisible] = useState(false);
 
   const [activeSyncIds, setActiveSyncIds] = useState(() => new Set());
   const [syncProgress, setSyncProgress] = useState({});
@@ -604,8 +605,12 @@ const CollectionsPage = () => {
         onCreate={handleCreateCollection}
       />
 
-      <main className="content collections-content">
-        <MediaBar />
+      <main
+        className={`content collections-content${
+          isMediaBarVisible ? " has-media-bar" : ""
+        }`}
+      >
+        <MediaBar onVisibilityChange={setIsMediaBarVisible} />
 
         <header className="collections-heading">
           <div className="collections-heading-copy">
