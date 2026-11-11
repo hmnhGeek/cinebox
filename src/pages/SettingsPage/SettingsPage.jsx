@@ -136,8 +136,6 @@ function SettingsPage() {
 
   const expandTechnicalInfo = settings?.library?.expandTechnicalInfo ?? false;
 
-  const showMediaBar = settings?.home?.showMediaBar ?? true;
-
   return (
     <main className="settings-page">
       <div className="settings-container">
@@ -148,21 +146,6 @@ function SettingsPage() {
         </header>
 
         <div className="settings-sections">
-          <SettingsSection
-            title="Home"
-            description="Customise the content displayed on your home page."
-          >
-            <SettingRow
-              title="Show Media Bar"
-              description="Display the featured movie carousel above Continue Watching on your home page."
-              checked={showMediaBar}
-              disabled={savingKeys.has("home.showMediaBar")}
-              onChange={(value) =>
-                handleSettingChange("home.showMediaBar", value)
-              }
-            />
-          </SettingsSection>
-
           <SettingsSection
             title="Playback"
             description="Control how your videos start and play."

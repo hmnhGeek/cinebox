@@ -13,7 +13,6 @@ import {
   requestMediaTechnicalInfo,
 } from "../../service/mediaTechnicalInfoApi";
 import CreateCollectionModal from "../../components/CreateCollectionModal/CreateCollectionModal";
-import MediaBar from "../../components/MediaBar/MediaBar";
 import ContinueWatching from "../ContinueWatching/ContinueWatching";
 import { useSync } from "../../context/SyncContext";
 import cineToast from "../../components/CineToast/CineToast";
@@ -90,7 +89,6 @@ const CollectionsPage = () => {
   const [loading, setLoading] = useState(true);
   const [isCollectionModalOpen, setCollectionModalOpen] = useState(false);
   const [error, setError] = useState(null);
-  const [isMediaBarVisible, setIsMediaBarVisible] = useState(false);
 
   const [activeSyncIds, setActiveSyncIds] = useState(() => new Set());
   const [syncProgress, setSyncProgress] = useState({});
@@ -605,13 +603,7 @@ const CollectionsPage = () => {
         onCreate={handleCreateCollection}
       />
 
-      <main
-        className={`content collections-content${
-          isMediaBarVisible ? " has-media-bar" : ""
-        }`}
-      >
-        <MediaBar onVisibilityChange={setIsMediaBarVisible} />
-
+      <main className="content collections-content">
         <header className="collections-heading">
           <div className="collections-heading-copy">
             <span className="collections-eyebrow">YOUR LIBRARY</span>
