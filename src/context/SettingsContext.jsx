@@ -23,6 +23,9 @@ const DEFAULT_SETTINGS = {
   library: {
     expandTechnicalInfo: false,
   },
+  home: {
+    showMediaBar: true,
+  },
 };
 
 const SettingsContext = createContext(null);
@@ -48,6 +51,12 @@ function normalizeSettings(data) {
         typeof data?.library?.expandTechnicalInfo === "boolean"
           ? data.library.expandTechnicalInfo
           : DEFAULT_SETTINGS.library.expandTechnicalInfo,
+    },
+    home: {
+      showMediaBar:
+        typeof data?.home?.showMediaBar === "boolean"
+          ? data.home.showMediaBar
+          : DEFAULT_SETTINGS.home.showMediaBar,
     },
   };
 }
@@ -103,10 +112,7 @@ export function SettingsProvider({ children }) {
     try {
       const data = await saveSettings(updates);
 
-      // The backend returns the complete settings object.
-      // Normalize it so missing values always retain their defaults.
       setSettings(normalizeSettings(data));
-
       setError("");
 
       return normalizeSettings(data);
