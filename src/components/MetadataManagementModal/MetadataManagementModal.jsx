@@ -15,7 +15,6 @@ const EMPTY_FORM = {
   originalTitle: "",
   sortTitle: "",
   year: "",
-  runtimeMinutes: "",
   plot: "",
   outline: "",
   premiered: "",
@@ -65,7 +64,6 @@ const toForm = (metadata = {}) => ({
   originalTitle: textValue(metadata.originalTitle),
   sortTitle: textValue(metadata.sortTitle),
   year: textValue(metadata.year),
-  runtimeMinutes: textValue(metadata.runtimeMinutes),
   plot: textValue(metadata.plot),
   outline: textValue(metadata.outline),
   premiered: textValue(metadata.premiered),
@@ -99,9 +97,6 @@ const toPayload = (form, actorEntries, directorEntries, writerEntries) => {
     originalTitle: form.originalTitle.trim() || null,
     sortTitle: form.sortTitle.trim() || null,
     year: form.year.trim() ? Number(form.year) : null,
-    runtimeMinutes: form.runtimeMinutes.trim()
-      ? Number(form.runtimeMinutes)
-      : null,
     plot: form.plot.trim() || null,
     outline: form.outline.trim() || null,
     premiered: form.premiered || null,
@@ -494,12 +489,8 @@ function MetadataManagementModal({
       writerEntries,
     );
 
-    if (
-      (payload.year != null && !Number.isFinite(payload.year)) ||
-      (payload.runtimeMinutes != null &&
-        !Number.isFinite(payload.runtimeMinutes))
-    ) {
-      cineToast.error("Enter valid numeric values for year and runtime.");
+    if (payload.year != null && !Number.isFinite(payload.year)) {
+      cineToast.error("Enter a valid numeric value for year.");
       return;
     }
 
@@ -697,15 +688,6 @@ function MetadataManagementModal({
                 min="1800"
                 max="2200"
                 value={form.year}
-                onChange={handleChange}
-              />
-
-              <Field
-                label="Runtime (minutes)"
-                name="runtimeMinutes"
-                type="number"
-                min="0"
-                value={form.runtimeMinutes}
                 onChange={handleChange}
               />
 
