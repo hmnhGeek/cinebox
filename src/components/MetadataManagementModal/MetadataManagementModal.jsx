@@ -602,9 +602,8 @@ function MetadataManagementModal({
       >
         <header className="metadata-modal__header">
           <div>
-            <span className="metadata-modal__eyebrow">CINEBOX LIBRARY</span>
-            <h2 id="metadata-modal-title">Manage metadata</h2>
-            <p>{movieTitle}</p>
+            <span className="metadata-modal__eyebrow">METADATA MANAGEMENT</span>
+            <h2 id="metadata-modal-title">{movieTitle}</h2>
           </div>
 
           <button
