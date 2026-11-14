@@ -1547,3 +1547,50 @@
     transition: none !important;
   }
 }
+
+/* =========================================
+   YEAR & DATE INPUT STYLING
+========================================= */
+
+/* Remove the default browser number spinner */
+.metadata-field input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+  font-variant-numeric: tabular-nums;
+}
+
+.metadata-field input[type="number"]::-webkit-inner-spin-button,
+.metadata-field input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Native date input - dark CineBox appearance */
+.metadata-field input[type="date"] {
+  color-scheme: dark;
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: #171614;
+  color: var(--mm-text);
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+/* Gold calendar icon */
+.metadata-field input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.85;
+  filter: invert(76%) sepia(17%) saturate(650%) hue-rotate(2deg) brightness(88%)
+    contrast(88%);
+  cursor: pointer;
+  transition: opacity 160ms ease;
+}
+
+.metadata-field input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Keep date text and controls vertically aligned */
+.metadata-field input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+}
