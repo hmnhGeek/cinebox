@@ -27,9 +27,6 @@ const EMPTY_FORM = {
   website: "",
   genres: "",
   studios: "",
-  directors: "",
-  writers: "",
-  actors: "",
   tags: "",
 };
 
@@ -40,6 +37,13 @@ const getName = (value) =>
 
 const listToText = (items) =>
   Array.isArray(items) ? items.map(getName).filter(Boolean).join(", ") : "";
+
+const listToEntries = (items) =>
+  Array.isArray(items)
+    ? items
+        .map((item) => ({ name: getName(item) }))
+        .filter((item) => item.name.trim())
+    : [];
 
 // Backend ActorDTO uses "role" for the character name.
 const actorsToEntries = (items) =>
@@ -73,8 +77,6 @@ const toForm = (metadata = {}) => ({
   website: textValue(metadata.website),
   genres: listToText(metadata.genres),
   studios: listToText(metadata.studios),
-  directors: listToText(metadata.directors),
-  writers: listToText(metadata.writers),
   tags: listToText(metadata.tags),
 });
 
@@ -84,8 +86,13 @@ const splitNames = (value) =>
     .map((entry) => entry.trim())
     .filter(Boolean);
 
-const toPayload = (form, actorEntries) => {
+const toPayload = (form, actorEntries, directorEntries, writerEntries) => {
   const toNamedObjects = (value) => splitNames(value).map((name) => ({ name }));
+
+  const toPeopleObjects = (entries) =>
+    entries
+      .map((entry) => ({ name: entry.name.trim() }))
+      .filter((entry) => entry.name);
 
   return {
     title: form.title.trim(),
@@ -107,8 +114,8 @@ const toPayload = (form, actorEntries) => {
 
     genres: toNamedObjects(form.genres),
     studios: toNamedObjects(form.studios),
-    directors: toNamedObjects(form.directors),
-    writers: toNamedObjects(form.writers),
+    directors: toPeopleObjects(directorEntries),
+    writers: toPeopleObjects(writerEntries),
 
     // Backend ActorDTO expects "role", not "characterName".
     actors: actorEntries
@@ -170,6 +177,215 @@ function TextAreaField({ label, name, value, onChange, hint, rows = 3 }) {
   );
 }
 
+function ChipListEditor({
+  label,
+  eyebrow,
+  value,
+  onChange,
+  placeholder,
+  hint,
+}) {
+  const [inputValue, setInputValue] = useState("");
+  const items = splitNames(value);
+
+  const addItem = () => {
+    const nextItem = inputValue.trim().replace(/,$/, "").trim();
+    if (!nextItem) return;
+
+    const alreadyExists = items.some(
+      (item) => item.toLocaleLowerCase() === nextItem.toLocaleLowerCase(),
+    );
+
+    if (!alreadyExists) {
+      onChange([...items, nextItem].join(", "));
+    }
+
+    setInputValue("");
+  };
+
+  const removeItem = (indexToRemove) => {
+    onChange(items.filter((_, index) => index !== indexToRemove).join(", "));
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter" || event.key === ",") {
+      event.preventDefault();
+      addItem();
+    } else if (event.key === "Backspace" && !inputValue && items.length > 0) {
+      removeItem(items.length - 1);
+    }
+  };
+
+  return (
+    <section className="metadata-chip-editor">
+      <div className="metadata-chip-editor__header">
+        <div>
+          <span className="metadata-chip-editor__eyebrow">{eyebrow}</span>
+          <h4>{label}</h4>
+        </div>
+
+        <span className="metadata-chip-editor__count">
+          {items.length} {items.length === 1 ? "ITEM" : "ITEMS"}
+        </span>
+      </div>
+
+      {items.length > 0 ? (
+        <div className="metadata-chip-editor__list">
+          {items.map((item, index) => (
+            <span className="metadata-chip" key={`${item}-${index}`}>
+              <span className="metadata-chip__text">{item}</span>
+              <button
+                type="button"
+                className="metadata-chip__remove"
+                onClick={() => removeItem(index)}
+                aria-label={`Remove ${item}`}
+                title={`Remove ${item}`}
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m18 6-12 12M6 6l12 12" />
+                </svg>
+              </button>
+            </span>
+          ))}
+        </div>
+      ) : (
+        <div className="metadata-chip-editor__empty">
+          No {label.toLowerCase()} added yet.
+        </div>
+      )}
+
+      <div className="metadata-chip-editor__input-row">
+        <input
+          type="text"
+          className="metadata-chip-editor__input"
+          value={inputValue}
+          onChange={(event) => setInputValue(event.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          aria-label={`Add ${label.toLowerCase()}`}
+        />
+
+        <button
+          type="button"
+          className="metadata-chip-editor__add"
+          onClick={addItem}
+          disabled={!inputValue.trim()}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          Add
+        </button>
+      </div>
+
+      {hint && <small className="metadata-chip-editor__hint">{hint}</small>}
+    </section>
+  );
+}
+
+function PersonListEditor({
+  label,
+  eyebrow,
+  description,
+  entries,
+  onChange,
+  placeholder,
+  emptyMessage,
+}) {
+  const handleEntryChange = (index, value) => {
+    onChange((current) =>
+      current.map((entry, entryIndex) =>
+        entryIndex === index ? { ...entry, name: value } : entry,
+      ),
+    );
+  };
+
+  const addEntry = () => {
+    onChange((current) => [...current, { name: "" }]);
+  };
+
+  const removeEntry = (index) => {
+    onChange((current) =>
+      current.filter((_, entryIndex) => entryIndex !== index),
+    );
+  };
+
+  return (
+    <section className="metadata-person-editor">
+      <div className="metadata-person-editor__header">
+        <div>
+          <span className="metadata-person-editor__eyebrow">{eyebrow}</span>
+          <h4>{label}</h4>
+          <p>{description}</p>
+        </div>
+
+        <span className="metadata-person-editor__count">
+          {entries.length} {entries.length === 1 ? "PERSON" : "PEOPLE"}
+        </span>
+      </div>
+
+      {entries.length > 0 ? (
+        <div className="metadata-person-list">
+          {entries.map((entry, index) => (
+            <div className="metadata-person-card" key={index}>
+              <div className="metadata-person-card__index">
+                {String(index + 1).padStart(2, "0")}
+              </div>
+
+              <label className="metadata-person-card__field">
+                <span>{label.toUpperCase()} NAME</span>
+                <input
+                  type="text"
+                  value={entry.name}
+                  onChange={(event) =>
+                    handleEntryChange(index, event.target.value)
+                  }
+                  placeholder={placeholder}
+                />
+              </label>
+
+              <button
+                type="button"
+                className="metadata-person-card__remove"
+                onClick={() => removeEntry(index)}
+                aria-label={`Remove ${label.toLowerCase()} ${entry.name || index + 1}`}
+                title={`Remove ${label.toLowerCase()}`}
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3" />
+                </svg>
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="metadata-person-editor__empty">
+          <span className="metadata-person-editor__empty-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="9" cy="8" r="3.5" />
+              <path d="M2.5 20c0-3.6 2.8-6 6.5-6 2 0 3.7.7 4.9 2" />
+              <path d="M18 11v8M14 15h8" />
+            </svg>
+          </span>
+          <strong>{emptyMessage}</strong>
+          <span>Add {label.toLowerCase()} to this movie's metadata.</span>
+        </div>
+      )}
+
+      <button
+        type="button"
+        className="metadata-person-editor__add"
+        onClick={addEntry}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        Add {label.slice(0, -1)}
+      </button>
+    </section>
+  );
+}
+
 function MetadataManagementModal({
   mediaItemId,
   movieTitle,
@@ -178,6 +394,8 @@ function MetadataManagementModal({
 }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [actorEntries, setActorEntries] = useState([]);
+  const [directorEntries, setDirectorEntries] = useState([]);
+  const [writerEntries, setWriterEntries] = useState([]);
   const [nfoStatus, setNfoStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -206,6 +424,8 @@ function MetadataManagementModal({
 
       setForm(toForm(metadata));
       setActorEntries(actorsToEntries(metadata.actors));
+      setDirectorEntries(listToEntries(metadata.directors));
+      setWriterEntries(listToEntries(metadata.writers));
     } catch (error) {
       setLoadError(error.message || "Couldn't load movie metadata.");
     } finally {
@@ -267,7 +487,12 @@ function MetadataManagementModal({
     event.preventDefault();
     if (!canSave) return;
 
-    const payload = toPayload(form, actorEntries);
+    const payload = toPayload(
+      form,
+      actorEntries,
+      directorEntries,
+      writerEntries,
+    );
 
     if (
       (payload.year != null && !Number.isFinite(payload.year)) ||
@@ -288,6 +513,8 @@ function MetadataManagementModal({
       if (updatedMetadata && typeof updatedMetadata === "object") {
         setForm(toForm(updatedMetadata));
         setActorEntries(actorsToEntries(updatedMetadata.actors));
+        setDirectorEntries(listToEntries(updatedMetadata.directors));
+        setWriterEntries(listToEntries(updatedMetadata.writers));
         onMetadataUpdated?.(updatedMetadata);
       }
 
@@ -326,6 +553,8 @@ function MetadataManagementModal({
       if (updatedMetadata && typeof updatedMetadata === "object") {
         setForm(toForm(updatedMetadata));
         setActorEntries(actorsToEntries(updatedMetadata.actors));
+        setDirectorEntries(listToEntries(updatedMetadata.directors));
+        setWriterEntries(listToEntries(updatedMetadata.writers));
         onMetadataUpdated?.(updatedMetadata);
       }
 
@@ -567,44 +796,52 @@ function MetadataManagementModal({
               <div>
                 <h3>People & classification</h3>
                 <p>
-                  Separate names with commas. Manage actors and their characters
+                  Organize movie credits and classification metadata
                   individually.
                 </p>
               </div>
             </div>
 
-            <div className="metadata-form-grid">
-              <TextAreaField
+            <div className="metadata-form-grid metadata-form-grid--editors">
+              <ChipListEditor
                 label="Genres"
-                name="genres"
+                eyebrow="CLASSIFICATION"
                 value={form.genres}
-                onChange={handleChange}
-                hint="Example: Drama, Thriller"
-                rows={2}
+                onChange={(value) =>
+                  setForm((current) => ({ ...current, genres: value }))
+                }
+                placeholder="Add a genre..."
+                hint="Press Enter or use Add to create a genre."
               />
 
-              <TextAreaField
+              <ChipListEditor
                 label="Studios"
-                name="studios"
+                eyebrow="PRODUCTION"
                 value={form.studios}
-                onChange={handleChange}
-                rows={2}
+                onChange={(value) =>
+                  setForm((current) => ({ ...current, studios: value }))
+                }
+                placeholder="Add a studio..."
               />
 
-              <TextAreaField
+              <PersonListEditor
                 label="Directors"
-                name="directors"
-                value={form.directors}
-                onChange={handleChange}
-                rows={2}
+                eyebrow="CREATIVE TEAM"
+                description="Manage the people who directed this movie."
+                entries={directorEntries}
+                onChange={setDirectorEntries}
+                placeholder="e.g. Christopher Nolan"
+                emptyMessage="No directors added"
               />
 
-              <TextAreaField
+              <PersonListEditor
                 label="Writers"
-                name="writers"
-                value={form.writers}
-                onChange={handleChange}
-                rows={2}
+                eyebrow="WRITING CREDITS"
+                description="Manage the writers credited for this movie."
+                entries={writerEntries}
+                onChange={setWriterEntries}
+                placeholder="e.g. Jonathan Nolan"
+                emptyMessage="No writers added"
               />
 
               <div className="metadata-actors-editor">
@@ -709,13 +946,15 @@ function MetadataManagementModal({
                 </button>
               </div>
 
-              <TextAreaField
+              <ChipListEditor
                 label="Tags"
-                name="tags"
+                eyebrow="ADDITIONAL LABELS"
                 value={form.tags}
-                onChange={handleChange}
-                hint="Example: Based on a novel, Award winner"
-                rows={3}
+                onChange={(value) =>
+                  setForm((current) => ({ ...current, tags: value }))
+                }
+                placeholder="Add a tag..."
+                hint="Examples: Based on a novel, Award winner."
               />
             </div>
 
