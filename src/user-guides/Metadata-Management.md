@@ -1,4 +1,4 @@
-# CineBox — Metadata Management
+# Metadata Management
 
 ## User Guide
 

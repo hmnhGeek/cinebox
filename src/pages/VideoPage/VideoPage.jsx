@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getVideoMetadata } from "../../service/collectionApi";
+import MetadataManagementModal from "../../components/MetadataManagementModal/MetadataManagementModal";
 import {
   getMediaTechnicalInfo,
   requestMediaTechnicalInfo,
@@ -168,6 +169,7 @@ function VideoPage() {
   const [error, setError] = useState("");
   const [playError, setPlayError] = useState("");
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+  const [isMetadataManagerOpen, setIsMetadataManagerOpen] = useState(false);
 
   const [playbackProgressLoading, setPlaybackProgressLoading] = useState(true);
   const [initialPlaybackTime, setInitialPlaybackTime] = useState(0);
@@ -1016,6 +1018,28 @@ function VideoPage() {
               </span>
             </div>
 
+            <button
+              type="button"
+              className="metadata-management-trigger"
+              onClick={() => setIsMetadataManagerOpen(true)}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="17"
+                height="17"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z" />
+              </svg>
+              <span>Edit metadata</span>
+            </button>
+
             {playError && (
               <p className="play-error" role="alert">
                 {playError}
@@ -1309,6 +1333,22 @@ function VideoPage() {
           <MovieGallery collectionId={collectionId} mediaItemId={mediaItemId} />
         </section>
       </div>
+
+      {isMetadataManagerOpen && (
+        <MetadataManagementModal
+          mediaItemId={mediaItemId}
+          movieTitle={metadata.title || "Untitled video"}
+          onClose={() => setIsMetadataManagerOpen(false)}
+          onMetadataUpdated={(updatedMetadata) => {
+            if (updatedMetadata && typeof updatedMetadata === "object") {
+              setVideoMetadata((current) => ({
+                ...current,
+                ...updatedMetadata,
+              }));
+            }
+          }}
+        />
+      )}
     </main>
   );
 }
