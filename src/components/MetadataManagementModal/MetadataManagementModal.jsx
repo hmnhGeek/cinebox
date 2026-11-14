@@ -953,7 +953,7 @@ function MetadataManagementModal({
                   setForm((current) => ({ ...current, tags: value }))
                 }
                 placeholder="Add a tag..."
-                hint="Examples: Based on a novel, Award winner."
+                hint="Examples: Combat, Cinematic, etc."
               />
             </div>
 
