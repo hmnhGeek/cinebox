@@ -1002,7 +1002,12 @@ function VideoPage() {
                 )}
               </button>
 
-              <span className="play-hint">
+              <button
+                type="button"
+                className="metadata-management-trigger"
+                style={{ marginTop: 0 }}
+                onClick={() => setIsMetadataManagerOpen(true)}
+              >
                 <svg
                   viewBox="0 0 24 24"
                   width="17"
@@ -1010,35 +1015,16 @@ function VideoPage() {
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   aria-hidden="true"
                 >
-                  <path d="M8 3H5a2 2 0 0 0-2 2v3m13-5h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3m8 0h3a2 2 0 0 0 2-2v-3" />
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z" />
                 </svg>
-                Fullscreen playback
-              </span>
+                <span>Edit metadata</span>
+              </button>
             </div>
-
-            <button
-              type="button"
-              className="metadata-management-trigger"
-              onClick={() => setIsMetadataManagerOpen(true)}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                width="17"
-                height="17"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.7"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M12 20h9" />
-                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z" />
-              </svg>
-              <span>Edit metadata</span>
-            </button>
 
             {playError && (
               <p className="play-error" role="alert">

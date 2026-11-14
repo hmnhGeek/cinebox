@@ -601,7 +601,7 @@ function MetadataManagementModal({
                       <span className="metadata-button__spinner" /> Saving...
                     </>
                   ) : (
-                    "Save metadata"
+                    "Save"
                   )}
                 </button>
               </div>

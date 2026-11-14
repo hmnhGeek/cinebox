@@ -1852,3 +1852,62 @@
     transition: none;
   }
 }
+
+/* =========================================
+   CineBox — Edit Metadata Action
+   Match playback action button dimensions
+   ========================================= */
+
+.video-page .metadata-management-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  min-height: 48px;
+  padding: 0 19px;
+
+  border: 1px solid rgba(196, 166, 106, 0.35);
+  border-radius: 7px;
+
+  background: rgba(28, 27, 25, 0.72);
+  color: var(--cb-gold-light);
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.video-page .metadata-management-trigger:hover {
+  border-color: var(--cb-gold);
+  background: rgba(196, 166, 106, 0.1);
+  color: #eddaaf;
+}
+
+.video-page .metadata-management-trigger:focus-visible {
+  outline: 2px solid var(--cb-gold-light);
+  outline-offset: 4px;
+}
+
+.video-page .metadata-management-trigger svg {
+  flex-shrink: 0;
+}
+
+@media (max-width: 650px) {
+  .video-page .metadata-management-trigger {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .video-page .metadata-management-trigger {
+    transition: none;
+  }
+}
