@@ -1,10 +1,15 @@
 .metadata-modal-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 1200;
+  z-index: 2000;
   display: grid;
   place-items: center;
-  padding: 28px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  padding: 20px;
   background: rgba(7, 7, 6, 0.82);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -27,7 +32,9 @@
   display: flex;
   flex-direction: column;
   width: min(980px, 100%);
-  max-height: min(900px, calc(100vh - 56px));
+  max-height: min(900px, calc(100dvh - 40px));
+  min-height: 0;
+  flex: 0 1 auto;
   overflow: hidden;
   color: var(--mm-text);
   background:
@@ -165,6 +172,7 @@
 
 .metadata-modal__body {
   min-height: 0;
+  flex: 1 1 auto;
   overflow-y: auto;
   padding: 27px 32px 0;
   scrollbar-color: #514a3b transparent;
@@ -455,14 +463,17 @@
   background: #a7bd91;
   box-shadow: 0 0 9px rgba(167, 189, 145, 0.35);
 }
+
 .nfo-status-card--failed .nfo-status-indicator {
   background: var(--mm-danger);
   box-shadow: 0 0 9px rgba(217, 132, 124, 0.35);
 }
+
 .nfo-status-card--missing .nfo-status-indicator {
   background: #8c877d;
   box-shadow: none;
 }
+
 .nfo-status-card > p {
   margin: 10px 0 0;
   color: var(--mm-secondary);
@@ -483,6 +494,7 @@
 .nfo-status-card > div:not(.nfo-status-card__topline) span {
   color: var(--mm-muted);
 }
+
 .nfo-status-card > div:not(.nfo-status-card__topline) strong {
   color: #c8c2b6;
   font-weight: 550;
@@ -531,6 +543,7 @@
   color: #e2a09a;
   font-size: 11px;
 }
+
 .nfo-error-detail p {
   margin: 6px 0 0;
   color: #b9a39f;
@@ -587,6 +600,7 @@
     transform: rotate(360deg);
   }
 }
+
 @keyframes metadata-backdrop-in {
   from {
     opacity: 0;
@@ -595,6 +609,7 @@
     opacity: 1;
   }
 }
+
 @keyframes metadata-modal-in {
   from {
     opacity: 0;
@@ -610,45 +625,57 @@
   .metadata-modal-backdrop {
     padding: 12px;
   }
+
   .metadata-modal {
-    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
     border-radius: 12px;
   }
+
   .metadata-modal__header {
     padding: 21px 20px 18px;
   }
+
   .metadata-modal__tabs {
     padding: 0 20px;
   }
+
   .metadata-modal__body {
     padding: 22px 20px 0;
   }
+
   .metadata-form-grid {
     grid-template-columns: minmax(0, 1fr);
     gap: 14px;
   }
+
   .metadata-field--full {
     grid-column: auto;
   }
+
   .metadata-modal__footer {
     margin-right: -20px;
     margin-left: -20px;
     padding: 15px 20px;
   }
+
   .metadata-modal__footer > span {
     max-width: 220px;
   }
+
   .metadata-modal__footer > div {
     gap: 7px;
   }
+
   .metadata-button {
     padding: 0 11px;
   }
+
   .nfo-action-card {
     align-items: flex-start;
     flex-direction: column;
     gap: 12px;
   }
+
   .nfo-action-card .metadata-button {
     align-self: flex-start;
   }
@@ -659,14 +686,17 @@
     padding-right: 15px;
     padding-left: 15px;
   }
+
   .metadata-modal__tabs {
     gap: 20px;
     padding: 0 15px;
   }
+
   .metadata-modal__body {
     padding-right: 15px;
     padding-left: 15px;
   }
+
   .metadata-modal__footer {
     align-items: flex-start;
     flex-direction: column;
@@ -674,12 +704,15 @@
     margin-left: -15px;
     padding: 14px 15px;
   }
+
   .metadata-modal__footer > span {
     max-width: none;
   }
+
   .metadata-modal__footer > div {
     width: 100%;
   }
+
   .metadata-modal__footer > div .metadata-button {
     flex: 1;
   }

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import cineToast from "../CineToast/CineToast";
 import {
   getManagedMetadata,
@@ -82,40 +83,52 @@ const splitNames = (value) =>
     .map((entry) => entry.trim())
     .filter(Boolean);
 
-const toPayload = (form) => ({
-  title: form.title.trim(),
-  originalTitle: form.originalTitle.trim() || null,
-  sortTitle: form.sortTitle.trim() || null,
-  year: form.year.trim() ? Number(form.year) : null,
-  runtimeMinutes: form.runtimeMinutes.trim()
-    ? Number(form.runtimeMinutes)
-    : null,
-  plot: form.plot.trim() || null,
-  outline: form.outline.trim() || null,
-  premiered: form.premiered || null,
-  releaseDate: form.releaseDate || null,
-  country: form.country.trim() || null,
-  originalCountry: form.originalCountry.trim() || null,
-  language: form.language.trim() || null,
-  mpaa: form.mpaa.trim() || null,
-  website: form.website.trim() || null,
-  genres: splitNames(form.genres),
-  studios: splitNames(form.studios),
-  directors: splitNames(form.directors),
-  writers: splitNames(form.writers),
-  actors: form.actors
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => {
-      const [name, ...characterParts] = line.split("|");
-      const actor = { name: name.trim() };
-      const characterName = characterParts.join("|").trim();
-      if (characterName) actor.characterName = characterName;
-      return actor;
-    }),
-  tags: splitNames(form.tags),
-});
+const toPayload = (form) => {
+  const toNamedObjects = (value) => splitNames(value).map((name) => ({ name }));
+
+  return {
+    title: form.title.trim(),
+    originalTitle: form.originalTitle.trim() || null,
+    sortTitle: form.sortTitle.trim() || null,
+    year: form.year.trim() ? Number(form.year) : null,
+    runtimeMinutes: form.runtimeMinutes.trim()
+      ? Number(form.runtimeMinutes)
+      : null,
+    plot: form.plot.trim() || null,
+    outline: form.outline.trim() || null,
+    premiered: form.premiered || null,
+    releaseDate: form.releaseDate || null,
+    country: form.country.trim() || null,
+    originalCountry: form.originalCountry.trim() || null,
+    language: form.language.trim() || null,
+    mpaa: form.mpaa.trim() || null,
+    website: form.website.trim() || null,
+
+    // Backend expects GenreDTO, StudioDTO, PersonDTO and TagDTO objects.
+    genres: toNamedObjects(form.genres),
+    studios: toNamedObjects(form.studios),
+    directors: toNamedObjects(form.directors),
+    writers: toNamedObjects(form.writers),
+
+    actors: form.actors
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const [name, ...characterParts] = line.split("|");
+        const actor = { name: name.trim() };
+        const characterName = characterParts.join("|").trim();
+
+        if (characterName) {
+          actor.characterName = characterName;
+        }
+
+        return actor;
+      }),
+
+    tags: toNamedObjects(form.tags),
+  };
+};
 
 const STATUS_COPY = {
   SYNCED: "NFO is synchronized with the database metadata.",
@@ -216,6 +229,15 @@ function MetadataManagementModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose, saving, nfoAction]);
 
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
   const handleChange = (event) => {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
@@ -307,7 +329,7 @@ function MetadataManagementModal({
   const statusMessage =
     nfoStatus?.errorMessage || STATUS_COPY[statusCode] || STATUS_COPY.UNKNOWN;
 
-  return (
+  return createPortal(
     <div
       className="metadata-modal-backdrop"
       role="presentation"
@@ -679,7 +701,8 @@ function MetadataManagementModal({
           </div>
         )}
       </section>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
