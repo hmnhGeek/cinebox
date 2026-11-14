@@ -41,17 +41,19 @@ const getName = (value) =>
 const listToText = (items) =>
   Array.isArray(items) ? items.map(getName).filter(Boolean).join(", ") : "";
 
-const actorsToText = (items) =>
+// Backend ActorDTO uses "role" for the character name.
+const actorsToEntries = (items) =>
   Array.isArray(items)
     ? items
-        .map((actor) => {
-          const name = getName(actor);
-          const character = actor?.characterName || actor?.character || "";
-          return name ? (character ? `${name} | ${character}` : name) : "";
-        })
-        .filter(Boolean)
-        .join("\n")
-    : "";
+        .map((actor) => ({
+          name: getName(actor),
+          characterName:
+            typeof actor === "object"
+              ? actor?.characterName || actor?.character || actor?.role || ""
+              : "",
+        }))
+        .filter((actor) => actor.name || actor.characterName)
+    : [];
 
 const toForm = (metadata = {}) => ({
   ...EMPTY_FORM,
@@ -73,7 +75,6 @@ const toForm = (metadata = {}) => ({
   studios: listToText(metadata.studios),
   directors: listToText(metadata.directors),
   writers: listToText(metadata.writers),
-  actors: actorsToText(metadata.actors),
   tags: listToText(metadata.tags),
 });
 
@@ -83,7 +84,7 @@ const splitNames = (value) =>
     .map((entry) => entry.trim())
     .filter(Boolean);
 
-const toPayload = (form) => {
+const toPayload = (form, actorEntries) => {
   const toNamedObjects = (value) => splitNames(value).map((name) => ({ name }));
 
   return {
@@ -104,27 +105,18 @@ const toPayload = (form) => {
     mpaa: form.mpaa.trim() || null,
     website: form.website.trim() || null,
 
-    // Backend expects GenreDTO, StudioDTO, PersonDTO and TagDTO objects.
     genres: toNamedObjects(form.genres),
     studios: toNamedObjects(form.studios),
     directors: toNamedObjects(form.directors),
     writers: toNamedObjects(form.writers),
 
-    actors: form.actors
-      .split("\n")
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .map((line) => {
-        const [name, ...characterParts] = line.split("|");
-        const actor = { name: name.trim() };
-        const characterName = characterParts.join("|").trim();
-
-        if (characterName) {
-          actor.characterName = characterName;
-        }
-
-        return actor;
-      }),
+    // Backend ActorDTO expects "role", not "characterName".
+    actors: actorEntries
+      .map((actor) => ({
+        name: actor.name.trim(),
+        role: actor.characterName.trim() || null,
+      }))
+      .filter((actor) => actor.name),
 
     tags: toNamedObjects(form.tags),
   };
@@ -185,6 +177,7 @@ function MetadataManagementModal({
   onMetadataUpdated,
 }) {
   const [form, setForm] = useState(EMPTY_FORM);
+  const [actorEntries, setActorEntries] = useState([]);
   const [nfoStatus, setNfoStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -204,12 +197,15 @@ function MetadataManagementModal({
   const loadMetadata = useCallback(async () => {
     setLoading(true);
     setLoadError("");
+
     try {
       const [metadata] = await Promise.all([
         getManagedMetadata(mediaItemId),
         refreshStatus(),
       ]);
+
       setForm(toForm(metadata));
+      setActorEntries(actorsToEntries(metadata.actors));
     } catch (error) {
       setLoadError(error.message || "Couldn't load movie metadata.");
     } finally {
@@ -225,6 +221,7 @@ function MetadataManagementModal({
     const handleKeyDown = (event) => {
       if (event.key === "Escape" && !saving && !nfoAction) onClose();
     };
+
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose, saving, nfoAction]);
@@ -243,6 +240,24 @@ function MetadataManagementModal({
     setForm((current) => ({ ...current, [name]: value }));
   };
 
+  const handleActorChange = (index, field, value) => {
+    setActorEntries((current) =>
+      current.map((actor, actorIndex) =>
+        actorIndex === index ? { ...actor, [field]: value } : actor,
+      ),
+    );
+  };
+
+  const addActor = () => {
+    setActorEntries((current) => [...current, { name: "", characterName: "" }]);
+  };
+
+  const removeActor = (index) => {
+    setActorEntries((current) =>
+      current.filter((_, actorIndex) => actorIndex !== index),
+    );
+  };
+
   const canSave = useMemo(
     () => Boolean(form.title.trim()) && !saving && !loading,
     [form.title, saving, loading],
@@ -252,7 +267,8 @@ function MetadataManagementModal({
     event.preventDefault();
     if (!canSave) return;
 
-    const payload = toPayload(form);
+    const payload = toPayload(form, actorEntries);
+
     if (
       (payload.year != null && !Number.isFinite(payload.year)) ||
       (payload.runtimeMinutes != null &&
@@ -263,14 +279,18 @@ function MetadataManagementModal({
     }
 
     setSaving(true);
+
     try {
       const result = await updateManagedMetadata(mediaItemId, payload);
       const updatedMetadata = result?.metadata || result;
       const returnedStatus = result?.nfoStatus;
+
       if (updatedMetadata && typeof updatedMetadata === "object") {
         setForm(toForm(updatedMetadata));
+        setActorEntries(actorsToEntries(updatedMetadata.actors));
         onMetadataUpdated?.(updatedMetadata);
       }
+
       if (returnedStatus) setNfoStatus(returnedStatus);
       else await refreshStatus();
 
@@ -291,19 +311,24 @@ function MetadataManagementModal({
 
   const runNfoAction = async (action) => {
     if (nfoAction) return;
+
     setNfoAction(action);
+
     try {
       const result =
         action === "reimport"
           ? await reimportNfo(mediaItemId)
           : await synchronizeNfo(mediaItemId);
+
       const updatedMetadata = result?.metadata;
       const status = result?.nfoStatus || result;
 
       if (updatedMetadata && typeof updatedMetadata === "object") {
         setForm(toForm(updatedMetadata));
+        setActorEntries(actorsToEntries(updatedMetadata.actors));
         onMetadataUpdated?.(updatedMetadata);
       }
+
       if (status) setNfoStatus(status);
       await refreshStatus();
 
@@ -314,6 +339,7 @@ function MetadataManagementModal({
       );
     } catch (error) {
       await refreshStatus();
+
       cineToast.error(
         error.message ||
           (action === "reimport"
@@ -351,6 +377,7 @@ function MetadataManagementModal({
             <h2 id="metadata-modal-title">Manage metadata</h2>
             <p>{movieTitle}</p>
           </div>
+
           <button
             type="button"
             className="metadata-modal__close"
@@ -372,6 +399,7 @@ function MetadataManagementModal({
           >
             Movie details
           </button>
+
           <button
             type="button"
             className={activeTab === "nfo" ? "is-active" : ""}
@@ -410,6 +438,7 @@ function MetadataManagementModal({
                 <p>Titles and core movie information</p>
               </div>
             </div>
+
             <div className="metadata-form-grid">
               <Field
                 label="Display title *"
@@ -418,18 +447,21 @@ function MetadataManagementModal({
                 onChange={handleChange}
                 required
               />
+
               <Field
                 label="Original title"
                 name="originalTitle"
                 value={form.originalTitle}
                 onChange={handleChange}
               />
+
               <Field
                 label="Sort title"
                 name="sortTitle"
                 value={form.sortTitle}
                 onChange={handleChange}
               />
+
               <Field
                 label="Year"
                 name="year"
@@ -439,6 +471,7 @@ function MetadataManagementModal({
                 value={form.year}
                 onChange={handleChange}
               />
+
               <Field
                 label="Runtime (minutes)"
                 name="runtimeMinutes"
@@ -447,6 +480,7 @@ function MetadataManagementModal({
                 value={form.runtimeMinutes}
                 onChange={handleChange}
               />
+
               <Field
                 label="Content rating"
                 name="mpaa"
@@ -463,6 +497,7 @@ function MetadataManagementModal({
                 <p>Descriptions, dates and origin</p>
               </div>
             </div>
+
             <div className="metadata-form-grid">
               <TextAreaField
                 label="Plot"
@@ -471,6 +506,7 @@ function MetadataManagementModal({
                 onChange={handleChange}
                 rows={4}
               />
+
               <TextAreaField
                 label="Outline"
                 name="outline"
@@ -478,6 +514,7 @@ function MetadataManagementModal({
                 onChange={handleChange}
                 rows={3}
               />
+
               <Field
                 label="Premiered"
                 name="premiered"
@@ -485,6 +522,7 @@ function MetadataManagementModal({
                 value={form.premiered}
                 onChange={handleChange}
               />
+
               <Field
                 label="Release date"
                 name="releaseDate"
@@ -492,24 +530,28 @@ function MetadataManagementModal({
                 value={form.releaseDate}
                 onChange={handleChange}
               />
+
               <Field
                 label="Country"
                 name="country"
                 value={form.country}
                 onChange={handleChange}
               />
+
               <Field
                 label="Original country"
                 name="originalCountry"
                 value={form.originalCountry}
                 onChange={handleChange}
               />
+
               <Field
                 label="Language"
                 name="language"
                 value={form.language}
                 onChange={handleChange}
               />
+
               <Field
                 label="Website"
                 name="website"
@@ -525,10 +567,12 @@ function MetadataManagementModal({
               <div>
                 <h3>People & classification</h3>
                 <p>
-                  Separate names with commas. Actors use one entry per line.
+                  Separate names with commas. Manage actors and their characters
+                  individually.
                 </p>
               </div>
             </div>
+
             <div className="metadata-form-grid">
               <TextAreaField
                 label="Genres"
@@ -538,6 +582,7 @@ function MetadataManagementModal({
                 hint="Example: Drama, Thriller"
                 rows={2}
               />
+
               <TextAreaField
                 label="Studios"
                 name="studios"
@@ -545,6 +590,7 @@ function MetadataManagementModal({
                 onChange={handleChange}
                 rows={2}
               />
+
               <TextAreaField
                 label="Directors"
                 name="directors"
@@ -552,6 +598,7 @@ function MetadataManagementModal({
                 onChange={handleChange}
                 rows={2}
               />
+
               <TextAreaField
                 label="Writers"
                 name="writers"
@@ -559,14 +606,109 @@ function MetadataManagementModal({
                 onChange={handleChange}
                 rows={2}
               />
-              <TextAreaField
-                label="Actors"
-                name="actors"
-                value={form.actors}
-                onChange={handleChange}
-                hint="Format: Actor name | Character name"
-                rows={5}
-              />
+
+              <div className="metadata-actors-editor">
+                <div className="metadata-actors-editor__header">
+                  <div>
+                    <span className="metadata-actors-editor__eyebrow">
+                      CAST & CHARACTERS
+                    </span>
+                    <h4>Cast members</h4>
+                    <p>Manage the actors and the characters they portray.</p>
+                  </div>
+
+                  <span className="metadata-actors-editor__count">
+                    {actorEntries.length}{" "}
+                    {actorEntries.length === 1 ? "ACTOR" : "ACTORS"}
+                  </span>
+                </div>
+
+                {actorEntries.length > 0 ? (
+                  <div className="metadata-actors-list">
+                    {actorEntries.map((actor, index) => (
+                      <div className="metadata-actor-card" key={index}>
+                        <div className="metadata-actor-card__index">
+                          {String(index + 1).padStart(2, "0")}
+                        </div>
+
+                        <div className="metadata-actor-card__fields">
+                          <label>
+                            <span>ACTOR NAME</span>
+                            <input
+                              type="text"
+                              value={actor.name}
+                              onChange={(event) =>
+                                handleActorChange(
+                                  index,
+                                  "name",
+                                  event.target.value,
+                                )
+                              }
+                              placeholder="e.g. Leonardo DiCaprio"
+                            />
+                          </label>
+
+                          <label>
+                            <span>CHARACTER / ROLE</span>
+                            <input
+                              type="text"
+                              value={actor.characterName}
+                              onChange={(event) =>
+                                handleActorChange(
+                                  index,
+                                  "characterName",
+                                  event.target.value,
+                                )
+                              }
+                              placeholder="e.g. Dom Cobb"
+                            />
+                          </label>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="metadata-actor-card__remove"
+                          onClick={() => removeActor(index)}
+                          aria-label={`Remove actor ${actor.name || index + 1}`}
+                          title="Remove actor"
+                        >
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="metadata-actors-empty">
+                    <span className="metadata-actors-empty__icon">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="9" cy="8" r="3.5" />
+                        <path d="M2.5 20c0-3.6 2.8-6 6.5-6 2 0 3.7.7 4.9 2" />
+                        <path d="M18 11v8M14 15h8" />
+                      </svg>
+                    </span>
+
+                    <strong>No cast members added</strong>
+                    <span>
+                      Add actors and their character names to build the movie's
+                      cast.
+                    </span>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  className="metadata-actors-add"
+                  onClick={addActor}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                  Add actor
+                </button>
+              </div>
+
               <TextAreaField
                 label="Tags"
                 name="tags"
@@ -582,6 +724,7 @@ function MetadataManagementModal({
                 Changes are saved to CineBox first. NFO synchronization is
                 handled separately.
               </span>
+
               <div>
                 <button
                   type="button"
@@ -591,6 +734,7 @@ function MetadataManagementModal({
                 >
                   Cancel
                 </button>
+
                 <button
                   type="submit"
                   className="metadata-button metadata-button--primary"
@@ -598,7 +742,8 @@ function MetadataManagementModal({
                 >
                   {saving ? (
                     <>
-                      <span className="metadata-button__spinner" /> Saving...
+                      <span className="metadata-button__spinner" />
+                      Saving...
                     </>
                   ) : (
                     "Save"
@@ -627,13 +772,16 @@ function MetadataManagementModal({
                 <span className="nfo-status-indicator" />
                 <strong>{statusCode}</strong>
               </div>
+
               <p>{statusMessage}</p>
+
               {nfoStatus?.lastAttemptAt && (
                 <div>
                   <span>Last attempt</span>
                   <strong>{formatTimestamp(nfoStatus.lastAttemptAt)}</strong>
                 </div>
               )}
+
               {nfoStatus?.lastSyncedAt && (
                 <div>
                   <span>Last successful sync</span>
@@ -650,6 +798,7 @@ function MetadataManagementModal({
                   file. A missing NFO file will be generated.
                 </p>
               </div>
+
               <button
                 type="button"
                 className="metadata-button metadata-button--secondary"
@@ -668,6 +817,7 @@ function MetadataManagementModal({
                   the NFO file. This does not merge changes.
                 </p>
               </div>
+
               <button
                 type="button"
                 className="metadata-button metadata-button--secondary"
@@ -690,6 +840,7 @@ function MetadataManagementModal({
                 Re-import overwrites database values for supported fields. Use
                 it only when you intend to replace them.
               </span>
+
               <button
                 type="button"
                 className="metadata-button metadata-button--secondary"

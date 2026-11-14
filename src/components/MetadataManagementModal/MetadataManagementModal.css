@@ -595,6 +595,282 @@
   outline-offset: 3px;
 }
 
+/* =========================================
+   CAST & ACTORS EDITOR
+========================================= */
+
+.metadata-actors-editor {
+  grid-column: 1 / -1;
+  min-width: 0;
+  padding: 19px;
+  background:
+    radial-gradient(
+      ellipse at 100% 0%,
+      rgba(196, 166, 106, 0.055),
+      transparent 48%
+    ),
+    #191815;
+  border: 1px solid #39362f;
+  border-radius: 11px;
+}
+
+.metadata-actors-editor__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 17px;
+}
+
+.metadata-actors-editor__eyebrow {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--mm-gold);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 1.8px;
+}
+
+.metadata-actors-editor__header h4 {
+  margin: 0;
+  color: var(--mm-text);
+  font-size: 15px;
+  font-weight: 680;
+}
+
+.metadata-actors-editor__header p {
+  margin: 5px 0 0;
+  color: var(--mm-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.metadata-actors-editor__count {
+  flex-shrink: 0;
+  padding: 6px 9px;
+  color: var(--mm-gold-light);
+  background: rgba(196, 166, 106, 0.09);
+  border: 1px solid rgba(196, 166, 106, 0.2);
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.metadata-actors-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.metadata-actor-card {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 13px;
+  padding: 13px;
+  background: #201f1c;
+  border: 1px solid #35332e;
+  border-radius: 9px;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.metadata-actor-card:hover {
+  background: #24221e;
+  border-color: #514a3b;
+}
+
+.metadata-actor-card__index {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  color: var(--mm-gold-light);
+  background: rgba(196, 166, 106, 0.1);
+  border: 1px solid rgba(196, 166, 106, 0.2);
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.metadata-actor-card__fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+  min-width: 0;
+}
+
+.metadata-actor-card__fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.metadata-actor-card__fields label > span {
+  color: var(--mm-muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+}
+
+.metadata-actor-card__fields input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+  padding: 0 10px;
+  color: var(--mm-text);
+  background: #171614;
+  border: 1px solid #39372f;
+  border-radius: 6px;
+  outline: none;
+  font-family: inherit;
+  font-size: 12px;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.metadata-actor-card__fields input:hover {
+  background: #191815;
+  border-color: #514a3b;
+}
+
+.metadata-actor-card__fields input:focus {
+  border-color: var(--mm-gold);
+  box-shadow: 0 0 0 3px rgba(196, 166, 106, 0.09);
+}
+
+.metadata-actor-card__fields input::placeholder {
+  color: #625e55;
+}
+
+.metadata-actor-card__remove {
+  display: grid;
+  place-items: center;
+  width: 33px;
+  height: 33px;
+  padding: 0;
+  color: #827970;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.metadata-actor-card__remove svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.metadata-actor-card__remove:hover {
+  color: var(--mm-danger);
+  background: rgba(217, 132, 124, 0.09);
+  border-color: rgba(217, 132, 124, 0.2);
+}
+
+.metadata-actors-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  margin-top: 13px;
+  padding: 0 13px;
+  color: var(--mm-gold-light);
+  background: rgba(196, 166, 106, 0.07);
+  border: 1px dashed rgba(196, 166, 106, 0.38);
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.metadata-actors-add svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.metadata-actors-add:hover {
+  color: #17140e;
+  background: var(--mm-gold);
+  border-color: var(--mm-gold);
+  border-style: solid;
+}
+
+.metadata-actors-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 145px;
+  padding: 18px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.012);
+  border: 1px dashed #454137;
+  border-radius: 9px;
+}
+
+.metadata-actors-empty__icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 3px;
+  color: var(--mm-gold-light);
+  background: rgba(196, 166, 106, 0.09);
+  border: 1px solid rgba(196, 166, 106, 0.2);
+  border-radius: 10px;
+}
+
+.metadata-actors-empty__icon svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.metadata-actors-empty strong {
+  color: var(--mm-text);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.metadata-actors-empty > span:last-child {
+  max-width: 290px;
+  color: var(--mm-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
 @keyframes metadata-spin {
   to {
     transform: rotate(360deg);
@@ -681,6 +957,34 @@
   }
 }
 
+@media (max-width: 560px) {
+  .metadata-actors-editor {
+    padding: 14px;
+  }
+
+  .metadata-actor-card {
+    grid-template-columns: 30px minmax(0, 1fr) 30px;
+    gap: 9px;
+    padding: 10px;
+  }
+
+  .metadata-actor-card__index {
+    width: 29px;
+    height: 29px;
+  }
+
+  .metadata-actor-card__fields {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 11px;
+  }
+
+  .metadata-actor-card__remove {
+    width: 30px;
+    height: 30px;
+    align-self: start;
+  }
+}
+
 @media (max-width: 440px) {
   .metadata-modal__header {
     padding-right: 15px;
@@ -722,7 +1026,11 @@
   .metadata-modal-backdrop,
   .metadata-modal,
   .metadata-modal *,
-  .metadata-management-trigger {
+  .metadata-management-trigger,
+  .metadata-actor-card,
+  .metadata-actor-card__fields input,
+  .metadata-actor-card__remove,
+  .metadata-actors-add {
     animation: none !important;
     transition: none !important;
   }
